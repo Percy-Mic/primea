@@ -1,0 +1,243 @@
+.main {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #f5f2eb;
+}
+
+/* Hero Section */
+.heroSection {
+  width: 100%;
+  background-color: #1f1815;
+  color: #fefdfa;
+  padding: 4rem 1.5rem 5rem;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.heroContainer {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.heroTitle {
+  font-family: serif;
+  font-size: 2.25rem;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  margin-bottom: 1rem;
+}
+
+.heroSubtitle {
+  color: #d1c8bd;
+  font-size: 0.95rem;
+  font-weight: 300;
+  letter-spacing: 0.02em;
+  line-height: 1.6;
+}
+
+/* Catalog Section */
+.catalogSection {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem 5rem;
+  box-sizing: border-box;
+}
+
+.catalogHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 2.5rem;
+}
+
+.catalogTitle {
+  font-family: serif;
+  font-size: 2rem;
+  font-weight: 400;
+  color: #1f1815;
+  margin: 0;
+}
+
+.catalogControls {
+  display: flex;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.controlBtn {
+  flex: 1;
+  background-color: #fefdfa;
+  border: 1px solid #e2dad0;
+  padding: 0.65rem 1rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #2a211d;
+  cursor: pointer;
+  text-align: center;
+}
+
+/* Responsive Product Grid */
+.productGrid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1.75rem;
+}
+
+.productCard {
+  background-color: #fefdfa;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(226, 218, 208, 0.7);
+  display: flex;
+  flex-direction: column;
+}
+
+.cardImageContainer {
+  width: 100%;
+  aspect-ratio: 4/5;
+  background-color: #eae4d8;
+  position: relative;
+  overflow: hidden;
+}
+
+.cardImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.noImagePlaceholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a89f91;
+  font-size: 0.875rem;
+}
+
+.badgeWrapper {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+}
+
+.badge {
+  background-color: #1f1815;
+  color: #fefdfa;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.cardDetails {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.productTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f1815;
+  margin-bottom: 0.35rem;
+  text-transform: capitalize;
+}
+
+.productPrice {
+  font-size: 0.95rem;
+  color: #b06d50;
+  font-weight: 600;
+  margin-bottom: 1.25rem;
+}
+
+.btnViewDetails {
+  margin-top: auto;
+  text-align: center;
+  background-color: #1f1815;
+  color: #fefdfa;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  display: block;
+}
+
+.loadMoreContainer {
+  text-align: center;
+  margin-top: 3.5rem;
+}
+
+.btnLoadMore {
+  width: 100%;
+  background-color: transparent;
+  border: 1px solid #1f1815;
+  color: #1f1815;
+  padding: 0.85rem 2rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+/* Tablet & Desktop Layouts */
+@media (min-width: 640px) {
+  .heroTitle {
+    font-size: 2.75rem;
+  }
+  
+  .catalogHeader {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .catalogControls {
+    width: auto;
+  }
+
+  .controlBtn {
+    flex: initial;
+    padding: 0.6rem 1.25rem;
+  }
+
+  .productGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+  }
+
+  .btnLoadMore {
+    width: auto;
+  }
+}
+
+@media (min-width: 1024px) {
+  .heroSection {
+    padding: 5rem 2rem 6rem;
+  }
+
+  .heroTitle {
+    font-size: 3.25rem;
+  }
+
+  .catalogSection {
+    padding: 4rem 2rem 6rem;
+  }
+
+  .productGrid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2.5rem 2rem;
+  }
+}

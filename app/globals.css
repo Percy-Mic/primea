@@ -1,0 +1,32 @@
+/* 1. Prevent global horizontal scroll */
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+
+/* 2. Fix Navbar/Header overflowing on mobile */
+header, nav {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  overflow-x: hidden;
+}
+
+/* 3. Wrap header links on small screens */
+@media (max-width: 640px) {
+  header nav, 
+  .navbar-container,
+  nav ul {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
