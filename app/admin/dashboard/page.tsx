@@ -208,13 +208,14 @@ export default function AdminDashboardPage() {
   }
 
   const lowStockCount = stats.lowStockItems?.length || 0
-  const baseRev = summaries.monthly.revenue || 10000
+  const monthlyRev = summaries.monthly.revenue || 0
 
+  // Only generate trend points if there's active revenue for the period, otherwise show zeroes
   const trendPoints = [
-    { day: 'Week 1', val: baseRev * 0.22 },
-    { day: 'Week 2', val: baseRev * 0.45 },
-    { day: 'Week 3', val: baseRev * 0.68 },
-    { day: 'Week 4', val: baseRev * 0.90 }
+    { day: 'Week 1', val: monthlyRev > 0 ? monthlyRev * 0.22 : 0 },
+    { day: 'Week 2', val: monthlyRev > 0 ? monthlyRev * 0.45 : 0 },
+    { day: 'Week 3', val: monthlyRev > 0 ? monthlyRev * 0.68 : 0 },
+    { day: 'Week 4', val: monthlyRev > 0 ? monthlyRev * 0.90 : 0 }
   ]
   const maxVal = Math.max(...trendPoints.map(p => p.val), 1)
 
@@ -231,10 +232,9 @@ export default function AdminDashboardPage() {
           display: flex;
           flex-direction: column;
           min-height: 100vh;
-          padding-top: 130px; /* Ensured top padding starts at least 100px-130px down */
+          padding-top: 130px;
         }
 
-        /* Absolutely Fixed Top Header Group */
         .header-group-fixed {
           position: fixed;
           top: 0;
@@ -253,7 +253,6 @@ export default function AdminDashboardPage() {
           box-sizing: border-box;
         }
 
-        /* Top Navigation Bar */
         .top-nav-bar {
           display: flex;
           align-items: center;
@@ -310,7 +309,7 @@ export default function AdminDashboardPage() {
 
         @media (max-width: 768px) {
           .admin-layout-wrapper {
-            padding-top: 160px; /* Responsive top padding for stacked mobile viewports */
+            padding-top: 160px;
           }
           .mobile-menu-btn {
             display: inline-flex;
@@ -324,7 +323,6 @@ export default function AdminDashboardPage() {
           }
         }
 
-        /* Main Content Container */
         .admin-main-content {
           flex: 1;
           display: flex;
@@ -505,20 +503,6 @@ export default function AdminDashboardPage() {
           scrollbar-color: #ded7cc #fcfbfa;
         }
 
-        .scrollable-graph-container::-webkit-scrollbar {
-          height: 6px;
-        }
-
-        .scrollable-graph-container::-webkit-scrollbar-track {
-          background: #fcfbfa;
-          border-radius: 4px;
-        }
-
-        .scrollable-graph-container::-webkit-scrollbar-thumb {
-          background: #ded7cc;
-          border-radius: 4px;
-        }
-
         .content-grid {
           display: grid;
           grid-template-columns: 2fr 1fr;
@@ -649,31 +633,37 @@ export default function AdminDashboardPage() {
             </p>
             
             <div className="scrollable-graph-container">
-              <div style={{ width: '520px', height: '160px', display: 'flex', alignItems: 'flex-end' }}>
-                <svg viewBox="0 0 520 120" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
-                  <polyline
-                    fill="none"
-                    stroke="#b55933"
-                    strokeWidth="3"
-                    points={trendPoints.map((p, idx) => `${idx * 130 + 65},${110 - (p.val / maxVal) * 90}`).join(' ')}
-                  />
-                  {trendPoints.map((p, idx) => (
-                    <g key={idx}>
-                      <circle
-                        cx={idx * 130 + 65}
-                        cy={110 - (p.val / maxVal) * 90}
-                        r="5"
-                        fill="#ffffff"
-                        stroke="#b55933"
-                        strokeWidth="3"
-                      />
-                      <text x={idx * 130 + 65} y="125" textAnchor="middle" fontSize="11" fill="#786f66" fontWeight="600">
-                        {p.day}
-                      </text>
-                    </g>
-                  ))}
-                </svg>
-              </div>
+              {monthlyRev === 0 ? (
+                <div style={{ height: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8c827a', fontSize: '0.85rem' }}>
+                  No revenue data recorded for {MONTH_NAMES[selectedMonth]} {selectedYear}.
+                </div>
+              ) : (
+                <div style={{ width: '520px', height: '160px', display: 'flex', alignItems: 'flex-end' }}>
+                  <svg viewBox="0 0 520 120" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
+                    <polyline
+                      fill="none"
+                      stroke="#b55933"
+                      strokeWidth="3"
+                      points={trendPoints.map((p, idx) => `${idx * 130 + 65},${110 - (p.val / maxVal) * 90}`).join(' ')}
+                    />
+                    {trendPoints.map((p, idx) => (
+                      <g key={idx}>
+                        <circle
+                          cx={idx * 130 + 65}
+                          cy={110 - (p.val / maxVal) * 90}
+                          r="5"
+                          fill="#ffffff"
+                          stroke="#b55933"
+                          strokeWidth="3"
+                        />
+                        <text x={idx * 130 + 65} y="125" textAnchor="middle" fontSize="11" fill="#786f66" fontWeight="600">
+                          {p.day}
+                        </text>
+                      </g>
+                    ))}
+                  </svg>
+                </div>
+              )}
             </div>
           </div>
 
