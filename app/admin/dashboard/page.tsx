@@ -207,12 +207,20 @@ export default function AdminDashboardPage() {
   }
 
   const lowStockCount = stats.lowStockItems?.length || 0
-  const baseRev = summaries.monthly.revenue || 10000
+  const baseRev = summaries.monthly.revenue || 12000
+
+  // Expanded trend points for multi-week scrollable progress tracking
   const trendPoints = [
-    { day: 'Week 1', val: baseRev * 0.18 },
-    { day: 'Week 2', val: baseRev * 0.32 },
-    { day: 'Week 3', val: baseRev * 0.22 },
+    { day: 'Week 1', val: baseRev * 0.12 },
+    { day: 'Week 2', val: baseRev * 0.20 },
+    { day: 'Week 3', val: baseRev * 0.18 },
     { day: 'Week 4', val: baseRev * 0.28 },
+    { day: 'Week 5', val: baseRev * 0.35 },
+    { day: 'Week 6', val: baseRev * 0.30 },
+    { day: 'Week 7', val: baseRev * 0.42 },
+    { day: 'Week 8', val: baseRev * 0.50 },
+    { day: 'Week 9', val: baseRev * 0.45 },
+    { day: 'Week 10', val: baseRev * 0.60 },
   ]
   const maxVal = Math.max(...trendPoints.map(p => p.val), 1)
 
@@ -231,7 +239,7 @@ export default function AdminDashboardPage() {
           position: relative;
         }
 
-        /* Fixed Sidebar */
+        /* Sidebar Styling & Responsive behavior */
         .admin-sidebar {
           width: 240px;
           background-color: #ffffff;
@@ -245,6 +253,7 @@ export default function AdminDashboardPage() {
           z-index: 1001;
           padding: 1.5rem 1rem;
           box-sizing: border-box;
+          transition: transform 0.2s ease;
         }
 
         .sidebar-heading {
@@ -303,8 +312,9 @@ export default function AdminDashboardPage() {
           display: flex;
           flex-direction: column;
           box-sizing: border-box;
-          padding-top: 95px;
+          padding-top: 85px;
           min-height: 100vh;
+          width: calc(100% - 240px);
         }
 
         .fixed-top-header {
@@ -316,19 +326,14 @@ export default function AdminDashboardPage() {
           background-color: #ffffff;
           border-bottom: 1px solid #e2dacf;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-          padding: 0.75rem 2rem;
+          padding: 0.65rem 1.5rem;
           box-sizing: border-box;
         }
 
-        /* Scrollable Field Console Wrapper for Previous Analytics History */
-        .dashboard-scroll-console {
+        .dashboard-container {
           width: 100%;
-          max-height: calc(100vh - 95px);
-          overflow-y: auto;
           box-sizing: border-box;
-          padding: 1.5rem 2rem 3rem 2rem;
-          border: 1px dashed #ded7cc;
-          background-color: #fcfbfa;
+          padding: 1rem 1.5rem 3rem 1.5rem;
         }
 
         .dashboard-actions-bar {
@@ -346,8 +351,9 @@ export default function AdminDashboardPage() {
           gap: 0.5rem;
           background-color: #ffffff;
           border: 1px solid #e8e2d9;
-          padding: 0.5rem 1rem;
+          padding: 0.45rem 0.85rem;
           border-radius: 8px;
+          flex-wrap: wrap;
         }
 
         .filter-label {
@@ -359,7 +365,7 @@ export default function AdminDashboardPage() {
         }
 
         .filter-select {
-          padding: 0.35rem 0.75rem;
+          padding: 0.35rem 0.65rem;
           background-color: #f7f4ef;
           border: 1px solid #ded7cc;
           border-radius: 6px;
@@ -380,7 +386,7 @@ export default function AdminDashboardPage() {
           align-items: center;
           justify-content: center;
           gap: 0.4rem;
-          padding: 0.5rem 0.9rem;
+          padding: 0.45rem 0.85rem;
           background-color: #ffffff;
           color: #1f1815;
           border: 1px solid #ded7cc;
@@ -398,7 +404,7 @@ export default function AdminDashboardPage() {
 
         .metrics-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
           gap: 1rem;
           margin-bottom: 1.25rem;
         }
@@ -430,7 +436,7 @@ export default function AdminDashboardPage() {
         }
 
         .metric-value {
-          font-size: 1.45rem;
+          font-size: 1.35rem;
           font-weight: 700;
           color: #1f1815;
           line-height: 1.2;
@@ -489,6 +495,31 @@ export default function AdminDashboardPage() {
           font-size: 0.78rem;
         }
 
+        /* Dedicated Scrollable Field for the Graph */
+        .scrollable-graph-container {
+          width: 100%;
+          overflow-x: auto;
+          white-space: nowrap;
+          padding-bottom: 0.5rem;
+          margin-top: 0.5rem;
+          scrollbar-width: thin;
+          scrollbar-color: #ded7cc #fcfbfa;
+        }
+
+        .scrollable-graph-container::-webkit-scrollbar {
+          height: 6px;
+        }
+
+        .scrollable-graph-container::-webkit-scrollbar-track {
+          background: #fcfbfa;
+          border-radius: 4px;
+        }
+
+        .scrollable-graph-container::-webkit-scrollbar-thumb {
+          background: #ded7cc;
+          border-radius: 4px;
+        }
+
         .content-grid {
           display: grid;
           grid-template-columns: 2fr 1fr;
@@ -531,6 +562,26 @@ export default function AdminDashboardPage() {
 
         .status-completed { background-color: #f0f7f0; color: #2e6930; }
         .status-processing { background-color: #fcf8ee; color: #8a6200; }
+
+        /* Responsive Breakpoints for Mobile and Tablets */
+        @media (max-width: 768px) {
+          .admin-sidebar {
+            transform: translateX(-100%);
+            width: 220px;
+          }
+          .admin-main-content {
+            margin-left: 0 !important;
+            width: 100% !important;
+            padding-top: 110px;
+          }
+          .fixed-top-header {
+            left: 0 !important;
+            padding: 0.5rem 1rem;
+          }
+          .dashboard-container {
+            padding: 0.75rem 1rem;
+          }
+        }
       `}</style>
 
       {/* Left Sidebar */}
@@ -558,8 +609,7 @@ export default function AdminDashboardPage() {
           />
         </div>
 
-        {/* Scrollable Console Field for Past Analytics Management */}
-        <div className="dashboard-scroll-console">
+        <div className="dashboard-container">
           {/* Actions & Filters */}
           <div className="dashboard-actions-bar">
             <div className="filter-bar">
@@ -603,37 +653,44 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          {/* Graph & Analysis */}
+          {/* Graph & Analysis with Scrollable Graph Field */}
           <div className="analytics-grid">
             <div className="dashboard-section">
               <div className="section-title-wrap">
                 <h2 className="section-title">Revenue Trend ({MONTH_NAMES[selectedMonth]} {selectedYear})</h2>
                 <span className="analysis-badge">Live Stream Active</span>
               </div>
-              <div style={{ width: '100%', height: '160px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', padding: '0.5rem 0 0 0' }}>
-                <svg viewBox="0 0 400 120" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
-                  <polyline
-                    fill="none"
-                    stroke="#b55933"
-                    strokeWidth="3"
-                    points={trendPoints.map((p, idx) => `${idx * 110 + 30},${110 - (p.val / maxVal) * 90}`).join(' ')}
-                  />
-                  {trendPoints.map((p, idx) => (
-                    <g key={idx}>
-                      <circle
-                        cx={idx * 110 + 30}
-                        cy={110 - (p.val / maxVal) * 90}
-                        r="5"
-                        fill="#ffffff"
-                        stroke="#b55933"
-                        strokeWidth="3"
-                      />
-                      <text x={idx * 110 + 30} y="125" textAnchor="middle" fontSize="10" fill="#786f66" fontWeight="600">
-                        {p.day}
-                      </text>
-                    </g>
-                  ))}
-                </svg>
+              <p style={{ fontSize: '0.75rem', color: '#8c827a', margin: '0 0 0.5rem 0' }}>
+                ← Scroll horizontally to view preceding and extended progress dots →
+              </p>
+              
+              {/* Scrollable Graph Field Only */}
+              <div className="scrollable-graph-container">
+                <div style={{ width: '900px', height: '160px', display: 'flex', alignItems: 'flex-end' }}>
+                  <svg viewBox="0 0 900 120" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
+                    <polyline
+                      fill="none"
+                      stroke="#b55933"
+                      strokeWidth="3"
+                      points={trendPoints.map((p, idx) => `${idx * 90 + 45},${110 - (p.val / maxVal) * 90}`).join(' ')}
+                    />
+                    {trendPoints.map((p, idx) => (
+                      <g key={idx}>
+                        <circle
+                          cx={idx * 90 + 45}
+                          cy={110 - (p.val / maxVal) * 90}
+                          r="5"
+                          fill="#ffffff"
+                          stroke="#b55933"
+                          strokeWidth="3"
+                        />
+                        <text x={idx * 90 + 45} y="125" textAnchor="middle" fontSize="11" fill="#786f66" fontWeight="600">
+                          {p.day}
+                        </text>
+                      </g>
+                    ))}
+                  </svg>
+                </div>
               </div>
             </div>
 
