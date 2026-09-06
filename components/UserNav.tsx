@@ -13,7 +13,6 @@ export default function UserNav() {
   const router = useRouter()
 
   useEffect(() => {
-    // Get initial user session
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
@@ -22,7 +21,6 @@ export default function UserNav() {
 
     checkUser()
 
-    // Listen for login/logout changes dynamically
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
       setLoading(false)
@@ -44,42 +42,75 @@ export default function UserNav() {
   }
 
   return (
-    <div style={styles.container}>
-      {user ? (
-        <div style={styles.loggedInContainer}>
-          <div style={styles.userInfo}>
-            <span style={styles.badge}>Logged In</span>
-            <span style={styles.email}>{user.email}</span>
+    <nav style={styles.navContainer}>
+      {/* Storefront & Cart Links */}
+      <div style={styles.leftLinks}>
+        <Link href="/products" style={styles.navLink}>
+          Shop
+        </Link>
+        <Link href="/cart" style={styles.navLink}>
+          Cart
+        </Link>
+      </div>
+
+      {/* User Session / Auth Controls */}
+      <div style={styles.rightContainer}>
+        {user ? (
+          <div style={styles.loggedInContainer}>
+            <div style={styles.userInfo}>
+              <span style={styles.badge}>Active</span>
+              <span style={styles.email}>{user.email}</span>
+            </div>
+            <button onClick={handleSignOut} style={styles.signOutButton}>
+              Sign Out
+            </button>
           </div>
-          <button onClick={handleSignOut} style={styles.signOutButton}>
-            Sign Out
-          </button>
-        </div>
-      ) : (
-        <div style={styles.guestContainer}>
-          <span style={styles.guestBadge}>Guest Mode</span>
-          <Link href="/login" style={styles.loginLink}>
-            Sign In
-          </Link>
-          <Link href="/register" style={styles.registerLink}>
-            Register
-          </Link>
-        </div>
-      )}
-    </div>
+        ) : (
+          <div style={styles.guestContainer}>
+            <Link href="/login" style={styles.loginLink}>
+              Sign In
+            </Link>
+            <Link href="/register" style={styles.registerLink}>
+              Register
+            </Link>
+          </div>
+        )}
+      </div>
+    </nav>
   )
 }
 
 const styles: { [key: string]: React.CSSProperties } = {
-  container: {
+  navContainer: {
     display: 'flex',
-    alignItems: 'center', // Fixed property name here
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    gap: '1rem',
     fontSize: '0.85rem',
+    flexWrap: 'wrap',
+  },
+  leftLinks: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '1.25rem',
+  },
+  navLink: {
+    color: '#1f1815',
+    textDecoration: 'none',
+    fontWeight: 600,
+    fontSize: '0.9rem',
+    fontFamily: 'sans-serif',
+  },
+  rightContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    marginLeft: 'auto',
   },
   loggedInContainer: {
     display: 'flex',
     alignItems: 'center',
-    gap: '1rem',
+    gap: '0.75rem',
   },
   userInfo: {
     display: 'flex',
@@ -87,34 +118,28 @@ const styles: { [key: string]: React.CSSProperties } = {
     alignItems: 'flex-end',
   },
   badge: {
-    fontSize: '0.65rem',
+    fontSize: '0.6rem',
     textTransform: 'uppercase',
     letterSpacing: '0.05em',
     backgroundColor: '#e6f4ea',
     color: '#137333',
-    padding: '0.1rem 0.4rem',
-    borderRadius: '4px',
-    fontWeight: 600,
-  },
-  guestBadge: {
-    fontSize: '0.65rem',
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-    backgroundColor: '#f1f3f4',
-    color: '#5f6368',
-    padding: '0.1rem 0.4rem',
+    padding: '0.05rem 0.3rem',
     borderRadius: '4px',
     fontWeight: 600,
   },
   email: {
-    color: '#1f1815',
-    fontWeight: 500,
-    fontSize: '0.8rem',
+    color: '#786e65',
+    fontSize: '0.75rem',
+    fontFamily: 'sans-serif',
+    maxWidth: '160px',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
   },
   guestContainer: {
     display: 'flex',
     alignItems: 'center',
-    gap: '0.75rem',
+    gap: '0.5rem',
   },
   guestText: {
     color: '#786f66',
@@ -123,23 +148,27 @@ const styles: { [key: string]: React.CSSProperties } = {
     color: '#1f1815',
     textDecoration: 'none',
     fontWeight: 600,
+    padding: '0.3rem 0.5rem',
+    fontFamily: 'sans-serif',
   },
   registerLink: {
     backgroundColor: '#1f1815',
     color: '#ffffff',
-    padding: '0.4rem 0.75rem',
+    padding: '0.35rem 0.65rem',
     borderRadius: '6px',
     textDecoration: 'none',
     fontWeight: 600,
+    fontFamily: 'sans-serif',
   },
   signOutButton: {
     background: 'none',
     border: '1px solid #dcd5ca',
     borderRadius: '6px',
-    padding: '0.35rem 0.65rem',
+    padding: '0.3rem 0.6rem',
     color: '#a82323',
     cursor: 'pointer',
     fontWeight: 600,
-    fontSize: '0.8rem',
+    fontSize: '0.75rem',
+    fontFamily: 'sans-serif',
   },
 }
