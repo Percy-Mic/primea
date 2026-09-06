@@ -44,6 +44,21 @@ export default function UserNav({ brandName = 'PRIMEA' }: UserNavProps) {
 
   return (
     <header style={styles.header}>
+      <style>{`
+        .mobile-hamburger {
+          display: none;
+        }
+        @media (max-width: 768px) {
+          .mobile-hamburger {
+            display: block !important;
+          }
+          .desktop-nav-links,
+          .desktop-auth-container {
+            display: none !important;
+          }
+        }
+      `}</style>
+
       <div style={styles.navContainer}>
         {/* Brand Logo */}
         <Link href="/" style={styles.brandLink}>
@@ -51,7 +66,7 @@ export default function UserNav({ brandName = 'PRIMEA' }: UserNavProps) {
         </Link>
 
         {/* Desktop Navigation Links */}
-        <nav style={styles.desktopNav}>
+        <nav className="desktop-nav-links" style={styles.desktopNav}>
           <Link href="/" style={styles.navLink}>STOREFRONT</Link>
           <Link href="/products" style={styles.navLink}>PRODUCTS</Link>
           <Link href="/cart" style={styles.navLink}>CART</Link>
@@ -63,7 +78,7 @@ export default function UserNav({ brandName = 'PRIMEA' }: UserNavProps) {
         </nav>
 
         {/* User Auth Controls (Desktop) */}
-        <div style={styles.rightContainer}>
+        <div className="desktop-auth-container" style={styles.rightContainer}>
           {loading ? (
             <span style={styles.guestText}>Loading...</span>
           ) : user ? (
@@ -86,6 +101,7 @@ export default function UserNav({ brandName = 'PRIMEA' }: UserNavProps) {
 
         {/* Mobile Menu Hamburger Button */}
         <button 
+          className="mobile-hamburger"
           style={styles.hamburgerButton} 
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           aria-label="Toggle Menu"
@@ -260,15 +276,11 @@ const styles: { [key: string]: React.CSSProperties } = {
     letterSpacing: '0.05em',
   },
   hamburgerButton: {
-    display: 'none',
     background: 'none',
     border: 'none',
     color: '#f5efe6',
     fontSize: '1.5rem',
     cursor: 'pointer',
-    '@media(max-width: 768px)': {
-      display: 'block',
-    },
   },
   mobileDrawer: {
     display: 'flex',
