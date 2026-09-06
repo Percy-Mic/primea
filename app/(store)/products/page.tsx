@@ -98,7 +98,8 @@ export default function ProductsPage() {
           left: 0,
           right: 0,
           zIndex: 1000,
-          backgroundColor: '#f5f2eb', // Adjust if your UserNav needs a specific background color
+          width: '100%',
+          backgroundColor: '#f5f2eb',
         }}
       >
         <UserNav />
@@ -140,7 +141,7 @@ export default function ProductsPage() {
         </div>
       )}
 
-      {/* Main Content Catalog - Added paddingTop so content is not hidden under the fixed header */}
+      {/* Main Content Catalog */}
       <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '7rem 1.5rem 2.5rem 1.5rem' }}>
         <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
           <h1 style={{ fontFamily: 'serif', fontSize: '2.5rem', marginBottom: '0.5rem', fontWeight: 400 }}>
