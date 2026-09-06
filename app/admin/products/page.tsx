@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import Header from '@/components/AdminNav' // Adjust the import path for your header component if needed
+import Header from '@/components/AdminNav'
 
 interface Product {
   id: string
@@ -198,7 +198,11 @@ export default function InventoryManagementPage() {
 
   return (
     <div className="page-wrapper">
-      <Header />
+      <Header 
+        title="Admin Dashboard" 
+        userEmail="admin@example.com" 
+        onLogout={() => {}} 
+      />
       <div className="inventory-container">
         <style dangerouslySetInnerHTML={{ __html: `
           .page-wrapper {
@@ -210,7 +214,7 @@ export default function InventoryManagementPage() {
             width: 100%;
             max-width: 1280px;
             margin: 0 auto;
-            padding: 3rem 1.5rem 2.5rem 1.5rem; /* Increased top padding */
+            padding: 3rem 1.5rem 2.5rem 1.5rem;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             color: #1c1917;
             box-sizing: border-box;
@@ -577,7 +581,6 @@ export default function InventoryManagementPage() {
             margin-top: 2rem;
           }
 
-          /* Mobile Layout Adjustments (Stacked Cards Grid) */
           @media (max-width: 768px) {
             .inventory-container {
               padding: 2rem 0.75rem 1rem 0.75rem;
