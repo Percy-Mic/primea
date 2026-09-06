@@ -90,8 +90,19 @@ export default function ProductsPage() {
         position: 'relative',
       }}
     >
-      {/* Custom UserNav Header */}
-      <UserNav />
+      {/* Fixed Custom UserNav Header Container */}
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 1000,
+          backgroundColor: '#f5f2eb', // Adjust if your UserNav needs a specific background color
+        }}
+      >
+        <UserNav />
+      </div>
 
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -129,8 +140,8 @@ export default function ProductsPage() {
         </div>
       )}
 
-      {/* Main Content Catalog */}
-      <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '2.5rem 1.5rem' }}>
+      {/* Main Content Catalog - Added paddingTop so content is not hidden under the fixed header */}
+      <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '7rem 1.5rem 2.5rem 1.5rem' }}>
         <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
           <h1 style={{ fontFamily: 'serif', fontSize: '2.5rem', marginBottom: '0.5rem', fontWeight: 400 }}>
             Curated Collection
