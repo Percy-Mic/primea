@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useParams } from 'next/navigation'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import UserNav from '@/components/UserNav'
 
@@ -15,35 +14,32 @@ interface Product {
   image?: string
 }
 
-export default function ProductDetailsPage() {
-  const params = useParams()
-  const id = params?.id
-
-  const [product, setProduct] = useState<Product | null>(null)
+export default function ProductsPage() {
+  const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [sortBy, setSortBy] = useState('featured')
   const [notification, setNotification] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!id) return
-
-    async function loadProductDetails() {
+    async function loadProducts() {
       try {
-        const res = await fetch(`/api/products/${id}`)
+        const res = await fetch('/api/products')
         const data = await res.json()
-        // Handles if the API returns the item directly or wrapped in an object
-        setProduct(data.product || data)
+        setProducts(Array.isArray(data) ? data : data.products || [])
       } catch (err) {
-        console.error('Failed to load product details:', err)
+        console.error('Failed to load products:', err)
       } finally {
         setLoading(false)
       }
     }
-    loadProductDetails()
-  }, [id])
+    loadProducts()
+  }, [])
 
-  // Functional Add to Cart Handler (Aligned with your catalog page implementation)
-  const handleAddToCart = () => {
-    if (!product) return
+  // Functional Add to Cart Handler
+  const handleAddToCart = (e: React.MouseEvent, product: Product) => {
+    e.preventDefault() // Prevents link navigation when clicking the button
+    e.stopPropagation()
 
     try {
       const existingCart = JSON.parse(localStorage.getItem('cart') || '[]')
@@ -65,7 +61,15 @@ export default function ProductDetailsPage() {
     }
   }
 
-  const imgSrc = product ? (product.image_url || product.image || '/placeholder.png') : '/placeholder.png'
+  const filteredProducts = products
+    .filter((product) =>
+      product.title?.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .sort((a, b) => {
+      if (sortBy === 'low-high') return a.price - b.price
+      if (sortBy === 'high-low') return b.price - a.price
+      return 0
+    })
 
   return (
     <div style={{ backgroundColor: '#faf8f5', minHeight: '100vh', position: 'relative' }}>
@@ -111,28 +115,57 @@ export default function ProductDetailsPage() {
       {/* Main Content View with Safe Padding-Top */}
       <main
         style={{
-          paddingTop: '140px',
+          paddingTop: '110px',
           paddingBottom: '80px',
           paddingLeft: '24px',
           paddingRight: '24px',
           color: '#1f1815',
           fontFamily: 'serif',
-          maxWidth: '1100px',
+          maxWidth: '1200px',
           margin: '0 auto',
         }}
       >
         <style>{`
-          .product-detail-grid {
+          .product-grid {
             display: grid;
-            grid-template-columns: 1fr;
-            gap: 40px;
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+            gap: 32px;
           }
-          @media (min-width: 768px) {
-            .product-detail-grid {
-              grid-template-columns: 1fr 1fr;
-              gap: 60px;
-              align-items: start;
+          @media (min-width: 640px) {
+            .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+          }
+          @media (min-width: 1024px) {
+            .product-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+          }
+
+          .controls-bar {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 40px;
+          }
+          @media (min-width: 640px) {
+            .controls-bar {
+              flex-direction: row;
+              justify-content: space-between;
+              align-items: center;
             }
+          }
+
+          .product-card {
+            background-color: #ffffff;
+            border: 1px solid #e8e2d9;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            text-decoration: none;
+            color: inherit;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+          }
+          .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px -8px rgba(31, 24, 21, 0.1);
           }
 
           .add-btn {
@@ -140,10 +173,10 @@ export default function ProductDetailsPage() {
             background-color: #1f1815;
             color: #ffffff;
             border: none;
-            padding: 16px;
+            padding: 12px;
             border-radius: 6px;
             font-family: sans-serif;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
             letter-spacing: 0.05em;
             text-transform: uppercase;
@@ -155,13 +188,94 @@ export default function ProductDetailsPage() {
           }
         `}</style>
 
-        {/* Back Link */}
-        <div style={{ marginBottom: '24px', fontFamily: 'sans-serif', fontSize: '13px' }}>
-          <Link href="/products" style={{ color: '#786e65', textDecoration: 'none' }}>
-            ← Back to All Products
-          </Link>
+        {/* Section Header */}
+        <section
+          style={{
+            textAlign: 'center',
+            marginBottom: '40px',
+            paddingBottom: '32px',
+            borderBottom: '1px solid #e2dad0',
+          }}
+        >
+          <span
+            style={{
+              fontSize: '11px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.25em',
+              color: '#786e65',
+              fontWeight: 600,
+              display: 'block',
+              marginBottom: '8px',
+              fontFamily: 'sans-serif',
+            }}
+          >
+            Curated Luxury
+          </span>
+          <h1
+            style={{
+              fontSize: '2.5rem',
+              margin: '0 0 12px 0',
+              fontWeight: 400,
+              letterSpacing: '-0.02em',
+            }}
+          >
+            All Products
+          </h1>
+          <p
+            style={{
+              color: '#786e65',
+              fontSize: '15px',
+              maxWidth: '520px',
+              margin: '0 auto',
+              fontFamily: 'sans-serif',
+              lineHeight: '1.5',
+            }}
+          >
+            Explore our carefully curated selection of timeless artisanal pieces.
+          </p>
+        </section>
+
+        {/* Controls Bar */}
+        <div className="controls-bar">
+          <input
+            type="text"
+            placeholder="Search catalog..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{
+              backgroundColor: '#ffffff',
+              border: '1px solid #e2dad0',
+              padding: '10px 16px',
+              fontSize: '14px',
+              borderRadius: '6px',
+              outline: 'none',
+              width: '100%',
+              maxWidth: '280px',
+              fontFamily: 'sans-serif',
+            }}
+          />
+
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            style={{
+              backgroundColor: '#ffffff',
+              border: '1px solid #e2dad0',
+              padding: '10px 16px',
+              fontSize: '14px',
+              borderRadius: '6px',
+              outline: 'none',
+              cursor: 'pointer',
+              fontFamily: 'sans-serif',
+            }}
+          >
+            <option value="featured">Featured</option>
+            <option value="low-high">Price: Low to High</option>
+            <option value="high-low">Price: High to Low</option>
+          </select>
         </div>
 
+        {/* Product Grid / Loading / Empty States */}
         {loading ? (
           <div
             style={{
@@ -171,9 +285,9 @@ export default function ProductDetailsPage() {
               fontFamily: 'sans-serif',
             }}
           >
-            Loading product details...
+            Loading collection...
           </div>
-        ) : !product ? (
+        ) : filteredProducts.length === 0 ? (
           <div
             style={{
               textAlign: 'center',
@@ -186,102 +300,116 @@ export default function ProductDetailsPage() {
               fontSize: '14px',
             }}
           >
-            Product not found.
+            No products found matching your search.
           </div>
         ) : (
-          <div className="product-detail-grid">
-            {/* Product Image Frame */}
-            <div
-              style={{
-                aspectRatio: '1/1',
-                backgroundColor: '#f5f2ed',
-                overflow: 'hidden',
-                width: '100%',
-                borderRadius: '12px',
-                border: '1px solid #e8e2d9',
-              }}
-            >
-              <img
-                src={imgSrc}
-                alt={product.title}
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                }}
-              />
-            </div>
+          <div className="product-grid">
+            {filteredProducts.map((product) => {
+              const imgSrc =
+                product.image_url || product.image || '/placeholder.png'
 
-            {/* Product Info Section */}
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-              }}
-            >
-              <h1
-                style={{
-                  margin: '0 0 12px 0',
-                  fontSize: '2.25rem',
-                  fontWeight: 400,
-                  letterSpacing: '-0.02em',
-                  color: '#1f1815',
-                }}
-              >
-                {product.title}
-              </h1>
+              return (
+                <Link
+                  key={product.id}
+                  href={`/products/${product.id}`}
+                  className="product-card"
+                >
+                  {/* Product Image Frame */}
+                  <div
+                    style={{
+                      aspectRatio: '1/1',
+                      backgroundColor: '#f5f2ed',
+                      overflow: 'hidden',
+                      width: '100%',
+                    }}
+                  >
+                    <img
+                      src={imgSrc}
+                      alt={product.title}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                      }}
+                    />
+                  </div>
 
-              {/* Ratings */}
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  fontSize: '13px',
-                  color: '#a03b1e',
-                  fontFamily: 'sans-serif',
-                  marginBottom: '16px',
-                }}
-              >
-                <span>★ 5.0</span>
-                <span style={{ color: '#786e65' }}>(0 reviews)</span>
-              </div>
+                  {/* Card Details */}
+                  <div
+                    style={{
+                      padding: '20px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      flexGrow: 1,
+                    }}
+                  >
+                    <div>
+                      <h3
+                        style={{
+                          margin: '0 0 8px 0',
+                          fontSize: '1.25rem',
+                          fontWeight: 600,
+                          color: '#1f1815',
+                        }}
+                      >
+                        {product.title}
+                      </h3>
 
-              {/* Price */}
-              <div
-                style={{
-                  fontSize: '1.5rem',
-                  fontWeight: 700,
-                  color: '#a03b1e',
-                  fontFamily: 'sans-serif',
-                  marginBottom: '20px',
-                }}
-              >
-                ${Number(product.price).toFixed(2)}
-              </div>
+                      {/* Ratings */}
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          fontSize: '13px',
+                          color: '#a03b1e',
+                          fontFamily: 'sans-serif',
+                          marginBottom: '12px',
+                        }}
+                      >
+                        <span>★ 5.0</span>
+                        <span style={{ color: '#786e65' }}>(0 reviews)</span>
+                      </div>
 
-              {/* Description */}
-              <p
-                style={{
-                  fontSize: '15px',
-                  color: '#786e65',
-                  fontFamily: 'sans-serif',
-                  margin: '0 0 32px 0',
-                  lineHeight: '1.6',
-                }}
-              >
-                {product.description || 'Exclusive luxury item crafted with meticulous attention to detail.'}
-              </p>
+                      {/* Price */}
+                      <div
+                        style={{
+                          fontSize: '1.25rem',
+                          fontWeight: 700,
+                          color: '#a03b1e',
+                          fontFamily: 'sans-serif',
+                          marginBottom: '12px',
+                        }}
+                      >
+                        ${Number(product.price).toFixed(2)}
+                      </div>
 
-              {/* Functional Add to Cart Button */}
-              <button
-                className="add-btn"
-                onClick={handleAddToCart}
-              >
-                Add to Cart
-              </button>
-            </div>
+                      {/* Description */}
+                      <p
+                        style={{
+                          fontSize: '13px',
+                          color: '#786e65',
+                          fontFamily: 'sans-serif',
+                          margin: '0 0 20px 0',
+                          lineHeight: '1.4',
+                        }}
+                      >
+                        {product.description || 'Exclusive luxury item.'}
+                      </p>
+                    </div>
+
+                    {/* Functional Add to Cart Button */}
+                    <button
+                      className="add-btn"
+                      onClick={(e) => handleAddToCart(e, product)}
+                    >
+                      Add to Cart
+                    </button>
+                  </div>
+                </Link>
+              )
+            })}
           </div>
         )}
       </main>
