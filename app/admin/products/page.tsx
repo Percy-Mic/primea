@@ -214,7 +214,7 @@ export default function InventoryManagementPage() {
           background-color: #fcfcfc;
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
           color: #1c1917;
-          padding-top: 240px; /* Added additional top padding */
+          padding-top: 240px;
         }
 
         .fixed-header-container {
@@ -433,14 +433,13 @@ export default function InventoryManagementPage() {
           border-radius: 14px;
           box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
           width: 100%;
-          overflow-x: auto;
+          /* Removed overflow-x: auto to eliminate horizontal scrolling layout */
         }
 
         .inventory-table {
           width: 100%;
           border-collapse: collapse;
           text-align: left;
-          min-width: 650px;
         }
 
         .inventory-table th {
@@ -706,7 +705,7 @@ export default function InventoryManagementPage() {
             display: flex;
           }
           .page-wrapper {
-            padding-top: 250px; /* Generous top padding for mobile view with active menu expansion */
+            padding-top: 250px;
           }
         }
       ` }} />
