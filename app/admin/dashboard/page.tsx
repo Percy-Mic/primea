@@ -237,12 +237,14 @@ export default function AdminDashboardPage() {
           display: flex;
           flex-direction: column;
           min-height: 100vh;
-          padding-top: 140px;
+          /* Added 100px more padding here (from 140px to 240px) */
+          padding-top: 240px;
         }
 
         @media (max-width: 768px) {
           .admin-layout-wrapper {
-            padding-top: 190px;
+            /* Added 100px more padding here on mobile (from 190px to 290px) */
+            padding-top: 290px;
           }
         }
 
