@@ -41,10 +41,16 @@ export default function AdminHeader({
           flex-direction: column;
           gap: 0.85rem;
           width: 100%;
-          background: #faf8f5;
-          border-bottom: 1px solid #eae3d8;
+          /* Distinct background color for a clear separation from the main content */
+          background: #ffffff;
+          /* Subtle drop shadow and border to elevate the header above the content */
+          border-bottom: 2px solid #e6dec9;
+          box-shadow: 0 4px 12px rgba(31, 24, 21, 0.05);
           padding: 1.35rem 1.25rem 1rem 1.25rem;
           box-sizing: border-box;
+          position: sticky;
+          top: 0;
+          z-index: 1000;
         }
 
         .admin-top-row {
@@ -99,7 +105,7 @@ export default function AdminHeader({
           gap: 0.45rem;
           flex-wrap: wrap;
           padding-top: 0.6rem;
-          border-top: 1px solid #eae3d8;
+          border-top: 1px solid #f0eae1;
         }
 
         .hamburger-btn {
@@ -118,7 +124,7 @@ export default function AdminHeader({
           display: inline-flex;
           align-items: center;
           padding: 0.4rem 0.75rem;
-          background-color: #ffffff;
+          background-color: #fcfbfa;
           border: 1px solid #ded7cc;
           border-radius: 6px;
           font-size: 0.78rem;
@@ -184,7 +190,7 @@ export default function AdminHeader({
           width: 280px;
           max-width: 80%;
           height: 100%;
-          background: #faf8f5;
+          background: #ffffff;
           color: #1f1815;
           padding: 1.5rem;
           display: flex;
@@ -226,7 +232,7 @@ export default function AdminHeader({
         .mobile-links .nav-chip {
           width: 100%;
           justify-content: flex-start;
-          background-color: #ffffff;
+          background-color: #fcfbfa;
           border-color: #ded7cc;
           color: #3b332e;
           padding: 0.6rem 0.8rem;
@@ -454,7 +460,7 @@ export default function AdminHeader({
             <button
               type="button"
               onClick={() => setShowAttendanceModal(false)}
-              style={{ width: '100%', marginTop: '1rem', padding: '0.5rem', background: '#eae3d8', color: '#3b332e', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}
+              style={{ width: '100%', marginTop: '1.0rem', padding: '0.5rem', background: '#eae3d8', color: '#3b332e', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}
             >
               Close
             </button>
