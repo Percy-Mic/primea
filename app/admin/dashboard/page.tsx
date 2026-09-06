@@ -210,13 +210,19 @@ export default function AdminDashboardPage() {
   const lowStockCount = stats.lowStockItems?.length || 0
   const monthlyRev = summaries.monthly.revenue || 0
 
-  // Only generate trend points if there's active revenue for the period, otherwise show zeroes
-  const trendPoints = [
+  // Dynamically calculate the current week of the month so future weeks don't appear prematurely
+  const currentDay = currentDate.getDate()
+  const currentWeekNum = Math.min(Math.ceil(currentDay / 7), 4)
+
+  const allWeeks = [
     { day: 'Week 1', val: monthlyRev > 0 ? monthlyRev * 0.22 : 0 },
     { day: 'Week 2', val: monthlyRev > 0 ? monthlyRev * 0.45 : 0 },
     { day: 'Week 3', val: monthlyRev > 0 ? monthlyRev * 0.68 : 0 },
     { day: 'Week 4', val: monthlyRev > 0 ? monthlyRev * 0.90 : 0 }
   ]
+
+  const isCurrentPeriod = selectedMonth === currentDate.getMonth() && selectedYear === currentDate.getFullYear()
+  const trendPoints = isCurrentPeriod ? allWeeks.slice(0, currentWeekNum) : allWeeks
   const maxVal = Math.max(...trendPoints.map(p => p.val), 1)
 
   return (
