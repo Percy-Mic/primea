@@ -211,6 +211,7 @@ export default function InventoryManagementPage() {
           background-color: #fcfcfc;
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
           color: #1c1917;
+          padding-top: 195px; /* Perfect offset for top AdminNav + Sub-nav */
         }
 
         .fixed-header-container {
@@ -223,10 +224,10 @@ export default function InventoryManagementPage() {
           box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
 
-        /* Top Sub-Navigation Bar matching your other pages */
+        /* Top Sub-Navigation Bar */
         .sub-nav-bar {
           position: fixed;
-          top: 73px; /* Adjust based on header height */
+          top: 140px; /* Sits right underneath your standard Header component */
           left: 0;
           right: 0;
           height: 52px;
@@ -279,7 +280,6 @@ export default function InventoryManagementPage() {
         }
 
         .main-content {
-          padding-top: 145px; /* Offset for fixed header + sub-nav */
           padding-bottom: 3rem;
           box-sizing: border-box;
         }
@@ -654,6 +654,7 @@ export default function InventoryManagementPage() {
       <div className="fixed-header-container">
         <Header 
           title="Admin Dashboard" 
+          description="Real-time store progress and inventory management dashboard"
           userEmail="percymicnono@gmail.com" 
           onLogout={() => {}} 
         />
@@ -671,7 +672,7 @@ export default function InventoryManagementPage() {
           <Link href="/admin/products" className="sub-nav-link active">
             Inventory
           </Link>
-          <Link href="/admin/products/add" className="sub-nav-link">
+          <Link href="/admin/products/new" className="sub-nav-link">
             Add Product
           </Link>
         </div>
