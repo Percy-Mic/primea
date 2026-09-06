@@ -29,6 +29,9 @@ export default function InventoryManagementPage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
 
+  // Mobile Menu State
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
   const fetchProducts = async () => {
     setLoading(true)
     try {
@@ -211,7 +214,7 @@ export default function InventoryManagementPage() {
           background-color: #fcfcfc;
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
           color: #1c1917;
-          padding-top: 140px; /* Offset for top AdminNav only; sub-nav is sticky beneath it */
+          padding-top: 140px;
         }
 
         .fixed-header-container {
@@ -224,10 +227,10 @@ export default function InventoryManagementPage() {
           box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
 
-        /* Top Sub-Navigation Bar */
+        /* Top Sub-Navigation Bar for Desktop */
         .sub-nav-bar {
           position: sticky;
-          top: 75px; /* Adjust according to your AdminNav height */
+          top: 75px;
           left: 0;
           right: 0;
           height: 52px;
@@ -239,8 +242,6 @@ export default function InventoryManagementPage() {
           padding: 0 2rem;
           z-index: 1050;
           box-sizing: border-box;
-          overflow-x: auto;
-          white-space: nowrap;
         }
 
         .sub-nav-links {
@@ -275,11 +276,63 @@ export default function InventoryManagementPage() {
           text-decoration: none;
           font-weight: 600;
           font-size: 0.9rem;
-          margin-left: 1rem;
         }
 
         .storefront-external-link:hover {
           text-decoration: underline;
+        }
+
+        /* Mobile Hamburger Toggle Bar */
+        .mobile-menu-toggle-bar {
+          display: none;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0.75rem 1rem;
+          background: #ffffff;
+          border-bottom: 1px solid #e5e5e5;
+        }
+
+        .hamburger-btn {
+          background: #f4f4f5;
+          border: 1px solid #d4d4d4;
+          padding: 0.5rem 0.8rem;
+          border-radius: 6px;
+          font-weight: 600;
+          font-size: 0.9rem;
+          cursor: pointer;
+          color: #111111;
+          display: flex;
+          align-items: center;
+          gap: 0.4rem;
+        }
+
+        /* Mobile Dropdown Menu */
+        .mobile-dropdown-menu {
+          display: none;
+          flex-direction: column;
+          background: #ffffff;
+          border-bottom: 1px solid #e5e5e5;
+          padding: 0.75rem 1rem 1rem 1rem;
+          gap: 0.5rem;
+        }
+
+        .mobile-dropdown-menu.open {
+          display: flex;
+        }
+
+        .mobile-nav-link {
+          text-decoration: none;
+          color: #525252;
+          font-weight: 500;
+          font-size: 0.95rem;
+          padding: 0.5rem 0.75rem;
+          border-radius: 6px;
+        }
+
+        .mobile-nav-link.active {
+          background-color: #1c1917;
+          color: #ffffff;
+          font-weight: 600;
         }
 
         .main-content {
@@ -645,16 +698,16 @@ export default function InventoryManagementPage() {
           margin-top: 2rem;
         }
 
+        /* Responsive Breakpoints */
         @media (max-width: 768px) {
-          .page-wrapper {
-            padding-top: 130px;
-          }
           .sub-nav-bar {
-            padding: 0 1rem;
-            top: 65px;
+            display: none;
           }
-          .sub-nav-links {
-            gap: 0.75rem;
+          .mobile-menu-toggle-bar {
+            display: flex;
+          }
+          .page-wrapper {
+            padding-top: 135px;
           }
         }
       ` }} />
@@ -666,7 +719,8 @@ export default function InventoryManagementPage() {
           userEmail="percymicnono@gmail.com" 
           onLogout={() => {}} 
         />
-        {/* Top Sub-Navigation Bar */}
+
+        {/* Desktop Sub-Navigation Bar */}
         <div className="sub-nav-bar">
           <div className="sub-nav-links">
             <Link href="/admin/dashboard" className="sub-nav-link">
@@ -687,6 +741,51 @@ export default function InventoryManagementPage() {
               View Storefront →
             </Link>
           </div>
+        </div>
+
+        {/* Mobile Hamburger Menu Toggle Bar */}
+        <div className="mobile-menu-toggle-bar">
+          <button 
+            className="hamburger-btn" 
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            ☰ Menu
+          </button>
+          <Link href="/" target="_blank" className="storefront-external-link">
+            View Storefront →
+          </Link>
+        </div>
+
+        {/* Mobile Dropdown Navigation Menu */}
+        <div className={`mobile-dropdown-menu ${mobileMenuOpen ? 'open' : ''}`}>
+          <Link 
+            href="/admin/dashboard" 
+            className="mobile-nav-link"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            Dashboard
+          </Link>
+          <Link 
+            href="/admin/orders" 
+            className="mobile-nav-link"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            Orders
+          </Link>
+          <Link 
+            href="/admin/products" 
+            className="mobile-nav-link active"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            Inventory
+          </Link>
+          <Link 
+            href="/admin/products/new" 
+            className="mobile-nav-link"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            Add Product
+          </Link>
         </div>
       </div>
 
