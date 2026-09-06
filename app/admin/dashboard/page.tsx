@@ -210,7 +210,6 @@ export default function AdminDashboardPage() {
   const lowStockCount = stats.lowStockItems?.length || 0
   const monthlyRev = summaries.monthly.revenue || 0
 
-  // Dynamically calculate the current week of the month so future weeks don't appear prematurely
   const currentDay = currentDate.getDate()
   const currentWeekNum = Math.min(Math.ceil(currentDay / 7), 4)
 
@@ -238,7 +237,13 @@ export default function AdminDashboardPage() {
           display: flex;
           flex-direction: column;
           min-height: 100vh;
-          padding-top: 130px;
+          padding-top: 140px;
+        }
+
+        @media (max-width: 768px) {
+          .admin-layout-wrapper {
+            padding-top: 190px;
+          }
         }
 
         .header-group-fixed {
@@ -254,7 +259,7 @@ export default function AdminDashboardPage() {
         .fixed-top-header {
           background-color: #ffffff;
           border-bottom: 1px solid #e2dacf;
-          padding: 0.5rem 1.25rem;
+          padding: 0.5rem 1rem;
           width: 100%;
           box-sizing: border-box;
         }
@@ -265,7 +270,7 @@ export default function AdminDashboardPage() {
           justify-content: space-between;
           background-color: #ffffff;
           border-bottom: 1px solid #e8e2d9;
-          padding: 0.6rem 1.5rem;
+          padding: 0.6rem 1rem;
           flex-wrap: wrap;
           gap: 0.75rem;
         }
@@ -307,18 +312,19 @@ export default function AdminDashboardPage() {
           display: none;
           background: none;
           border: 1px solid #ded7cc;
-          padding: 0.35rem 0.65rem;
+          padding: 0.4rem 0.75rem;
           border-radius: 6px;
-          font-size: 1rem;
+          font-size: 0.9rem;
+          font-weight: 600;
           cursor: pointer;
+          color: #1f1815;
         }
 
         @media (max-width: 768px) {
-          .admin-layout-wrapper {
-            padding-top: 160px;
-          }
           .mobile-menu-btn {
             display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
           }
           .nav-links-group {
             display: ${mobileMenuOpen ? 'flex' : 'none'};
@@ -326,6 +332,9 @@ export default function AdminDashboardPage() {
             flex-direction: column;
             align-items: stretch;
             padding-bottom: 0.5rem;
+            border-top: 1px solid #f2ede4;
+            margin-top: 0.4rem;
+            padding-top: 0.4rem;
           }
         }
 
@@ -334,10 +343,16 @@ export default function AdminDashboardPage() {
           display: flex;
           flex-direction: column;
           box-sizing: border-box;
-          padding: 1.25rem 1.5rem 3rem 1.5rem;
+          padding: 1rem;
           width: 100%;
           max-width: 1400px;
           margin: 0 auto;
+        }
+
+        @media (min-width: 640px) {
+          .admin-main-content {
+            padding: 1.25rem 1.5rem 3rem 1.5rem;
+          }
         }
 
         .dashboard-actions-bar {
@@ -358,6 +373,13 @@ export default function AdminDashboardPage() {
           padding: 0.45rem 0.85rem;
           border-radius: 8px;
           flex-wrap: wrap;
+          width: 100%;
+        }
+
+        @media (min-width: 640px) {
+          .filter-bar {
+            width: auto;
+          }
         }
 
         .filter-label {
@@ -383,14 +405,22 @@ export default function AdminDashboardPage() {
           display: flex;
           gap: 0.5rem;
           align-items: center;
+          width: 100%;
+        }
+
+        @media (min-width: 640px) {
+          .action-buttons-group {
+            width: auto;
+          }
         }
 
         .btn-action {
+          flex: 1;
           display: inline-flex;
           align-items: center;
           justify-content: center;
           gap: 0.4rem;
-          padding: 0.45rem 0.85rem;
+          padding: 0.5rem 0.85rem;
           background-color: #ffffff;
           color: #1f1815;
           border: 1px solid #ded7cc;
@@ -401,6 +431,12 @@ export default function AdminDashboardPage() {
           transition: all 0.15s ease;
         }
 
+        @media (min-width: 640px) {
+          .btn-action {
+            flex: initial;
+          }
+        }
+
         .btn-action:hover {
           background-color: #f7f4ef;
           border-color: #1f1815;
@@ -408,9 +444,21 @@ export default function AdminDashboardPage() {
 
         .metrics-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+          grid-template-columns: 1fr;
           gap: 1rem;
           margin-bottom: 1.25rem;
+        }
+
+        @media (min-width: 480px) {
+          .metrics-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+
+        @media (min-width: 1024px) {
+          .metrics-grid {
+            grid-template-columns: repeat(4, 1fr);
+          }
         }
 
         .metric-card {
@@ -444,18 +492,19 @@ export default function AdminDashboardPage() {
           font-weight: 700;
           color: #1f1815;
           line-height: 1.2;
+          word-break: break-word;
         }
 
         .analytics-grid {
           display: grid;
-          grid-template-columns: 2fr 1fr;
+          grid-template-columns: 1fr;
           gap: 1.25rem;
           margin-bottom: 1.25rem;
         }
 
-        @media (max-width: 1024px) {
+        @media (min-width: 1024px) {
           .analytics-grid {
-            grid-template-columns: 1fr;
+            grid-template-columns: 2fr 1fr;
           }
         }
 
@@ -464,6 +513,7 @@ export default function AdminDashboardPage() {
           border: 1px solid #e8e2d9;
           border-radius: 8px;
           padding: 1.1rem 1.25rem;
+          overflow: hidden;
         }
 
         .section-title-wrap {
@@ -473,6 +523,8 @@ export default function AdminDashboardPage() {
           margin-bottom: 0.85rem;
           padding-bottom: 0.4rem;
           border-bottom: 1px solid #f2ede4;
+          flex-wrap: wrap;
+          gap: 0.5rem;
         }
 
         .section-title {
@@ -507,24 +559,32 @@ export default function AdminDashboardPage() {
           margin-top: 0.5rem;
           scrollbar-width: thin;
           scrollbar-color: #ded7cc #fcfbfa;
+          -webkit-overflow-scrolling: touch;
         }
 
         .content-grid {
           display: grid;
-          grid-template-columns: 2fr 1fr;
+          grid-template-columns: 1fr;
           gap: 1.25rem;
         }
 
-        @media (max-width: 1024px) {
+        @media (min-width: 1024px) {
           .content-grid {
-            grid-template-columns: 1fr;
+            grid-template-columns: 2fr 1fr;
           }
+        }
+
+        .table-responsive-wrapper {
+          width: 100%;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
         }
 
         .orders-table {
           width: 100%;
           border-collapse: collapse;
           font-size: 0.85rem;
+          min-width: 450px;
         }
 
         .orders-table th {
@@ -533,6 +593,7 @@ export default function AdminDashboardPage() {
           color: #8c827a;
           font-weight: 600;
           border-bottom: 1px solid #eee8e0;
+          white-space: nowrap;
         }
 
         .orders-table td {
@@ -547,6 +608,7 @@ export default function AdminDashboardPage() {
           border-radius: 999px;
           font-size: 0.7rem;
           font-weight: 600;
+          white-space: nowrap;
         }
 
         .status-completed { background-color: #f0f7f0; color: #2e6930; }
@@ -701,30 +763,32 @@ export default function AdminDashboardPage() {
             ) : recentOrders.length === 0 ? (
               <p style={{ fontSize: '0.85rem', color: '#8c827a' }}>No recent orders found.</p>
             ) : (
-              <table className="orders-table">
-                <thead>
-                  <tr>
-                    <th>Order ID</th>
-                    <th>Customer</th>
-                    <th>Total</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentOrders.map((order) => (
-                    <tr key={order.id}>
-                      <td style={{ fontWeight: 600 }}>{order.id}</td>
-                      <td>{order.customer}</td>
-                      <td>{formatCurrency(order.total)}</td>
-                      <td>
-                        <span className={`status-badge ${order.status?.toLowerCase() === 'completed' ? 'status-completed' : 'status-processing'}`}>
-                          {order.status}
-                        </span>
-                      </td>
+              <div className="table-responsive-wrapper">
+                <table className="orders-table">
+                  <thead>
+                    <tr>
+                      <th>Order ID</th>
+                      <th>Customer</th>
+                      <th>Total</th>
+                      <th>Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {recentOrders.map((order) => (
+                      <tr key={order.id}>
+                        <td style={{ fontWeight: 600 }}>{order.id}</td>
+                        <td>{order.customer}</td>
+                        <td>{formatCurrency(order.total)}</td>
+                        <td>
+                          <span className={`status-badge ${order.status?.toLowerCase() === 'completed' ? 'status-completed' : 'status-processing'}`}>
+                            {order.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
 
