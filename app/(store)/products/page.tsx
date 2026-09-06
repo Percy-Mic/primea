@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import Navbar from '@/components/userNav'
+import Navbar from '@/components/UserNav'
 
 interface Product {
   id: string
