@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
-import Navbar from '@/components/UserNav'
+import { useRouter } from 'components/UserNav'
 
 interface Product {
   id: string
@@ -85,7 +84,7 @@ export default function ProductsPage() {
       style={{
         backgroundColor: '#f5f2eb',
         minHeight: '100vh',
-        paddingTop: '90px', // Ensures content clears the fixed top navbar
+        paddingTop: '90px',
         fontFamily: 'system-ui, -apple-system, sans-serif',
         color: '#1f1815',
         position: 'relative',
@@ -126,9 +125,6 @@ export default function ProductsPage() {
           {notification}
         </div>
       )}
-
-      {/* Fixed Navigation Bar */}
-      <Navbar />
 
       {/* Main Content Catalog */}
       <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '2.5rem 1.5rem' }}>
