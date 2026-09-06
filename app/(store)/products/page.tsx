@@ -46,7 +46,7 @@ export default function ProductsPage() {
 
   return (
     <>
-      {/* Clean Fixed Header Container without conflicting wrappers */}
+      {/* Fixed Header Container with a clean matching divider line */}
       <header
         style={{
           position: 'fixed',
@@ -55,18 +55,19 @@ export default function ProductsPage() {
           right: 0,
           zIndex: 1000,
           width: '100%',
-          backgroundColor: '#16120f', // Matches your nav background cleanly
+          backgroundColor: '#16120f',
+          borderBottom: '1px solid #2a221e',
         }}
       >
         <UserNav brandName="PRIMEA" />
       </header>
 
-      {/* Main Content */}
+      {/* Main Content with proper spacing to sit comfortably below the fixed header */}
       <main
         style={{
           minHeight: '100vh',
           backgroundColor: '#faf8f5',
-          paddingTop: '90px', // Adjusted to tightly fit the fixed navbar height
+          paddingTop: '110px',
           paddingBottom: '80px',
           paddingLeft: '24px',
           paddingRight: '24px',
@@ -139,7 +140,7 @@ export default function ProductsPage() {
         <section
           style={{
             maxWidth: '1200px',
-            margin: '20px auto 40px auto',
+            margin: '10px auto 40px auto',
             textAlign: 'center',
             paddingBottom: '32px',
             borderBottom: '1px solid #e2dad0',
