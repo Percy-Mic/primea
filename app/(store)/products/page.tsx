@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import Link from 'next/link'
 import UserNav from '@/components/UserNav'
 
 interface Product {
@@ -36,7 +37,10 @@ export default function ProductsPage() {
   }, [])
 
   // Functional Add to Cart Handler
-  const handleAddToCart = (product: Product) => {
+  const handleAddToCart = (e: React.MouseEvent, product: Product) => {
+    e.preventDefault() // Prevents link navigation when clicking the button
+    e.stopPropagation()
+
     try {
       const existingCart = JSON.parse(localStorage.getItem('cart') || '[]')
       const productIndex = existingCart.findIndex((item: any) => item.id === product.id)
@@ -155,6 +159,8 @@ export default function ProductsPage() {
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            text-decoration: none;
+            color: inherit;
             transition: transform 0.25s ease, box-shadow 0.25s ease;
           }
           .product-card:hover {
@@ -303,7 +309,11 @@ export default function ProductsPage() {
                 product.image_url || product.image || '/placeholder.png'
 
               return (
-                <div key={product.id} className="product-card">
+                <Link
+                  key={product.id}
+                  href={`/products/${product.id}`}
+                  className="product-card"
+                >
                   {/* Product Image Frame */}
                   <div
                     style={{
@@ -392,12 +402,12 @@ export default function ProductsPage() {
                     {/* Functional Add to Cart Button */}
                     <button
                       className="add-btn"
-                      onClick={() => handleAddToCart(product)}
+                      onClick={(e) => handleAddToCart(e, product)}
                     >
                       Add to Cart
                     </button>
                   </div>
-                </div>
+                </Link>
               )
             })}
           </div>
