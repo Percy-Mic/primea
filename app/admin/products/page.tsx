@@ -211,7 +211,7 @@ export default function InventoryManagementPage() {
           background-color: #fcfcfc;
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
           color: #1c1917;
-          padding-top: 195px; /* Perfect offset for top AdminNav + Sub-nav */
+          padding-top: 140px; /* Offset for top AdminNav only; sub-nav is sticky beneath it */
         }
 
         .fixed-header-container {
@@ -226,8 +226,8 @@ export default function InventoryManagementPage() {
 
         /* Top Sub-Navigation Bar */
         .sub-nav-bar {
-          position: fixed;
-          top: 140px; /* Sits right underneath your standard Header component */
+          position: sticky;
+          top: 75px; /* Adjust according to your AdminNav height */
           left: 0;
           right: 0;
           height: 52px;
@@ -239,6 +239,8 @@ export default function InventoryManagementPage() {
           padding: 0 2rem;
           z-index: 1050;
           box-sizing: border-box;
+          overflow-x: auto;
+          white-space: nowrap;
         }
 
         .sub-nav-links {
@@ -273,6 +275,7 @@ export default function InventoryManagementPage() {
           text-decoration: none;
           font-weight: 600;
           font-size: 0.9rem;
+          margin-left: 1rem;
         }
 
         .storefront-external-link:hover {
@@ -280,6 +283,7 @@ export default function InventoryManagementPage() {
         }
 
         .main-content {
+          padding-top: 2rem;
           padding-bottom: 3rem;
           box-sizing: border-box;
         }
@@ -377,13 +381,14 @@ export default function InventoryManagementPage() {
           border-radius: 14px;
           box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
           width: 100%;
-          overflow: hidden;
+          overflow-x: auto;
         }
 
         .inventory-table {
           width: 100%;
           border-collapse: collapse;
           text-align: left;
+          min-width: 650px;
         }
 
         .inventory-table th {
@@ -474,6 +479,7 @@ export default function InventoryManagementPage() {
           gap: 0.5rem;
           justify-content: flex-end;
           align-items: center;
+          flex-wrap: wrap;
         }
 
         .btn-action {
@@ -640,13 +646,15 @@ export default function InventoryManagementPage() {
         }
 
         @media (max-width: 768px) {
+          .page-wrapper {
+            padding-top: 130px;
+          }
           .sub-nav-bar {
             padding: 0 1rem;
-            overflow-x: auto;
+            top: 65px;
           }
           .sub-nav-links {
             gap: 0.75rem;
-            white-space: nowrap;
           }
         }
       ` }} />
@@ -658,28 +666,27 @@ export default function InventoryManagementPage() {
           userEmail="percymicnono@gmail.com" 
           onLogout={() => {}} 
         />
-      </div>
-
-      {/* Top Sub-Navigation Bar */}
-      <div className="sub-nav-bar">
-        <div className="sub-nav-links">
-          <Link href="/admin/dashboard" className="sub-nav-link">
-            Dashboard
-          </Link>
-          <Link href="/admin/orders" className="sub-nav-link">
-            Orders
-          </Link>
-          <Link href="/admin/products" className="sub-nav-link active">
-            Inventory
-          </Link>
-          <Link href="/admin/products/new" className="sub-nav-link">
-            Add Product
-          </Link>
-        </div>
-        <div>
-          <Link href="/" target="_blank" className="storefront-external-link">
-            View Storefront →
-          </Link>
+        {/* Top Sub-Navigation Bar */}
+        <div className="sub-nav-bar">
+          <div className="sub-nav-links">
+            <Link href="/admin/dashboard" className="sub-nav-link">
+              Dashboard
+            </Link>
+            <Link href="/admin/orders" className="sub-nav-link">
+              Orders
+            </Link>
+            <Link href="/admin/products" className="sub-nav-link active">
+              Inventory
+            </Link>
+            <Link href="/admin/products/new" className="sub-nav-link">
+              Add Product
+            </Link>
+          </div>
+          <div>
+            <Link href="/" target="_blank" className="storefront-external-link">
+              View Storefront →
+            </Link>
+          </div>
         </div>
       </div>
 
