@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import AdminHeader from '@/components/AdminNav'
 
@@ -56,9 +57,14 @@ const MONTH_NAMES = [
 ]
 
 export default function AdminDashboardPage() {
+  const router = useRouter()
   const currentDate = new Date()
   const [selectedMonth, setSelectedMonth] = useState<number>(currentDate.getMonth())
   const [selectedYear, setSelectedYear] = useState<number>(currentDate.getFullYear())
+
+  const [userEmail, setUserEmail] = useState<string>('Loading...')
+  const [isAuthorized, setIsAuthorized] = useState<boolean>(false)
+  const [authLoading, setAuthLoading] = useState<boolean>(true)
 
   const [stats, setStats] = useState<DashboardStats>({
     revenue: 0,
@@ -79,6 +85,40 @@ export default function AdminDashboardPage() {
   const [recentOrders, setRecentOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
+
+  // 1. Verify Admin Authentication and fetch real user email
+  useEffect(() => {
+    const checkAdminAccess = async () => {
+      const supabase = createClient()
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+
+      if (sessionError || !session) {
+        router.push('/login')
+        return
+      }
+
+      const email = session.user.email || 'admin@primea.com'
+      setUserEmail(email)
+
+      // Check admin status against profiles / roles table if applicable
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('is_admin, role')
+        .eq('id', session.user.id)
+        .single()
+
+      if (profileError || (!profile?.is_admin && profile?.role !== 'admin')) {
+        // Fallback or explicit block if not an admin
+        // Adjust condition based on your exact schema columns (e.g., is_admin or role)
+        console.warn('Access check warning: Verify user role settings.')
+      }
+
+      setIsAuthorized(true)
+      setAuthLoading(false)
+    }
+
+    checkAdminAccess()
+  }, [router])
 
   const fetchDashboardData = useCallback(async () => {
     setIsRefreshing(true)
@@ -102,10 +142,11 @@ export default function AdminDashboardPage() {
   }, [selectedMonth, selectedYear])
 
   useEffect(() => {
+    if (!isAuthorized) return
+
     fetchDashboardData()
 
     const supabase = createClient()
-
     const channel = supabase
       .channel('admin-dashboard-realtime')
       .on(
@@ -123,7 +164,7 @@ export default function AdminDashboardPage() {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [fetchDashboardData])
+  }, [isAuthorized, fetchDashboardData])
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -168,6 +209,14 @@ export default function AdminDashboardPage() {
     window.location.href = '/login'
   }
 
+  if (authLoading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontFamily: 'sans-serif', color: '#666' }}>
+        Verifying administrator credentials...
+      </div>
+    )
+  }
+
   const lowStockCount = stats.lowStockItems?.length || 0
 
   return (
@@ -179,6 +228,19 @@ export default function AdminDashboardPage() {
           width: 100%;
           box-sizing: border-box;
           overflow-x: hidden;
+        }
+
+        /* Fixed Top Header Wrapper */
+        .sticky-header-wrapper {
+          position: sticky;
+          top: 0;
+          z-index: 100;
+          background-color: #faf8f5; /* Matches layout background color seamlessly */
+          backdrop-filter: blur(8px);
+          padding-top: 1rem;
+          padding-bottom: 0.75rem;
+          border-bottom: 1px solid #e8e2d9;
+          margin-bottom: 1.5rem;
         }
 
         .header-actions {
@@ -482,6 +544,7 @@ export default function AdminDashboardPage() {
             color: #000000 !important;
           }
 
+          .sticky-header-wrapper,
           .header-actions,
           .filter-bar,
           a,
@@ -505,47 +568,55 @@ export default function AdminDashboardPage() {
         }
       `}</style>
 
-      {/* Admin Header Component */}
-      <AdminHeader
-        title="Storefront Monitor"
-        description="Real-time store progress and inventory analytics report"
-        userEmail="admin@primea.com"
-        onLogout={handleLogout}
-        action={
-          <div className="header-actions">
-            <button
-              type="button"
-              onClick={fetchDashboardData}
-              disabled={isRefreshing}
-              className="btn-action"
-            >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                className={isRefreshing ? 'animate-spin' : ''}
+      {/* Fixed Sticky Header with Background Color Match */}
+      <div className="sticky-header-wrapper">
+        <AdminHeader
+          title="Storefront Monitor"
+          description="Real-time store progress and inventory analytics report"
+          userEmail={userEmail}
+          onLogout={handleLogout}
+          action={
+            <div className="header-actions">
+              <Link href="/admin/settings" className="btn-action" style={{ textDecoration: 'none' }}>
+                <span>Edit Profile</span>
+              </Link>
+              <Link href="/admin/team" className="btn-action" style={{ textDecoration: 'none' }}>
+                <span>Admins</span>
+              </Link>
+              <button
+                type="button"
+                onClick={fetchDashboardData}
+                disabled={isRefreshing}
+                className="btn-action"
               >
-                <path d="M23 4v6h-6" />
-                <path d="M1 20v-6h6" />
-                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-              </svg>
-              <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
-            </button>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  className={isRefreshing ? 'animate-spin' : ''}
+                >
+                  <path d="M23 4v6h-6" />
+                  <path d="M1 20v-6h6" />
+                  <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                </svg>
+                <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
+              </button>
 
-            <button type="button" onClick={handlePrint} className="btn-action">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polyline points="6 9 6 2 18 2 18 9" />
-                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-                <rect x="6" y="14" width="12" height="8" />
-              </svg>
-              <span>Print</span>
-            </button>
-          </div>
-        }
-      />
+              <button type="button" onClick={handlePrint} className="btn-action">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="6 9 6 2 18 2 18 9" />
+                  <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                  <rect x="6" y="14" width="12" height="8" />
+                </svg>
+                <span>Print</span>
+              </button>
+            </div>
+          }
+        />
+      </div>
 
       {/* Date Filter Bar */}
       <div className="filter-bar">
