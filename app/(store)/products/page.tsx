@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import Image from 'next/image'
-import { useRouter } from 'components/UserNav'
+import { useRouter } from 'next/navigation'
 
 interface Product {
   id: string
@@ -84,7 +84,7 @@ export default function ProductsPage() {
       style={{
         backgroundColor: '#f5f2eb',
         minHeight: '100vh',
-        paddingTop: '90px',
+        paddingTop: '2rem',
         fontFamily: 'system-ui, -apple-system, sans-serif',
         color: '#1f1815',
         position: 'relative',
