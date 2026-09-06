@@ -210,7 +210,6 @@ export default function AdminDashboardPage() {
   const lowStockCount = stats.lowStockItems?.length || 0
   const baseRev = summaries.monthly.revenue || 10000
 
-  // Standard 4 weeks per historical month view for reliable comparison
   const trendPoints = [
     { day: 'Week 1', val: baseRev * 0.22 },
     { day: 'Week 2', val: baseRev * 0.45 },
@@ -232,16 +231,23 @@ export default function AdminDashboardPage() {
           display: flex;
           flex-direction: column;
           min-height: 100vh;
+          padding-top: 115px; /* Push content down so it doesn't hide behind the fixed header and nav */
         }
 
-        /* Top Header */
-        .fixed-top-header {
-          position: sticky;
+        /* Absolutely Fixed Top Header Group */
+        .header-group-fixed {
+          position: fixed;
           top: 0;
-          z-index: 1005;
+          left: 0;
+          right: 0;
+          z-index: 1050;
+          background-color: #ffffff;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .fixed-top-header {
           background-color: #ffffff;
           border-bottom: 1px solid #e2dacf;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
           padding: 0.5rem 1.25rem;
           width: 100%;
           box-sizing: border-box;
@@ -303,6 +309,9 @@ export default function AdminDashboardPage() {
         }
 
         @media (max-width: 768px) {
+          .admin-layout-wrapper {
+            padding-top: 140px; /* Adjust spacing dynamically on smaller stacked viewports */
+          }
           .mobile-menu-btn {
             display: inline-flex;
           }
@@ -554,33 +563,34 @@ export default function AdminDashboardPage() {
         .status-processing { background-color: #fcf8ee; color: #8a6200; }
       `}</style>
 
-      {/* Top Header */}
-      <div className="fixed-top-header">
-        <AdminHeader
-          title="Storefront Monitor"
-          description="Real-time store progress and inventory analytics report"
-          userEmail={userEmail}
-          onLogout={handleLogout}
-        />
-      </div>
+      {/* Fixed Header & Navigation Group (Stays pinned at top during scroll) */}
+      <div className="header-group-fixed">
+        <div className="fixed-top-header">
+          <AdminHeader
+            title="Storefront Monitor"
+            description="Real-time store progress and inventory analytics report"
+            userEmail={userEmail}
+            onLogout={handleLogout}
+          />
+        </div>
 
-      {/* Responsive Top Navigation Bar */}
-      <nav className="top-nav-bar">
-        <button 
-          type="button" 
-          className="mobile-menu-btn" 
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        >
-          ☰ Menu
-        </button>
-        <ul className="nav-links-group">
-          <li><Link href="/admin/dashboard" className={`nav-link ${pathname === '/admin/dashboard' ? 'active' : ''}`}>Dashboard</Link></li>
-          <li><Link href="/admin/orders" className={`nav-link ${pathname === '/admin/orders' ? 'active' : ''}`}>Orders</Link></li>
-          <li><Link href="/admin/products" className={`nav-link ${pathname === '/admin/products' ? 'active' : ''}`}>Inventory</Link></li>
-          <li><Link href="/admin/products/new" className={`nav-link ${pathname === '/admin/products/new' ? 'active' : ''}`}>Add Product</Link></li>
-        </ul>
-        <Link href="/" target="_blank" className="nav-link" style={{ color: '#b55933', fontWeight: 600 }}>View Storefront →</Link>
-      </nav>
+        <nav className="top-nav-bar">
+          <button 
+            type="button" 
+            className="mobile-menu-btn" 
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            ☰ Menu
+          </button>
+          <ul className="nav-links-group">
+            <li><Link href="/admin/dashboard" className={`nav-link ${pathname === '/admin/dashboard' ? 'active' : ''}`}>Dashboard</Link></li>
+            <li><Link href="/admin/orders" className={`nav-link ${pathname === '/admin/orders' ? 'active' : ''}`}>Orders</Link></li>
+            <li><Link href="/admin/products" className={`nav-link ${pathname === '/admin/products' ? 'active' : ''}`}>Inventory</Link></li>
+            <li><Link href="/admin/products/new" className={`nav-link ${pathname === '/admin/products/new' ? 'active' : ''}`}>Add Product</Link></li>
+          </ul>
+          <Link href="/" target="_blank" className="nav-link" style={{ color: '#b55933', fontWeight: 600 }}>View Storefront →</Link>
+        </nav>
+      </div>
 
       {/* Main Content Area */}
       <div className="admin-main-content">
