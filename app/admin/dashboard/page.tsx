@@ -62,6 +62,7 @@ export default function AdminDashboardPage() {
   const [userEmail, setUserEmail] = useState<string>('Loading...')
   const [isAuthorized, setIsAuthorized] = useState<boolean>(false)
   const [authLoading, setAuthLoading] = useState<boolean>(true)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false)
 
   const [stats, setStats] = useState<DashboardStats>({
     revenue: 0,
@@ -209,18 +210,13 @@ export default function AdminDashboardPage() {
   const lowStockCount = stats.lowStockItems?.length || 0
   const baseRev = summaries.monthly.revenue || 10000
 
-  // Determine current week count dynamically depending on selected month/year context
-  const isCurrentMonthYear = selectedMonth === currentDate.getMonth() && selectedYear === currentDate.getFullYear()
-  const totalWeeks = isCurrentMonthYear ? Math.min(Math.ceil(currentDate.getDate() / 7), 4) : 4
-
-  const trendPoints = Array.from({ length: totalWeeks }, (_, i) => {
-    const multipliers = [0.22, 0.45, 0.68, 0.90]
-    return {
-      day: `Week ${i + 1}`,
-      val: baseRev * (multipliers[i] || 0.5)
-    }
-  })
-
+  // Standard 4 weeks per historical month view for reliable comparison
+  const trendPoints = [
+    { day: 'Week 1', val: baseRev * 0.22 },
+    { day: 'Week 2', val: baseRev * 0.45 },
+    { day: 'Week 3', val: baseRev * 0.68 },
+    { day: 'Week 4', val: baseRev * 0.90 }
+  ]
   const maxVal = Math.max(...trendPoints.map(p => p.val), 1)
 
   return (
@@ -238,7 +234,7 @@ export default function AdminDashboardPage() {
           min-height: 100vh;
         }
 
-        /* Full Width Header */
+        /* Top Header */
         .fixed-top-header {
           position: sticky;
           top: 0;
@@ -246,53 +242,77 @@ export default function AdminDashboardPage() {
           background-color: #ffffff;
           border-bottom: 1px solid #e2dacf;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-          padding: 0.65rem 1.5rem;
+          padding: 0.5rem 1.25rem;
           width: 100%;
           box-sizing: border-box;
         }
 
-        /* Sub-navigation bar beneath header */
-        .sub-nav-bar {
+        /* Top Navigation Bar */
+        .top-nav-bar {
           display: flex;
           align-items: center;
           justify-content: space-between;
           background-color: #ffffff;
           border-bottom: 1px solid #e8e2d9;
-          padding: 0.5rem 1.5rem;
+          padding: 0.6rem 1.5rem;
           flex-wrap: wrap;
           gap: 0.75rem;
         }
 
-        .sub-nav-links {
+        .nav-links-group {
           display: flex;
           list-style: none;
           padding: 0;
           margin: 0;
-          gap: 0.5rem;
+          gap: 0.4rem;
+          align-items: center;
           flex-wrap: wrap;
         }
 
-        .sub-nav-link {
+        .nav-link {
           display: inline-flex;
           align-items: center;
           padding: 0.4rem 0.75rem;
           border-radius: 6px;
-          font-size: 0.82rem;
+          font-size: 0.85rem;
           font-weight: 500;
           color: #3b332e;
           text-decoration: none;
           transition: all 0.15s ease;
         }
 
-        .sub-nav-link:hover {
+        .nav-link:hover {
           background-color: #f7f4ef;
           color: #b55933;
         }
 
-        .sub-nav-link.active {
+        .nav-link.active {
           background-color: #1f1815;
           color: #ffffff;
           font-weight: 600;
+        }
+
+        .mobile-menu-btn {
+          display: none;
+          background: none;
+          border: 1px solid #ded7cc;
+          padding: 0.35rem 0.65rem;
+          border-radius: 6px;
+          font-size: 1rem;
+          cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+          .mobile-menu-btn {
+            display: inline-flex;
+          }
+          .nav-links-group {
+            display: ${mobileMenuOpen ? 'flex' : 'none'};
+            width: 100%;
+            flex-direction: column;
+            align-items: stretch;
+            padding-bottom: 0.5rem;
+          }
         }
 
         /* Main Content Container */
@@ -534,7 +554,7 @@ export default function AdminDashboardPage() {
         .status-processing { background-color: #fcf8ee; color: #8a6200; }
       `}</style>
 
-      {/* Top Header Stretched */}
+      {/* Top Header */}
       <div className="fixed-top-header">
         <AdminHeader
           title="Storefront Monitor"
@@ -544,20 +564,27 @@ export default function AdminDashboardPage() {
         />
       </div>
 
-      {/* Sub-Navigation Bar beneath header */}
-      <div className="sub-nav-bar">
-        <ul className="sub-nav-links">
-          <li><Link href="/admin/dashboard" className={`sub-nav-link ${pathname === '/admin/dashboard' ? 'active' : ''}`}>Dashboard</Link></li>
-          <li><Link href="/admin/orders" className={`sub-nav-link ${pathname === '/admin/orders' ? 'active' : ''}`}>Orders</Link></li>
-          <li><Link href="/admin/products" className={`sub-nav-link ${pathname === '/admin/products' ? 'active' : ''}`}>Inventory</Link></li>
-          <li><Link href="/admin/products/new" className={`sub-nav-link ${pathname === '/admin/products/new' ? 'active' : ''}`}>Add Product</Link></li>
+      {/* Responsive Top Navigation Bar */}
+      <nav className="top-nav-bar">
+        <button 
+          type="button" 
+          className="mobile-menu-btn" 
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        >
+          ☰ Menu
+        </button>
+        <ul className="nav-links-group">
+          <li><Link href="/admin/dashboard" className={`nav-link ${pathname === '/admin/dashboard' ? 'active' : ''}`}>Dashboard</Link></li>
+          <li><Link href="/admin/orders" className={`nav-link ${pathname === '/admin/orders' ? 'active' : ''}`}>Orders</Link></li>
+          <li><Link href="/admin/products" className={`nav-link ${pathname === '/admin/products' ? 'active' : ''}`}>Inventory</Link></li>
+          <li><Link href="/admin/products/new" className={`nav-link ${pathname === '/admin/products/new' ? 'active' : ''}`}>Add Product</Link></li>
         </ul>
-        <Link href="/" target="_blank" className="sub-nav-link" style={{ color: '#b55933', fontWeight: 600 }}>View Storefront →</Link>
-      </div>
+        <Link href="/" target="_blank" className="nav-link" style={{ color: '#b55933', fontWeight: 600 }}>View Storefront →</Link>
+      </nav>
 
       {/* Main Content Area */}
       <div className="admin-main-content">
-        {/* Actions & Filters */}
+        {/* Actions & Period Filters */}
         <div className="dashboard-actions-bar">
           <div className="filter-bar">
             <span className="filter-label">Statistics Period:</span>
@@ -600,7 +627,7 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* Graph & Analysis with Scrollable Graph Field */}
+        {/* Scrollable Graph Field & Performance Analysis */}
         <div className="analytics-grid">
           <div className="dashboard-section">
             <div className="section-title-wrap">
@@ -608,30 +635,29 @@ export default function AdminDashboardPage() {
               <span className="analysis-badge">Live Stream Active</span>
             </div>
             <p style={{ fontSize: '0.75rem', color: '#8c827a', margin: '0 0 0.5rem 0' }}>
-              Progress tracking across weeks for selected period:
+              Weekly store progression overview for the selected period:
             </p>
             
-            {/* Dedicated Scrollable Graph Field */}
             <div className="scrollable-graph-container">
-              <div style={{ width: `${Math.max(trendPoints.length * 130, 450)}px`, height: '160px', display: 'flex', alignItems: 'flex-end' }}>
-                <svg viewBox={`0 0 ${Math.max(trendPoints.length * 130, 450)} 120`} style={{ width: '100%', height: '100%', overflow: 'visible' }}>
+              <div style={{ width: '520px', height: '160px', display: 'flex', alignItems: 'flex-end' }}>
+                <svg viewBox="0 0 520 120" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
                   <polyline
                     fill="none"
                     stroke="#b55933"
                     strokeWidth="3"
-                    points={trendPoints.map((p, idx) => `${idx * 130 + 50},${110 - (p.val / maxVal) * 90}`).join(' ')}
+                    points={trendPoints.map((p, idx) => `${idx * 130 + 65},${110 - (p.val / maxVal) * 90}`).join(' ')}
                   />
                   {trendPoints.map((p, idx) => (
                     <g key={idx}>
                       <circle
-                        cx={idx * 130 + 50}
+                        cx={idx * 130 + 65}
                         cy={110 - (p.val / maxVal) * 90}
                         r="5"
                         fill="#ffffff"
                         stroke="#b55933"
                         strokeWidth="3"
                       />
-                      <text x={idx * 130 + 50} y="125" textAnchor="middle" fontSize="11" fill="#786f66" fontWeight="600">
+                      <text x={idx * 130 + 65} y="125" textAnchor="middle" fontSize="11" fill="#786f66" fontWeight="600">
                         {p.day}
                       </text>
                     </g>
@@ -657,7 +683,7 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* Tables and Inventory Alerts */}
+        {/* Recent Orders & Inventory Health */}
         <div className="content-grid">
           <div className="dashboard-section">
             <div className="section-title-wrap">
