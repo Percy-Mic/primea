@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
+import UserNav from '@/components/UserNav' // Update this import path if your UserNav is located elsewhere
 
 interface OrderItem {
   id?: string
@@ -220,50 +221,6 @@ export default function CustomerOrdersPage() {
           text-align: center;
           color: #78716c;
           font-family: inherit;
-        }
-
-        /* Navigation Bar Styles */
-        .site-nav {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          height: 70px;
-          background: rgba(255, 255, 255, 0.9);
-          backdrop-filter: blur(8px);
-          border-bottom: 1px solid #e7e5e4;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 0 2rem;
-          z-index: 1000;
-        }
-
-        .nav-brand {
-          font-weight: 700;
-          font-size: 1.15rem;
-          color: #1c1917;
-          text-decoration: none;
-        }
-
-        .nav-links {
-          display: flex;
-          gap: 1.5rem;
-          list-style: none;
-          margin: 0;
-          padding: 0;
-        }
-
-        .nav-links a {
-          text-decoration: none;
-          color: #57534e;
-          font-size: 0.9rem;
-          font-weight: 500;
-          transition: color 0.2s ease;
-        }
-
-        .nav-links a:hover {
-          color: #1c1917;
         }
 
         .orders-container {
@@ -847,15 +804,8 @@ export default function CustomerOrdersPage() {
         }
       `}</style>
 
-      {/* Rendered Navigation */}
-      <nav className="site-nav">
-        <a href="/" className="nav-brand">Storefront</a>
-        <ul className="nav-links">
-          <li><a href="/products">Products</a></li>
-          <li><a href="/orders">My Orders</a></li>
-          <li><a href="/cart">Cart</a></li>
-        </ul>
-      </nav>
+      {/* Rendered UserNav Component */}
+      <UserNav />
 
       <div className="page-header">
         <h1 className="page-title">My Orders</h1>
