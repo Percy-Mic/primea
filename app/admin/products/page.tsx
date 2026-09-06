@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import Header from '@/components/Header' // Adjust the import path for your header component if needed
 
 interface Product {
   id: string
@@ -196,714 +197,720 @@ export default function InventoryManagementPage() {
   }
 
   return (
-    <div className="inventory-container">
-      <style dangerouslySetInnerHTML={{ __html: `
-        .inventory-container {
-          width: 100%;
-          max-width: 1280px;
-          margin: 0 auto;
-          padding: 1.5rem 1.5rem 2.5rem 1.5rem; /* Top padding removed */
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-          color: #1c1917;
-          background-color: #fcfcfc;
-          min-height: 100vh;
-          box-sizing: border-box;
-        }
+    <div className="page-wrapper">
+      <Header />
+      <div className="inventory-container">
+        <style dangerouslySetInnerHTML={{ __html: `
+          .page-wrapper {
+            min-height: 100vh;
+            background-color: #fcfcfc;
+          }
 
-        .header-section {
-          margin-bottom: 2rem;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          flex-wrap: wrap;
-          gap: 1rem;
-        }
-
-        .page-title {
-          font-family: serif;
-          font-size: 2.25rem;
-          margin: 0;
-          font-weight: 600;
-          letter-spacing: -0.02em;
-          color: #111111;
-        }
-
-        .filter-card {
-          background-color: #ffffff;
-          border: 1px solid #e5e5e5;
-          border-radius: 12px;
-          padding: 1.25rem;
-          display: flex;
-          gap: 1rem;
-          margin-bottom: 2rem;
-          align-items: center;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-          flex-wrap: wrap;
-        }
-
-        .search-input {
-          flex: 1;
-          min-width: 200px;
-          width: 100%;
-          max-width: 100%;
-          box-sizing: border-box;
-          padding: 0.75rem 1rem;
-          background-color: #ffffff;
-          border: 1px solid #d4d4d4;
-          color: #111111;
-          border-radius: 8px;
-          font-size: 0.92rem;
-          outline: none;
-          transition: border-color 0.2s, box-shadow 0.2s;
-        }
-
-        .search-input:focus, .select-input:focus {
-          border-color: #111111;
-          box-shadow: 0 0 0 3px rgba(17, 17, 17, 0.05);
-        }
-
-        .select-input {
-          padding: 0.75rem 1rem;
-          background-color: #ffffff;
-          border: 1px solid #d4d4d4;
-          color: #111111;
-          border-radius: 8px;
-          font-size: 0.92rem;
-          outline: none;
-          cursor: pointer;
-          box-sizing: border-box;
-        }
-
-        .btn-apply {
-          background-color: #111111;
-          color: #ffffff;
-          border: none;
-          padding: 0.75rem 1.4rem;
-          border-radius: 8px;
-          font-weight: 600;
-          font-size: 0.9rem;
-          cursor: pointer;
-          transition: background-color 0.2s;
-          white-space: nowrap;
-        }
-
-        .btn-apply:hover {
-          background-color: #262626;
-        }
-
-        .inventory-card {
-          background-color: #ffffff;
-          border: 1px solid #e5e5e5;
-          border-radius: 14px;
-          box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.01);
-          width: 100%;
-          overflow: hidden;
-        }
-
-        .inventory-table {
-          width: 100%;
-          border-collapse: collapse;
-          text-align: left;
-        }
-
-        .inventory-table th {
-          background-color: #fafafa;
-          padding: 1.1rem 1.5rem;
-          font-size: 0.75rem;
-          font-weight: 700;
-          color: #525252;
-          letter-spacing: 0.08em;
-          border-bottom: 1px solid #e5e5e5;
-        }
-
-        .inventory-table td {
-          padding: 1.2rem 1.5rem;
-          border-bottom: 1px solid #f0f0f0;
-          font-size: 0.92rem;
-          vertical-align: middle;
-          color: #171717;
-        }
-
-        .inventory-table tr:last-child td {
-          border-bottom: none;
-        }
-
-        .product-info-cell {
-          display: flex;
-          align-items: center;
-          gap: 1.25rem;
-        }
-
-        .product-thumb {
-          width: 56px;
-          height: 56px;
-          border-radius: 10px;
-          object-fit: cover;
-          border: 1px solid #e5e5e5;
-          background: #fafafa;
-          flex-shrink: 0;
-        }
-
-        .thumb-placeholder {
-          width: 56px;
-          height: 56px;
-          border-radius: 10px;
-          border: 1px dashed #d4d4d4;
-          background: #fafafa;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 0.65rem;
-          color: #737373;
-          text-align: center;
-          flex-shrink: 0;
-        }
-
-        .product-title {
-          font-weight: 600;
-          color: #111111;
-          line-height: 1.4;
-        }
-
-        .product-id {
-          font-size: 0.75rem;
-          color: #737373;
-          font-family: monospace;
-          margin-top: 0.2rem;
-        }
-
-        .price-text {
-          font-weight: 700;
-          color: #111111;
-        }
-
-        .stock-badge {
-          display: inline-flex;
-          align-items: center;
-          padding: 0.35rem 0.85rem;
-          border-radius: 999px;
-          font-size: 0.8rem;
-          font-weight: 600;
-          background-color: #f4f4f5;
-          color: #27272a;
-          border: 1px solid #e4e4e7;
-        }
-
-        .actions-cell {
-          display: flex;
-          gap: 0.5rem;
-          justify-content: flex-end;
-          align-items: center;
-        }
-
-        .btn-action {
-          padding: 0.5rem 0.9rem;
-          border-radius: 6px;
-          font-size: 0.85rem;
-          font-weight: 500;
-          cursor: pointer;
-          transition: all 0.15s ease;
-          border: 1px solid #d4d4d4;
-          background-color: transparent;
-          color: #404040;
-        }
-
-        .btn-action:hover {
-          background-color: #f5f5f5;
-          color: #111111;
-          border-color: #a3a3a3;
-        }
-
-        .btn-delete-btn {
-          border-color: rgba(220, 38, 38, 0.2);
-          color: #dc2626;
-        }
-
-        .btn-delete-btn:hover {
-          background-color: #fef2f2;
-          border-color: #dc2626;
-          color: #dc2626;
-        }
-
-        .add-box {
-          display: flex;
-          gap: 0.4rem;
-          align-items: center;
-          justify-content: flex-end;
-        }
-
-        .add-input {
-          width: 60px;
-          padding: 0.45rem;
-          background: #ffffff;
-          border: 1px solid #d4d4d4;
-          color: #111111;
-          border-radius: 6px;
-          text-align: center;
-          font-size: 0.85rem;
-          outline: none;
-          box-sizing: border-box;
-        }
-
-        .modal-overlay {
-          position: fixed;
-          top: 0; left: 0; right: 0; bottom: 0;
-          background: rgba(0, 0, 0, 0.5);
-          backdrop-filter: blur(3px);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 1000;
-          padding: 1rem;
-        }
-
-        .modal-card {
-          background: #ffffff;
-          border: 1px solid #e5e5e5;
-          width: 100%;
-          max-width: 480px;
-          border-radius: 16px;
-          padding: 2.25rem;
-          box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
-          max-height: 90vh;
-          overflow-y: auto;
-          box-sizing: border-box;
-        }
-
-        .modal-title {
-          font-family: serif;
-          font-size: 1.6rem;
-          margin: 0 0 1.5rem 0;
-          color: #111111;
-        }
-
-        .form-group {
-          margin-bottom: 1.25rem;
-        }
-
-        .form-group label {
-          display: block;
-          font-size: 0.78rem;
-          font-weight: 700;
-          color: #525252;
-          margin-bottom: 0.4rem;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-        }
-
-        .form-group input {
-          width: 100%;
-          padding: 0.75rem 0.9rem;
-          background: #ffffff;
-          border: 1px solid #d4d4d4;
-          color: #111111;
-          border-radius: 8px;
-          font-size: 0.92rem;
-          box-sizing: border-box;
-          outline: none;
-        }
-
-        .form-group input:focus {
-          border-color: #111111;
-        }
-
-        .image-upload-wrapper {
-          border: 2px dashed #d4d4d4;
-          border-radius: 10px;
-          padding: 1.5rem 1rem;
-          text-align: center;
-          background: #fafafa;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          position: relative;
-        }
-
-        .image-upload-wrapper:hover {
-          border-color: #a3a3a3;
-          background: #f5f5f5;
-        }
-
-        .file-hidden-input {
-          position: absolute;
-          top: 0; left: 0; width: 100%; height: 100%;
-          opacity: 0;
-          cursor: pointer;
-        }
-
-        .upload-content {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 0.5rem;
-        }
-
-        .preview-img {
-          width: 80px;
-          height: 80px;
-          object-fit: cover;
-          border-radius: 8px;
-          border: 1px solid #d4d4d4;
-          margin-bottom: 0.25rem;
-        }
-
-        .upload-icon {
-          width: 28px;
-          height: 28px;
-          fill: #737373;
-          margin-bottom: 0.2rem;
-        }
-
-        .upload-text {
-          font-size: 0.85rem;
-          color: #111111;
-          font-weight: 600;
-        }
-
-        .upload-subtext {
-          font-size: 0.75rem;
-          color: #737373;
-        }
-
-        .modal-actions {
-          display: flex;
-          justify-content: flex-end;
-          gap: 0.75rem;
-          margin-top: 2rem;
-        }
-
-        /* Mobile Layout Adjustments (Stacked Cards Grid) */
-        @media (max-width: 768px) {
           .inventory-container {
-            padding: 1rem 0.75rem; /* Clean standard mobile padding */
-          }
-          
-          .filter-card {
-            flex-direction: column;
-            align-items: stretch;
-            padding: 1rem;
-          }
-
-          .search-input, .select-input, .btn-apply {
             width: 100%;
-          }
-
-          .inventory-card {
-            background-color: transparent;
-            border: none;
-            box-shadow: none;
-          }
-
-          .inventory-table, .inventory-table thead, .inventory-table tbody, .inventory-table tr, .inventory-table td {
-            display: block;
-            width: 100%;
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem 2.5rem 1.5rem; /* Increased top padding */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: #1c1917;
             box-sizing: border-box;
           }
 
-          .inventory-table thead {
-            display: none;
+          .header-section {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
           }
 
-          .inventory-table tr {
-            background: #ffffff;
+          .page-title {
+            font-family: serif;
+            font-size: 2.25rem;
+            margin: 0;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            color: #111111;
+          }
+
+          .filter-card {
+            background-color: #ffffff;
             border: 1px solid #e5e5e5;
             border-radius: 12px;
             padding: 1.25rem;
-            margin-bottom: 1rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            flex-wrap: wrap;
+          }
+
+          .search-input {
+            flex: 1;
+            min-width: 200px;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            padding: 0.75rem 1rem;
+            background-color: #ffffff;
+            border: 1px solid #d4d4d4;
+            color: #111111;
+            border-radius: 8px;
+            font-size: 0.92rem;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+          }
+
+          .search-input:focus, .select-input:focus {
+            border-color: #111111;
+            box-shadow: 0 0 0 3px rgba(17, 17, 17, 0.05);
+          }
+
+          .select-input {
+            padding: 0.75rem 1rem;
+            background-color: #ffffff;
+            border: 1px solid #d4d4d4;
+            color: #111111;
+            border-radius: 8px;
+            font-size: 0.92rem;
+            outline: none;
+            cursor: pointer;
+            box-sizing: border-box;
+          }
+
+          .btn-apply {
+            background-color: #111111;
+            color: #ffffff;
+            border: none;
+            padding: 0.75rem 1.4rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            white-space: nowrap;
+          }
+
+          .btn-apply:hover {
+            background-color: #262626;
+          }
+
+          .inventory-card {
+            background-color: #ffffff;
+            border: 1px solid #e5e5e5;
+            border-radius: 14px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.01);
+            width: 100%;
+            overflow: hidden;
+          }
+
+          .inventory-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+          }
+
+          .inventory-table th {
+            background-color: #fafafa;
+            padding: 1.1rem 1.5rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #525252;
+            letter-spacing: 0.08em;
+            border-bottom: 1px solid #e5e5e5;
           }
 
           .inventory-table td {
-            padding: 0.4rem 0;
-            border: none;
-          }
-
-          .inventory-table td:first-child {
+            padding: 1.2rem 1.5rem;
             border-bottom: 1px solid #f0f0f0;
-            padding-bottom: 1rem;
-            margin-bottom: 0.75rem;
+            font-size: 0.92rem;
+            vertical-align: middle;
+            color: #171717;
           }
 
-          .inventory-table td:nth-child(2) {
+          .inventory-table tr:last-child td {
+            border-bottom: none;
+          }
+
+          .product-info-cell {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 0.5rem;
-          }
-          .inventory-table td:nth-child(2)::before {
-            content: "PRICE";
-            font-size: 0.72rem;
-            font-weight: 700;
-            color: #737373;
+            gap: 1.25rem;
           }
 
-          .inventory-table td:nth-child(3) {
+          .product-thumb {
+            width: 56px;
+            height: 56px;
+            border-radius: 10px;
+            object-fit: cover;
+            border: 1px solid #e5e5e5;
+            background: #fafafa;
+            flex-shrink: 0;
+          }
+
+          .thumb-placeholder {
+            width: 56px;
+            height: 56px;
+            border-radius: 10px;
+            border: 1px dashed #d4d4d4;
+            background: #fafafa;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 1rem;
-          }
-          .inventory-table td:nth-child(3)::before {
-            content: "STOCK";
-            font-size: 0.72rem;
-            font-weight: 700;
+            justify-content: center;
+            font-size: 0.65rem;
             color: #737373;
+            text-align: center;
+            flex-shrink: 0;
           }
 
-          .inventory-table td:last-child {
-            border-top: 1px dashed #e5e5e5;
-            padding-top: 1rem;
+          .product-title {
+            font-weight: 600;
+            color: #111111;
+            line-height: 1.4;
+          }
+
+          .product-id {
+            font-size: 0.75rem;
+            color: #737373;
+            font-family: monospace;
+            margin-top: 0.2rem;
+          }
+
+          .price-text {
+            font-weight: 700;
+            color: #111111;
+          }
+
+          .stock-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.35rem 0.85rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background-color: #f4f4f5;
+            color: #27272a;
+            border: 1px solid #e4e4e7;
           }
 
           .actions-cell {
-            justify-content: stretch;
-            flex-wrap: wrap;
+            display: flex;
             gap: 0.5rem;
+            justify-content: flex-end;
+            align-items: center;
           }
 
           .btn-action {
-            flex: 1;
-            text-align: center;
-            padding: 0.6rem;
+            padding: 0.5rem 0.9rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            border: 1px solid #d4d4d4;
+            background-color: transparent;
+            color: #404040;
+          }
+
+          .btn-action:hover {
+            background-color: #f5f5f5;
+            color: #111111;
+            border-color: #a3a3a3;
+          }
+
+          .btn-delete-btn {
+            border-color: rgba(220, 38, 38, 0.2);
+            color: #dc2626;
+          }
+
+          .btn-delete-btn:hover {
+            background-color: #fef2f2;
+            border-color: #dc2626;
+            color: #dc2626;
           }
 
           .add-box {
-            width: 100%;
-            justify-content: space-between;
+            display: flex;
+            gap: 0.4rem;
+            align-items: center;
+            justify-content: flex-end;
           }
 
           .add-input {
-            flex: 1;
+            width: 60px;
+            padding: 0.45rem;
+            background: #ffffff;
+            border: 1px solid #d4d4d4;
+            color: #111111;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 0.85rem;
+            outline: none;
+            box-sizing: border-box;
           }
-        }
-      ` }} />
 
-      <div className="header-section">
-        <h1 className="page-title">Inventory Management</h1>
-      </div>
+          .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(3px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 1rem;
+          }
 
-      <div className="filter-card">
-        <input
-          type="text"
-          placeholder="Filter products by title..."
-          className="search-input"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-        <select
-          className="select-input"
-          value={sortOption}
-          onChange={(e) => setSortOption(e.target.value)}
-        >
-          <option value="newest">Sort by: Default (Newest)</option>
-          <option value="price-low">Price: Low to High</option>
-          <option value="price-high">Price: High to Low</option>
-          <option value="stock-low">Stock: Lowest First</option>
-        </select>
-        <button className="btn-apply" onClick={fetchProducts}>
-          Refresh
-        </button>
-      </div>
+          .modal-card {
+            background: #ffffff;
+            border: 1px solid #e5e5e5;
+            width: 100%;
+            max-width: 480px;
+            border-radius: 16px;
+            padding: 2.25rem;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+            max-height: 90vh;
+            overflow-y: auto;
+            box-sizing: border-box;
+          }
 
-      <div className="inventory-card">
-        <table className="inventory-table">
-          <thead>
-            <tr>
-              <th>PRODUCT</th>
-              <th>PRICE</th>
-              <th>STOCK</th>
-              <th style={{ textAlign: 'right' }}>ACTIONS</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
+          .modal-title {
+            font-family: serif;
+            font-size: 1.6rem;
+            margin: 0 0 1.5rem 0;
+            color: #111111;
+          }
+
+          .form-group {
+            margin-bottom: 1.25rem;
+          }
+
+          .form-group label {
+            display: block;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #525252;
+            margin-bottom: 0.4rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+          }
+
+          .form-group input {
+            width: 100%;
+            padding: 0.75rem 0.9rem;
+            background: #ffffff;
+            border: 1px solid #d4d4d4;
+            color: #111111;
+            border-radius: 8px;
+            font-size: 0.92rem;
+            box-sizing: border-box;
+            outline: none;
+          }
+
+          .form-group input:focus {
+            border-color: #111111;
+          }
+
+          .image-upload-wrapper {
+            border: 2px dashed #d4d4d4;
+            border-radius: 10px;
+            padding: 1.5rem 1rem;
+            text-align: center;
+            background: #fafafa;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+          }
+
+          .image-upload-wrapper:hover {
+            border-color: #a3a3a3;
+            background: #f5f5f5;
+          }
+
+          .file-hidden-input {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0;
+            cursor: pointer;
+          }
+
+          .upload-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+          }
+
+          .preview-img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #d4d4d4;
+            margin-bottom: 0.25rem;
+          }
+
+          .upload-icon {
+            width: 28px;
+            height: 28px;
+            fill: #737373;
+            margin-bottom: 0.2rem;
+          }
+
+          .upload-text {
+            font-size: 0.85rem;
+            color: #111111;
+            font-weight: 600;
+          }
+
+          .upload-subtext {
+            font-size: 0.75rem;
+            color: #737373;
+          }
+
+          .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            margin-top: 2rem;
+          }
+
+          /* Mobile Layout Adjustments (Stacked Cards Grid) */
+          @media (max-width: 768px) {
+            .inventory-container {
+              padding: 2rem 0.75rem 1rem 0.75rem;
+            }
+            
+            .filter-card {
+              flex-direction: column;
+              align-items: stretch;
+              padding: 1rem;
+            }
+
+            .search-input, .select-input, .btn-apply {
+              width: 100%;
+            }
+
+            .inventory-card {
+              background-color: transparent;
+              border: none;
+              box-shadow: none;
+            }
+
+            .inventory-table, .inventory-table thead, .inventory-table tbody, .inventory-table tr, .inventory-table td {
+              display: block;
+              width: 100%;
+              box-sizing: border-box;
+            }
+
+            .inventory-table thead {
+              display: none;
+            }
+
+            .inventory-table tr {
+              background: #ffffff;
+              border: 1px solid #e5e5e5;
+              border-radius: 12px;
+              padding: 1.25rem;
+              margin-bottom: 1rem;
+              box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+            }
+
+            .inventory-table td {
+              padding: 0.4rem 0;
+              border: none;
+            }
+
+            .inventory-table td:first-child {
+              border-bottom: 1px solid #f0f0f0;
+              padding-bottom: 1rem;
+              margin-bottom: 0.75rem;
+            }
+
+            .inventory-table td:nth-child(2) {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 0.5rem;
+            }
+            .inventory-table td:nth-child(2)::before {
+              content: "PRICE";
+              font-size: 0.72rem;
+              font-weight: 700;
+              color: #737373;
+            }
+
+            .inventory-table td:nth-child(3) {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 1rem;
+            }
+            .inventory-table td:nth-child(3)::before {
+              content: "STOCK";
+              font-size: 0.72rem;
+              font-weight: 700;
+              color: #737373;
+            }
+
+            .inventory-table td:last-child {
+              border-top: 1px dashed #e5e5e5;
+              padding-top: 1rem;
+            }
+
+            .actions-cell {
+              justify-content: stretch;
+              flex-wrap: wrap;
+              gap: 0.5rem;
+            }
+
+            .btn-action {
+              flex: 1;
+              text-align: center;
+              padding: 0.6rem;
+            }
+
+            .add-box {
+              width: 100%;
+              justify-content: space-between;
+            }
+
+            .add-input {
+              flex: 1;
+            }
+          }
+        ` }} />
+
+        <div className="header-section">
+          <h1 className="page-title">Inventory Management</h1>
+        </div>
+
+        <div className="filter-card">
+          <input
+            type="text"
+            placeholder="Filter products by title..."
+            className="search-input"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <select
+            className="select-input"
+            value={sortOption}
+            onChange={(e) => setSortOption(e.target.value)}
+          >
+            <option value="newest">Sort by: Default (Newest)</option>
+            <option value="price-low">Price: Low to High</option>
+            <option value="price-high">Price: High to Low</option>
+            <option value="stock-low">Stock: Lowest First</option>
+          </select>
+          <button className="btn-apply" onClick={fetchProducts}>
+            Refresh
+          </button>
+        </div>
+
+        <div className="inventory-card">
+          <table className="inventory-table">
+            <thead>
               <tr>
-                <td colSpan={4} style={{ textAlign: 'center', padding: '3rem', color: '#737373' }}>
-                  Loading inventory...
-                </td>
+                <th>PRODUCT</th>
+                <th>PRICE</th>
+                <th>STOCK</th>
+                <th style={{ textAlign: 'right' }}>ACTIONS</th>
               </tr>
-            ) : filteredProducts.length > 0 ? (
-              filteredProducts.map((p) => {
-                const isAdding = addingId === p.id
-                const imgUrl = p.image_url
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan={4} style={{ textAlign: 'center', padding: '3rem', color: '#737373' }}>
+                    Loading inventory...
+                  </td>
+                </tr>
+              ) : filteredProducts.length > 0 ? (
+                filteredProducts.map((p) => {
+                  const isAdding = addingId === p.id
+                  const imgUrl = p.image_url
 
-                return (
-                  <tr key={p.id}>
-                    <td>
-                      <div className="product-info-cell">
-                        {imgUrl ? (
-                          <img src={imgUrl} alt={p.title} className="product-thumb" />
-                        ) : (
-                          <div className="thumb-placeholder">No Image</div>
-                        )}
-                        <div>
-                          <div className="product-title">{p.title}</div>
-                          <div className="product-id">ID: {p.id}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="price-text">{formatCurrency(p.price)}</td>
-                    <td>
-                      <span className="stock-badge">{p.stock} in stock</span>
-                    </td>
-                    <td>
-                      <div className="actions-cell">
-                        {isAdding ? (
-                          <div className="add-box">
-                            <input
-                              type="number"
-                              className="add-input"
-                              value={amountToAdd}
-                              onChange={(e) => setAmountToAdd(Number(e.target.value))}
-                              min="1"
-                            />
-                            <button
-                              className="btn-apply"
-                              style={{ padding: '0.5rem 0.8rem', fontSize: '0.82rem' }}
-                              onClick={() => handleAddStock(p.id, p.stock)}
-                            >
-                              + Add
-                            </button>
-                            <button className="btn-action" onClick={() => setAddingId(null)}>
-                              Cancel
-                            </button>
+                  return (
+                    <tr key={p.id}>
+                      <td>
+                        <div className="product-info-cell">
+                          {imgUrl ? (
+                            <img src={imgUrl} alt={p.title} className="product-thumb" />
+                          ) : (
+                            <div className="thumb-placeholder">No Image</div>
+                          )}
+                          <div>
+                            <div className="product-title">{p.title}</div>
+                            <div className="product-id">ID: {p.id}</div>
                           </div>
-                        ) : (
-                          <>
-                            <button
-                              className="btn-action"
-                              onClick={() => {
-                                setAddingId(p.id)
-                                setAmountToAdd(5)
-                              }}
-                            >
-                              + Stock
-                            </button>
-                            <button
-                              className="btn-action"
-                              onClick={() => {
-                                setEditingProduct(p)
-                                setSelectedFile(null)
-                                setPreviewUrl(null)
-                              }}
-                            >
-                              Edit
-                            </button>
-                            <button
-                              className="btn-action btn-delete-btn"
-                              onClick={() => handleDeleteProduct(p.id)}
-                            >
-                              Delete
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                )
-              })
-            ) : (
-              <tr>
-                <td colSpan={4} style={{ textAlign: 'center', padding: '3rem', color: '#737373' }}>
-                  No inventory products found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+                        </div>
+                      </td>
+                      <td className="price-text">{formatCurrency(p.price)}</td>
+                      <td>
+                        <span className="stock-badge">{p.stock} in stock</span>
+                      </td>
+                      <td>
+                        <div className="actions-cell">
+                          {isAdding ? (
+                            <div className="add-box">
+                              <input
+                                type="number"
+                                className="add-input"
+                                value={amountToAdd}
+                                onChange={(e) => setAmountToAdd(Number(e.target.value))}
+                                min="1"
+                              />
+                              <button
+                                className="btn-apply"
+                                style={{ padding: '0.5rem 0.8rem', fontSize: '0.82rem' }}
+                                onClick={() => handleAddStock(p.id, p.stock)}
+                              >
+                                + Add
+                              </button>
+                              <button className="btn-action" onClick={() => setAddingId(null)}>
+                                Cancel
+                              </button>
+                            </div>
+                          ) : (
+                            <>
+                              <button
+                                className="btn-action"
+                                onClick={() => {
+                                  setAddingId(p.id)
+                                  setAmountToAdd(5)
+                                }}
+                              >
+                                + Stock
+                              </button>
+                              <button
+                                className="btn-action"
+                                onClick={() => {
+                                  setEditingProduct(p)
+                                  setSelectedFile(null)
+                                  setPreviewUrl(null)
+                                }}
+                              >
+                                Edit
+                              </button>
+                              <button
+                                className="btn-action btn-delete-btn"
+                                onClick={() => handleDeleteProduct(p.id)}
+                              >
+                                Delete
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })
+              ) : (
+                <tr>
+                  <td colSpan={4} style={{ textAlign: 'center', padding: '3rem', color: '#737373' }}>
+                    No inventory products found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
 
-      {editingProduct && (
-        <div className="modal-overlay">
-          <div className="modal-card">
-            <h2 className="modal-title">Edit Product</h2>
-            <form onSubmit={handleSaveProduct}>
-              <div className="form-group">
-                <label>Product Title</label>
-                <input
-                  type="text"
-                  value={editingProduct.title}
-                  onChange={(e) =>
-                    setEditingProduct({ ...editingProduct, title: e.target.value })
-                  }
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Price ($)</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={editingProduct.price}
-                  onChange={(e) =>
-                    setEditingProduct({ ...editingProduct, price: Number(e.target.value) })
-                  }
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Stock Count</label>
-                <input
-                  type="number"
-                  value={editingProduct.stock}
-                  onChange={(e) =>
-                    setEditingProduct({ ...editingProduct, stock: Number(e.target.value) })
-                  }
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Product Image</label>
-                <div className="image-upload-wrapper">
+        {editingProduct && (
+          <div className="modal-overlay">
+            <div className="modal-card">
+              <h2 className="modal-title">Edit Product</h2>
+              <form onSubmit={handleSaveProduct}>
+                <div className="form-group">
+                  <label>Product Title</label>
                   <input
-                    type="file"
-                    accept="image/*"
-                    className="file-hidden-input"
-                    onChange={handleFileChange}
+                    type="text"
+                    value={editingProduct.title}
+                    onChange={(e) =>
+                      setEditingProduct({ ...editingProduct, title: e.target.value })
+                    }
+                    required
                   />
-                  <div className="upload-content">
-                    {previewUrl || editingProduct.image_url ? (
-                      <img
-                        src={previewUrl || editingProduct.image_url}
-                        alt="Preview"
-                        className="preview-img"
-                      />
-                    ) : (
-                      <svg className="upload-icon" viewBox="0 0 24 24">
-                        <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" />
-                      </svg>
-                    )}
-                    <span className="upload-text">
-                      {selectedFile ? selectedFile.name : 'Click or drop image to upload'}
-                    </span>
-                    <span className="upload-subtext">PNG, JPG, or WEBP up to 5MB</span>
+                </div>
+
+                <div className="form-group">
+                  <label>Price ($)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={editingProduct.price}
+                    onChange={(e) =>
+                      setEditingProduct({ ...editingProduct, price: Number(e.target.value) })
+                    }
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Stock Count</label>
+                  <input
+                    type="number"
+                    value={editingProduct.stock}
+                    onChange={(e) =>
+                      setEditingProduct({ ...editingProduct, stock: Number(e.target.value) })
+                    }
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Product Image</label>
+                  <div className="image-upload-wrapper">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="file-hidden-input"
+                      onChange={handleFileChange}
+                    />
+                    <div className="upload-content">
+                      {previewUrl || editingProduct.image_url ? (
+                        <img
+                          src={previewUrl || editingProduct.image_url}
+                          alt="Preview"
+                          className="preview-img"
+                        />
+                      ) : (
+                        <svg className="upload-icon" viewBox="0 0 24 24">
+                          <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" />
+                        </svg>
+                      )}
+                      <span className="upload-text">
+                        {selectedFile ? selectedFile.name : 'Click or drop image to upload'}
+                      </span>
+                      <span className="upload-subtext">PNG, JPG, or WEBP up to 5MB</span>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="modal-actions">
-                <button
-                  type="button"
-                  className="btn-action"
-                  disabled={isSaving}
-                  onClick={() => {
-                    setEditingProduct(null)
-                    setSelectedFile(null)
-                    setPreviewUrl(null)
-                  }}
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="btn-apply" disabled={isSaving}>
-                  {isSaving ? 'Saving...' : 'Save Changes'}
-                </button>
-              </div>
-            </form>
+                <div className="modal-actions">
+                  <button
+                    type="button"
+                    className="btn-action"
+                    disabled={isSaving}
+                    onClick={() => {
+                      setEditingProduct(null)
+                      setSelectedFile(null)
+                      setPreviewUrl(null)
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn-apply" disabled={isSaving}>
+                    {isSaving ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }
