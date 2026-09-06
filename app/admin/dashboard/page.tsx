@@ -56,7 +56,6 @@ export default function AdminDashboardPage() {
   const pathname = usePathname()
   const currentDate = new Date()
   
-  // Default to actual current month and year
   const [selectedMonth, setSelectedMonth] = useState<number>(currentDate.getMonth())
   const [selectedYear, setSelectedYear] = useState<number>(currentDate.getFullYear())
 
@@ -297,19 +296,17 @@ export default function AdminDashboardPage() {
           margin-top: auto;
         }
 
-        /* Main Content Area - perfectly aligned next to sidebar */
+        /* Main Content Area */
         .admin-main-content {
           margin-left: 240px;
           flex: 1;
           display: flex;
           flex-direction: column;
           box-sizing: border-box;
-          /* Adjusted top padding to completely remove excess whitespace gap */
           padding-top: 95px;
           min-height: 100vh;
         }
 
-        /* Fixed Header spanning smoothly right from the sidebar */
         .fixed-top-header {
           position: fixed;
           top: 0;
@@ -323,10 +320,15 @@ export default function AdminDashboardPage() {
           box-sizing: border-box;
         }
 
-        .dashboard-container {
+        /* Scrollable Field Console Wrapper for Previous Analytics History */
+        .dashboard-scroll-console {
           width: 100%;
+          max-height: calc(100vh - 95px);
+          overflow-y: auto;
           box-sizing: border-box;
-          padding: 1rem 2rem 3rem 2rem;
+          padding: 1.5rem 2rem 3rem 2rem;
+          border: 1px dashed #ded7cc;
+          background-color: #fcfbfa;
         }
 
         .dashboard-actions-bar {
@@ -556,7 +558,8 @@ export default function AdminDashboardPage() {
           />
         </div>
 
-        <div className="dashboard-container">
+        {/* Scrollable Console Field for Past Analytics Management */}
+        <div className="dashboard-scroll-console">
           {/* Actions & Filters */}
           <div className="dashboard-actions-bar">
             <div className="filter-bar">
@@ -639,7 +642,7 @@ export default function AdminDashboardPage() {
                 <h2 className="section-title">Live Performance Analysis</h2>
               </div>
               <p className="analysis-text">
-                Real-time tracking is connected for <strong>{MONTH_NAMES[selectedMonth]}</strong>. Any newly completed orders or inventory edits sync instantly.
+                Real-time tracking is connected for <strong>{MONTH_NAMES[selectedMonth]} {selectedYear}</strong>. Any newly completed orders or inventory edits sync instantly via Supabase channels.
               </p>
               <div style={{ background: '#fcfbfa', padding: '0.6rem 0.75rem', borderRadius: '6px', border: '1px solid #f2ede4' }}>
                 <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#8c827a', textTransform: 'uppercase' }}>Stream Status</span>
