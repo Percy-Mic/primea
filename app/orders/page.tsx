@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import UserNav from '@/components/UserNav' // Update this import path if your UserNav is located elsewhere
+import UserNav from '@/components/UserNav'
 
 interface OrderItem {
   id?: string
@@ -804,7 +804,6 @@ export default function CustomerOrdersPage() {
         }
       `}</style>
 
-      {/* Rendered UserNav Component */}
       <UserNav />
 
       <div className="page-header">
@@ -1038,7 +1037,10 @@ export default function CustomerOrdersPage() {
                                     type="button"
                                     className="btn-submit-review"
                                     disabled={submitting}
-                                    onClick={() => handleReviewSubmit(productId, orderId, itemKey)}
+                                    onClick={() => {
+                                      if (!productId) return
+                                      handleReviewSubmit(productId, orderId, itemKey)
+                                    }}
                                   >
                                     {submitting ? 'Submitting...' : 'Submit Review'}
                                   </button>
