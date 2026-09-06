@@ -31,7 +31,6 @@ export default function RootLayout({
       </head>
       <body className="antialiased min-h-screen flex flex-col">
         <CartProvider>
-          <Navbar />
           <div className="flex-1">{children}</div>
         </CartProvider>
       </body>
