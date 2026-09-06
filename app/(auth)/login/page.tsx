@@ -44,7 +44,7 @@ export default function LoginPage() {
 
     setLoading(true)
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}https://primea-chi.vercel.app/auth/update-password`,
+      redirectTo: `${window.location}https://primea-chi.vercel.app/auth/update-password`,
     })
 
     setLoading(false)
