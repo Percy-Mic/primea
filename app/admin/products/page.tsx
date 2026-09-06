@@ -433,7 +433,7 @@ export default function InventoryManagementPage() {
           border-radius: 14px;
           box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
           width: 100%;
-          /* Removed overflow-x: auto to eliminate horizontal scrolling layout */
+          overflow: hidden;
         }
 
         .inventory-table {
@@ -696,7 +696,7 @@ export default function InventoryManagementPage() {
           margin-top: 2rem;
         }
 
-        /* Responsive Breakpoints */
+        /* Responsive Mobile Layout Adaptations (Card list on small screens) */
         @media (max-width: 768px) {
           .sub-nav-bar {
             display: none;
@@ -706,6 +706,43 @@ export default function InventoryManagementPage() {
           }
           .page-wrapper {
             padding-top: 250px;
+          }
+
+          /* Transform table into a clean stacked card view on mobile for ultimate responsiveness */
+          .inventory-table, 
+          .inventory-table tbody, 
+          .inventory-table tr, 
+          .inventory-table td {
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+          }
+
+          .inventory-table thead {
+            display: none;
+          }
+
+          .inventory-table tr {
+            padding: 1.25rem;
+            border-bottom: 1px solid #e5e5e5;
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+          }
+
+          .inventory-table tr:last-child {
+            border-bottom: none;
+          }
+
+          .inventory-table td {
+            padding: 0;
+            border-bottom: none;
+          }
+
+          .actions-cell, .add-box {
+            justify-content: flex-start;
+            width: 100%;
+            margin-top: 0.5rem;
           }
         }
       ` }} />
