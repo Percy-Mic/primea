@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-/*import UserNav from '@/components/UserNav'*/
+// import UserNav from '@/components/UserNav'
 
 interface Product {
   id: string
@@ -46,7 +46,7 @@ export default function ProductsPage() {
 
   return (
     <>
-      {/* Fixed Header Container with a clean matching divider line */}
+      {/* Fixed Header Container with UserNav commented out */}
       <header
         style={{
           position: 'fixed',
@@ -57,12 +57,13 @@ export default function ProductsPage() {
           width: '100%',
           backgroundColor: '#16120f',
           borderBottom: '1px solid #2a221e',
+          minHeight: '60px', // Temporary placeholder height so you can see the empty header block
         }}
       >
-        <UserNav brandName="PRIMEA" />
+        {/* <UserNav brandName="PRIMEA" /> */}
       </header>
 
-      {/* Main Content with proper spacing to sit comfortably below the fixed header */}
+      {/* Main Content */}
       <main
         style={{
           minHeight: '100vh',
