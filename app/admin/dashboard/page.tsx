@@ -207,21 +207,20 @@ export default function AdminDashboardPage() {
   }
 
   const lowStockCount = stats.lowStockItems?.length || 0
-  const baseRev = summaries.monthly.revenue || 12000
+  const baseRev = summaries.monthly.revenue || 10000
 
-  // Expanded trend points for multi-week scrollable progress tracking
-  const trendPoints = [
-    { day: 'Week 1', val: baseRev * 0.12 },
-    { day: 'Week 2', val: baseRev * 0.20 },
-    { day: 'Week 3', val: baseRev * 0.18 },
-    { day: 'Week 4', val: baseRev * 0.28 },
-    { day: 'Week 5', val: baseRev * 0.35 },
-    { day: 'Week 6', val: baseRev * 0.30 },
-    { day: 'Week 7', val: baseRev * 0.42 },
-    { day: 'Week 8', val: baseRev * 0.50 },
-    { day: 'Week 9', val: baseRev * 0.45 },
-    { day: 'Week 10', val: baseRev * 0.60 },
-  ]
+  // Determine current week count dynamically depending on selected month/year context
+  const isCurrentMonthYear = selectedMonth === currentDate.getMonth() && selectedYear === currentDate.getFullYear()
+  const totalWeeks = isCurrentMonthYear ? Math.min(Math.ceil(currentDate.getDate() / 7), 4) : 4
+
+  const trendPoints = Array.from({ length: totalWeeks }, (_, i) => {
+    const multipliers = [0.22, 0.45, 0.68, 0.90]
+    return {
+      day: `Week ${i + 1}`,
+      val: baseRev * (multipliers[i] || 0.5)
+    }
+  })
+
   const maxVal = Math.max(...trendPoints.map(p => p.val), 1)
 
   return (
@@ -235,105 +234,77 @@ export default function AdminDashboardPage() {
 
         .admin-layout-wrapper {
           display: flex;
+          flex-direction: column;
           min-height: 100vh;
-          position: relative;
         }
 
-        /* Sidebar Styling & Responsive behavior */
-        .admin-sidebar {
-          width: 240px;
-          background-color: #ffffff;
-          border-right: 1px solid #e8e2d9;
-          display: flex;
-          flex-direction: column;
-          position: fixed;
+        /* Full Width Header */
+        .fixed-top-header {
+          position: sticky;
           top: 0;
-          bottom: 0;
-          left: 0;
-          z-index: 1001;
-          padding: 1.5rem 1rem;
+          z-index: 1005;
+          background-color: #ffffff;
+          border-bottom: 1px solid #e2dacf;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+          padding: 0.65rem 1.5rem;
+          width: 100%;
           box-sizing: border-box;
-          transition: transform 0.2s ease;
         }
 
-        .sidebar-heading {
-          font-size: 0.7rem;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.08em;
-          color: #8c827a;
-          margin-bottom: 0.75rem;
-          padding-left: 0.5rem;
-        }
-
-        .sidebar-nav-list {
-          display: flex;
-          flex-direction: column;
-          gap: 0.25rem;
-          list-style: none;
-          padding: 0;
-          margin: 0 0 auto 0;
-        }
-
-        .sidebar-link {
+        /* Sub-navigation bar beneath header */
+        .sub-nav-bar {
           display: flex;
           align-items: center;
+          justify-content: space-between;
+          background-color: #ffffff;
+          border-bottom: 1px solid #e8e2d9;
+          padding: 0.5rem 1.5rem;
+          flex-wrap: wrap;
           gap: 0.75rem;
-          padding: 0.65rem 0.75rem;
+        }
+
+        .sub-nav-links {
+          display: flex;
+          list-style: none;
+          padding: 0;
+          margin: 0;
+          gap: 0.5rem;
+          flex-wrap: wrap;
+        }
+
+        .sub-nav-link {
+          display: inline-flex;
+          align-items: center;
+          padding: 0.4rem 0.75rem;
           border-radius: 6px;
-          font-size: 0.85rem;
+          font-size: 0.82rem;
           font-weight: 500;
           color: #3b332e;
           text-decoration: none;
           transition: all 0.15s ease;
         }
 
-        .sidebar-link:hover {
+        .sub-nav-link:hover {
           background-color: #f7f4ef;
           color: #b55933;
         }
 
-        .sidebar-link.active {
+        .sub-nav-link.active {
           background-color: #1f1815;
           color: #ffffff;
           font-weight: 600;
         }
 
-        .sidebar-footer {
-          border-top: 1px solid #f2ede4;
-          padding-top: 1rem;
-          margin-top: auto;
-        }
-
-        /* Main Content Area */
+        /* Main Content Container */
         .admin-main-content {
-          margin-left: 240px;
           flex: 1;
           display: flex;
           flex-direction: column;
           box-sizing: border-box;
-          padding-top: 85px;
-          min-height: 100vh;
-          width: calc(100% - 240px);
-        }
-
-        .fixed-top-header {
-          position: fixed;
-          top: 0;
-          left: 240px;
-          right: 0;
-          z-index: 1000;
-          background-color: #ffffff;
-          border-bottom: 1px solid #e2dacf;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-          padding: 0.65rem 1.5rem;
-          box-sizing: border-box;
-        }
-
-        .dashboard-container {
+          padding: 1.25rem 1.5rem 3rem 1.5rem;
           width: 100%;
-          box-sizing: border-box;
-          padding: 1rem 1.5rem 3rem 1.5rem;
+          max-width: 1400px;
+          margin: 0 auto;
         }
 
         .dashboard-actions-bar {
@@ -404,7 +375,7 @@ export default function AdminDashboardPage() {
 
         .metrics-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
           gap: 1rem;
           margin-bottom: 1.25rem;
         }
@@ -495,7 +466,6 @@ export default function AdminDashboardPage() {
           font-size: 0.78rem;
         }
 
-        /* Dedicated Scrollable Field for the Graph */
         .scrollable-graph-container {
           width: 100%;
           overflow-x: auto;
@@ -562,213 +532,189 @@ export default function AdminDashboardPage() {
 
         .status-completed { background-color: #f0f7f0; color: #2e6930; }
         .status-processing { background-color: #fcf8ee; color: #8a6200; }
-
-        /* Responsive Breakpoints for Mobile and Tablets */
-        @media (max-width: 768px) {
-          .admin-sidebar {
-            transform: translateX(-100%);
-            width: 220px;
-          }
-          .admin-main-content {
-            margin-left: 0 !important;
-            width: 100% !important;
-            padding-top: 110px;
-          }
-          .fixed-top-header {
-            left: 0 !important;
-            padding: 0.5rem 1rem;
-          }
-          .dashboard-container {
-            padding: 0.75rem 1rem;
-          }
-        }
       `}</style>
 
-      {/* Left Sidebar */}
-      <aside className="admin-sidebar">
-        <div className="sidebar-heading">Management</div>
-        <ul className="sidebar-nav-list">
-          <li><Link href="/admin/dashboard" className={`sidebar-link ${pathname === '/admin/dashboard' ? 'active' : ''}`}>Dashboard</Link></li>
-          <li><Link href="/admin/orders" className={`sidebar-link ${pathname === '/admin/orders' ? 'active' : ''}`}>Orders</Link></li>
-          <li><Link href="/admin/products" className={`sidebar-link ${pathname === '/admin/products' ? 'active' : ''}`}>Inventory</Link></li>
-          <li><Link href="/admin/products/new" className={`sidebar-link ${pathname === '/admin/products/new' ? 'active' : ''}`}>Add Product</Link></li>
+      {/* Top Header Stretched */}
+      <div className="fixed-top-header">
+        <AdminHeader
+          title="Storefront Monitor"
+          description="Real-time store progress and inventory analytics report"
+          userEmail={userEmail}
+          onLogout={handleLogout}
+        />
+      </div>
+
+      {/* Sub-Navigation Bar beneath header */}
+      <div className="sub-nav-bar">
+        <ul className="sub-nav-links">
+          <li><Link href="/admin/dashboard" className={`sub-nav-link ${pathname === '/admin/dashboard' ? 'active' : ''}`}>Dashboard</Link></li>
+          <li><Link href="/admin/orders" className={`sub-nav-link ${pathname === '/admin/orders' ? 'active' : ''}`}>Orders</Link></li>
+          <li><Link href="/admin/products" className={`sub-nav-link ${pathname === '/admin/products' ? 'active' : ''}`}>Inventory</Link></li>
+          <li><Link href="/admin/products/new" className={`sub-nav-link ${pathname === '/admin/products/new' ? 'active' : ''}`}>Add Product</Link></li>
         </ul>
-        <div className="sidebar-footer">
-          <Link href="/" target="_blank" className="sidebar-link" style={{ color: '#b55933', fontWeight: 600 }}>View Storefront</Link>
-        </div>
-      </aside>
+        <Link href="/" target="_blank" className="sub-nav-link" style={{ color: '#b55933', fontWeight: 600 }}>View Storefront →</Link>
+      </div>
 
-      {/* Main Content Pane */}
+      {/* Main Content Area */}
       <div className="admin-main-content">
-        <div className="fixed-top-header">
-          <AdminHeader
-            title="Storefront Monitor"
-            description="Real-time store progress and inventory analytics report"
-            userEmail={userEmail}
-            onLogout={handleLogout}
-          />
+        {/* Actions & Filters */}
+        <div className="dashboard-actions-bar">
+          <div className="filter-bar">
+            <span className="filter-label">Statistics Period:</span>
+            <select value={selectedMonth} onChange={(e) => setSelectedMonth(Number(e.target.value))} className="filter-select">
+              {MONTH_NAMES.map((name, index) => (<option key={index} value={index}>{name}</option>))}
+            </select>
+            <select value={selectedYear} onChange={(e) => setSelectedYear(Number(e.target.value))} className="filter-select">
+              {[2024, 2025, 2026, 2027].map((year) => (<option key={year} value={year}>{year}</option>))}
+            </select>
+          </div>
+
+          <div className="action-buttons-group">
+            <button type="button" onClick={fetchDashboardData} disabled={isRefreshing} className="btn-action">
+              <span>{isRefreshing ? 'Syncing...' : 'Force Sync'}</span>
+            </button>
+            <button type="button" onClick={handlePrint} className="btn-action">
+              <span>Print Report</span>
+            </button>
+          </div>
         </div>
 
-        <div className="dashboard-container">
-          {/* Actions & Filters */}
-          <div className="dashboard-actions-bar">
-            <div className="filter-bar">
-              <span className="filter-label">Viewing Period:</span>
-              <select value={selectedMonth} onChange={(e) => setSelectedMonth(Number(e.target.value))} className="filter-select">
-                {MONTH_NAMES.map((name, index) => (<option key={index} value={index}>{name}</option>))}
-              </select>
-              <select value={selectedYear} onChange={(e) => setSelectedYear(Number(e.target.value))} className="filter-select">
-                {[2024, 2025, 2026, 2027].map((year) => (<option key={year} value={year}>{year}</option>))}
-              </select>
-            </div>
-
-            <div className="action-buttons-group">
-              <button type="button" onClick={fetchDashboardData} disabled={isRefreshing} className="btn-action">
-                <span>{isRefreshing ? 'Syncing...' : 'Force Sync'}</span>
-              </button>
-              <button type="button" onClick={handlePrint} className="btn-action">
-                <span>Print</span>
-              </button>
-            </div>
+        {/* Metrics Cards */}
+        <div className="metrics-grid">
+          <div className="metric-card">
+            <div className="metric-header"><span className="metric-label">Lifetime Revenue</span></div>
+            <div className="metric-value">{loading ? '...' : formatCurrency(stats.revenue)}</div>
           </div>
-
-          {/* Metrics Cards */}
-          <div className="metrics-grid">
-            <div className="metric-card">
-              <div className="metric-header"><span className="metric-label">Lifetime Revenue</span></div>
-              <div className="metric-value">{loading ? '...' : formatCurrency(stats.revenue)}</div>
-            </div>
-            <div className="metric-card">
-              <div className="metric-header"><span className="metric-label">Completed Orders</span></div>
-              <div className="metric-value">{loading ? '...' : stats.totalOrders}</div>
-            </div>
-            <div className="metric-card">
-              <div className="metric-header"><span className="metric-label">Active Products</span></div>
-              <div className="metric-value">{loading ? '...' : stats.activeProducts}</div>
-            </div>
-            <div className="metric-card">
-              <div className="metric-header"><span className="metric-label">{MONTH_NAMES[selectedMonth]} Revenue</span></div>
-              <div className="metric-value">{loading ? '...' : formatCurrency(summaries.monthly.revenue)}</div>
-              {!loading && renderGrowthBadge(summaries.monthly.revenueGrowth)}
-            </div>
+          <div className="metric-card">
+            <div className="metric-header"><span className="metric-label">Completed Orders</span></div>
+            <div className="metric-value">{loading ? '...' : stats.totalOrders}</div>
           </div>
+          <div className="metric-card">
+            <div className="metric-header"><span className="metric-label">Active Products</span></div>
+            <div className="metric-value">{loading ? '...' : stats.activeProducts}</div>
+          </div>
+          <div className="metric-card">
+            <div className="metric-header"><span className="metric-label">{MONTH_NAMES[selectedMonth]} Revenue</span></div>
+            <div className="metric-value">{loading ? '...' : formatCurrency(summaries.monthly.revenue)}</div>
+            {!loading && renderGrowthBadge(summaries.monthly.revenueGrowth)}
+          </div>
+        </div>
 
-          {/* Graph & Analysis with Scrollable Graph Field */}
-          <div className="analytics-grid">
-            <div className="dashboard-section">
-              <div className="section-title-wrap">
-                <h2 className="section-title">Revenue Trend ({MONTH_NAMES[selectedMonth]} {selectedYear})</h2>
-                <span className="analysis-badge">Live Stream Active</span>
-              </div>
-              <p style={{ fontSize: '0.75rem', color: '#8c827a', margin: '0 0 0.5rem 0' }}>
-                ← Scroll horizontally to view preceding and extended progress dots →
-              </p>
-              
-              {/* Scrollable Graph Field Only */}
-              <div className="scrollable-graph-container">
-                <div style={{ width: '900px', height: '160px', display: 'flex', alignItems: 'flex-end' }}>
-                  <svg viewBox="0 0 900 120" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
-                    <polyline
-                      fill="none"
-                      stroke="#b55933"
-                      strokeWidth="3"
-                      points={trendPoints.map((p, idx) => `${idx * 90 + 45},${110 - (p.val / maxVal) * 90}`).join(' ')}
-                    />
-                    {trendPoints.map((p, idx) => (
-                      <g key={idx}>
-                        <circle
-                          cx={idx * 90 + 45}
-                          cy={110 - (p.val / maxVal) * 90}
-                          r="5"
-                          fill="#ffffff"
-                          stroke="#b55933"
-                          strokeWidth="3"
-                        />
-                        <text x={idx * 90 + 45} y="125" textAnchor="middle" fontSize="11" fill="#786f66" fontWeight="600">
-                          {p.day}
-                        </text>
-                      </g>
-                    ))}
-                  </svg>
-                </div>
-              </div>
+        {/* Graph & Analysis with Scrollable Graph Field */}
+        <div className="analytics-grid">
+          <div className="dashboard-section">
+            <div className="section-title-wrap">
+              <h2 className="section-title">Revenue Trend ({MONTH_NAMES[selectedMonth]} {selectedYear})</h2>
+              <span className="analysis-badge">Live Stream Active</span>
             </div>
-
-            <div className="dashboard-section">
-              <div className="section-title-wrap">
-                <h2 className="section-title">Live Performance Analysis</h2>
-              </div>
-              <p className="analysis-text">
-                Real-time tracking is connected for <strong>{MONTH_NAMES[selectedMonth]} {selectedYear}</strong>. Any newly completed orders or inventory edits sync instantly via Supabase channels.
-              </p>
-              <div style={{ background: '#fcfbfa', padding: '0.6rem 0.75rem', borderRadius: '6px', border: '1px solid #f2ede4' }}>
-                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#8c827a', textTransform: 'uppercase' }}>Stream Status</span>
-                <div style={{ fontSize: '0.82rem', color: '#2e6930', fontWeight: 600, marginTop: '0.2rem' }}>
-                  ● Connected to database stream
-                </div>
+            <p style={{ fontSize: '0.75rem', color: '#8c827a', margin: '0 0 0.5rem 0' }}>
+              Progress tracking across weeks for selected period:
+            </p>
+            
+            {/* Dedicated Scrollable Graph Field */}
+            <div className="scrollable-graph-container">
+              <div style={{ width: `${Math.max(trendPoints.length * 130, 450)}px`, height: '160px', display: 'flex', alignItems: 'flex-end' }}>
+                <svg viewBox={`0 0 ${Math.max(trendPoints.length * 130, 450)} 120`} style={{ width: '100%', height: '100%', overflow: 'visible' }}>
+                  <polyline
+                    fill="none"
+                    stroke="#b55933"
+                    strokeWidth="3"
+                    points={trendPoints.map((p, idx) => `${idx * 130 + 50},${110 - (p.val / maxVal) * 90}`).join(' ')}
+                  />
+                  {trendPoints.map((p, idx) => (
+                    <g key={idx}>
+                      <circle
+                        cx={idx * 130 + 50}
+                        cy={110 - (p.val / maxVal) * 90}
+                        r="5"
+                        fill="#ffffff"
+                        stroke="#b55933"
+                        strokeWidth="3"
+                      />
+                      <text x={idx * 130 + 50} y="125" textAnchor="middle" fontSize="11" fill="#786f66" fontWeight="600">
+                        {p.day}
+                      </text>
+                    </g>
+                  ))}
+                </svg>
               </div>
             </div>
           </div>
 
-          {/* Tables and Inventory Alerts */}
-          <div className="content-grid">
-            <div className="dashboard-section">
-              <div className="section-title-wrap">
-                <h2 className="section-title">Recent Orders (Live)</h2>
-                <Link href="/admin/orders" style={{ fontSize: '0.8rem', color: '#b55933', textDecoration: 'none', fontWeight: 600 }}>View All →</Link>
+          <div className="dashboard-section">
+            <div className="section-title-wrap">
+              <h2 className="section-title">Live Performance Analysis</h2>
+            </div>
+            <p className="analysis-text">
+              Real-time tracking is connected for <strong>{MONTH_NAMES[selectedMonth]} {selectedYear}</strong>. Any newly completed orders or inventory edits sync instantly via Supabase channels.
+            </p>
+            <div style={{ background: '#fcfbfa', padding: '0.6rem 0.75rem', borderRadius: '6px', border: '1px solid #f2ede4' }}>
+              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#8c827a', textTransform: 'uppercase' }}>Stream Status</span>
+              <div style={{ fontSize: '0.82rem', color: '#2e6930', fontWeight: 600, marginTop: '0.2rem' }}>
+                ● Connected to database stream
               </div>
-              {loading ? (
-                <p style={{ fontSize: '0.85rem', color: '#8c827a' }}>Loading...</p>
-              ) : recentOrders.length === 0 ? (
-                <p style={{ fontSize: '0.85rem', color: '#8c827a' }}>No recent orders found.</p>
-              ) : (
-                <table className="orders-table">
-                  <thead>
-                    <tr>
-                      <th>Order ID</th>
-                      <th>Customer</th>
-                      <th>Total</th>
-                      <th>Status</th>
+            </div>
+          </div>
+        </div>
+
+        {/* Tables and Inventory Alerts */}
+        <div className="content-grid">
+          <div className="dashboard-section">
+            <div className="section-title-wrap">
+              <h2 className="section-title">Recent Orders (Live)</h2>
+              <Link href="/admin/orders" style={{ fontSize: '0.8rem', color: '#b55933', textDecoration: 'none', fontWeight: 600 }}>View All →</Link>
+            </div>
+            {loading ? (
+              <p style={{ fontSize: '0.85rem', color: '#8c827a' }}>Loading...</p>
+            ) : recentOrders.length === 0 ? (
+              <p style={{ fontSize: '0.85rem', color: '#8c827a' }}>No recent orders found.</p>
+            ) : (
+              <table className="orders-table">
+                <thead>
+                  <tr>
+                    <th>Order ID</th>
+                    <th>Customer</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentOrders.map((order) => (
+                    <tr key={order.id}>
+                      <td style={{ fontWeight: 600 }}>{order.id}</td>
+                      <td>{order.customer}</td>
+                      <td>{formatCurrency(order.total)}</td>
+                      <td>
+                        <span className={`status-badge ${order.status?.toLowerCase() === 'completed' ? 'status-completed' : 'status-processing'}`}>
+                          {order.status}
+                        </span>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {recentOrders.map((order) => (
-                      <tr key={order.id}>
-                        <td style={{ fontWeight: 600 }}>{order.id}</td>
-                        <td>{order.customer}</td>
-                        <td>{formatCurrency(order.total)}</td>
-                        <td>
-                          <span className={`status-badge ${order.status?.toLowerCase() === 'completed' ? 'status-completed' : 'status-processing'}`}>
-                            {order.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
 
-            <div className="dashboard-section">
-              <div className="section-title-wrap">
-                <h2 className="section-title">Inventory Health</h2>
-                <Link href="/admin/products" style={{ fontSize: '0.8rem', color: '#b55933', textDecoration: 'none', fontWeight: 600 }}>Manage →</Link>
-              </div>
-              {lowStockCount === 0 ? (
-                <div style={{ color: '#2e6930', fontSize: '0.85rem', background: '#f2f8f2', padding: '0.85rem', borderRadius: '6px' }}>
-                  Inventory levels are optimal. All items are in stock.
-                </div>
-              ) : (
-                <div style={{ color: '#992222', fontSize: '0.85rem', background: '#fdf5f5', padding: '0.85rem', borderRadius: '6px' }}>
-                  <strong>Low Stock Alerts ({lowStockCount})</strong>
-                  <ul style={{ margin: '0.5rem 0 0 0', paddingLeft: '1rem' }}>
-                    {stats.lowStockItems.map((item) => (
-                      <li key={item.id}>{item.title} — {item.stock} left</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+          <div className="dashboard-section">
+            <div className="section-title-wrap">
+              <h2 className="section-title">Inventory Health</h2>
+              <Link href="/admin/products" style={{ fontSize: '0.8rem', color: '#b55933', textDecoration: 'none', fontWeight: 600 }}>Manage →</Link>
             </div>
+            {lowStockCount === 0 ? (
+              <div style={{ color: '#2e6930', fontSize: '0.85rem', background: '#f2f8f2', padding: '0.85rem', borderRadius: '6px' }}>
+                Inventory levels are optimal. All items are in stock.
+              </div>
+            ) : (
+              <div style={{ color: '#992222', fontSize: '0.85rem', background: '#fdf5f5', padding: '0.85rem', borderRadius: '6px' }}>
+                <strong>Low Stock Alerts ({lowStockCount})</strong>
+                <ul style={{ margin: '0.5rem 0 0 0', paddingLeft: '1rem' }}>
+                  {stats.lowStockItems.map((item) => (
+                    <li key={item.id}>{item.title} — {item.stock} left</li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </div>
       </div>
