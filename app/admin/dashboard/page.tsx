@@ -231,7 +231,7 @@ export default function AdminDashboardPage() {
           display: flex;
           flex-direction: column;
           min-height: 100vh;
-          padding-top: 115px; /* Push content down so it doesn't hide behind the fixed header and nav */
+          padding-top: 130px; /* Ensured top padding starts at least 100px-130px down */
         }
 
         /* Absolutely Fixed Top Header Group */
@@ -310,7 +310,7 @@ export default function AdminDashboardPage() {
 
         @media (max-width: 768px) {
           .admin-layout-wrapper {
-            padding-top: 140px; /* Adjust spacing dynamically on smaller stacked viewports */
+            padding-top: 160px; /* Responsive top padding for stacked mobile viewports */
           }
           .mobile-menu-btn {
             display: inline-flex;
@@ -563,7 +563,7 @@ export default function AdminDashboardPage() {
         .status-processing { background-color: #fcf8ee; color: #8a6200; }
       `}</style>
 
-      {/* Fixed Header & Navigation Group (Stays pinned at top during scroll) */}
+      {/* Fixed Header & Navigation Group */}
       <div className="header-group-fixed">
         <div className="fixed-top-header">
           <AdminHeader
