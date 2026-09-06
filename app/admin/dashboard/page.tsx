@@ -55,6 +55,8 @@ export default function AdminDashboardPage() {
   const router = useRouter()
   const pathname = usePathname()
   const currentDate = new Date()
+  
+  // Default to actual current month and year
   const [selectedMonth, setSelectedMonth] = useState<number>(currentDate.getMonth())
   const [selectedYear, setSelectedYear] = useState<number>(currentDate.getFullYear())
 
@@ -132,7 +134,6 @@ export default function AdminDashboardPage() {
     }
   }, [selectedMonth, selectedYear])
 
-  // Initial load + Realtime Supabase Channel subscriptions
   useEffect(() => {
     if (!isAuthorized) return
     fetchDashboardData()
@@ -143,16 +144,12 @@ export default function AdminDashboardPage() {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'orders' },
-        () => {
-          fetchDashboardData()
-        }
+        () => { fetchDashboardData() }
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'products' },
-        () => {
-          fetchDashboardData()
-        }
+        () => { fetchDashboardData() }
       )
       .subscribe()
 
@@ -194,9 +191,7 @@ export default function AdminDashboardPage() {
     )
   }
 
-  const handlePrint = () => {
-    window.print()
-  }
+  const handlePrint = () => { window.print() }
 
   const handleLogout = async () => {
     const supabase = createClient()
@@ -213,7 +208,6 @@ export default function AdminDashboardPage() {
   }
 
   const lowStockCount = stats.lowStockItems?.length || 0
-
   const baseRev = summaries.monthly.revenue || 10000
   const trendPoints = [
     { day: 'Week 1', val: baseRev * 0.18 },
@@ -303,18 +297,19 @@ export default function AdminDashboardPage() {
           margin-top: auto;
         }
 
-        /* Main Content Area - perfectly aligned with sidebar */
+        /* Main Content Area - perfectly aligned next to sidebar */
         .admin-main-content {
           margin-left: 240px;
           flex: 1;
           display: flex;
           flex-direction: column;
           box-sizing: border-box;
-          padding-top: 140px;
+          /* Adjusted top padding to completely remove excess whitespace gap */
+          padding-top: 95px;
           min-height: 100vh;
         }
 
-        /* Fixed Header spanning smoothly */
+        /* Fixed Header spanning smoothly right from the sidebar */
         .fixed-top-header {
           position: fixed;
           top: 0;
@@ -324,22 +319,21 @@ export default function AdminDashboardPage() {
           background-color: #ffffff;
           border-bottom: 1px solid #e2dacf;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-          padding: 0.9rem 2rem;
+          padding: 0.75rem 2rem;
           box-sizing: border-box;
         }
 
-        /* Fluid Dashboard Container removing the side void */
         .dashboard-container {
           width: 100%;
           box-sizing: border-box;
-          padding: 0 2rem 3rem 2rem;
+          padding: 1rem 2rem 3rem 2rem;
         }
 
         .dashboard-actions-bar {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 1.5rem;
+          margin-bottom: 1.25rem;
           flex-wrap: wrap;
           gap: 1rem;
         }
@@ -350,9 +344,8 @@ export default function AdminDashboardPage() {
           gap: 0.5rem;
           background-color: #ffffff;
           border: 1px solid #e8e2d9;
-          padding: 0.65rem 1rem;
+          padding: 0.5rem 1rem;
           border-radius: 8px;
-          flex-wrap: wrap;
         }
 
         .filter-label {
@@ -364,7 +357,7 @@ export default function AdminDashboardPage() {
         }
 
         .filter-select {
-          padding: 0.4rem 0.75rem;
+          padding: 0.35rem 0.75rem;
           background-color: #f7f4ef;
           border: 1px solid #ded7cc;
           border-radius: 6px;
@@ -385,7 +378,7 @@ export default function AdminDashboardPage() {
           align-items: center;
           justify-content: center;
           gap: 0.4rem;
-          padding: 0.55rem 0.95rem;
+          padding: 0.5rem 0.9rem;
           background-color: #ffffff;
           color: #1f1815;
           border: 1px solid #ded7cc;
@@ -405,14 +398,14 @@ export default function AdminDashboardPage() {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
           gap: 1rem;
-          margin-bottom: 1.5rem;
+          margin-bottom: 1.25rem;
         }
 
         .metric-card {
           background-color: #ffffff;
           border: 1px solid #e8e2d9;
           border-radius: 8px;
-          padding: 1.25rem;
+          padding: 1.1rem 1.25rem;
           box-shadow: 0 1px 2px rgba(0, 0, 0, 0.01);
           display: flex;
           flex-direction: column;
@@ -423,7 +416,7 @@ export default function AdminDashboardPage() {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 0.5rem;
+          margin-bottom: 0.4rem;
         }
 
         .metric-label {
@@ -444,8 +437,8 @@ export default function AdminDashboardPage() {
         .analytics-grid {
           display: grid;
           grid-template-columns: 2fr 1fr;
-          gap: 1.5rem;
-          margin-bottom: 1.5rem;
+          gap: 1.25rem;
+          margin-bottom: 1.25rem;
         }
 
         @media (max-width: 1024px) {
@@ -458,15 +451,15 @@ export default function AdminDashboardPage() {
           background-color: #ffffff;
           border: 1px solid #e8e2d9;
           border-radius: 8px;
-          padding: 1.25rem;
+          padding: 1.1rem 1.25rem;
         }
 
         .section-title-wrap {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          margin-bottom: 1rem;
-          padding-bottom: 0.5rem;
+          margin-bottom: 0.85rem;
+          padding-bottom: 0.4rem;
           border-bottom: 1px solid #f2ede4;
         }
 
@@ -480,8 +473,8 @@ export default function AdminDashboardPage() {
         .analysis-text {
           font-size: 0.85rem;
           color: #3b332e;
-          line-height: 1.6;
-          margin: 0 0 1rem 0;
+          line-height: 1.5;
+          margin: 0 0 0.75rem 0;
         }
 
         .analysis-badge {
@@ -497,7 +490,7 @@ export default function AdminDashboardPage() {
         .content-grid {
           display: grid;
           grid-template-columns: 2fr 1fr;
-          gap: 1.5rem;
+          gap: 1.25rem;
         }
 
         @media (max-width: 1024px) {
@@ -514,21 +507,21 @@ export default function AdminDashboardPage() {
 
         .orders-table th {
           text-align: left;
-          padding: 0.5rem;
+          padding: 0.4rem 0.5rem;
           color: #8c827a;
           font-weight: 600;
           border-bottom: 1px solid #eee8e0;
         }
 
         .orders-table td {
-          padding: 0.75rem 0.5rem;
+          padding: 0.6rem 0.5rem;
           border-bottom: 1px solid #f7f4ef;
           color: #3b332e;
         }
 
         .status-badge {
           display: inline-block;
-          padding: 0.2rem 0.55rem;
+          padding: 0.15rem 0.5rem;
           border-radius: 999px;
           font-size: 0.7rem;
           font-weight: 600;
@@ -612,9 +605,9 @@ export default function AdminDashboardPage() {
             <div className="dashboard-section">
               <div className="section-title-wrap">
                 <h2 className="section-title">Revenue Trend ({MONTH_NAMES[selectedMonth]} {selectedYear})</h2>
-                <span className="analysis-badge">Live Live Stream Active</span>
+                <span className="analysis-badge">Live Stream Active</span>
               </div>
-              <div style={{ width: '100%', height: '180px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', padding: '1rem 0 0 0' }}>
+              <div style={{ width: '100%', height: '160px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', padding: '0.5rem 0 0 0' }}>
                 <svg viewBox="0 0 400 120" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
                   <polyline
                     fill="none"
@@ -648,7 +641,7 @@ export default function AdminDashboardPage() {
               <p className="analysis-text">
                 Real-time tracking is connected for <strong>{MONTH_NAMES[selectedMonth]}</strong>. Any newly completed orders or inventory edits sync instantly.
               </p>
-              <div style={{ background: '#fcfbfa', padding: '0.75rem', borderRadius: '6px', border: '1px solid #f2ede4' }}>
+              <div style={{ background: '#fcfbfa', padding: '0.6rem 0.75rem', borderRadius: '6px', border: '1px solid #f2ede4' }}>
                 <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#8c827a', textTransform: 'uppercase' }}>Stream Status</span>
                 <div style={{ fontSize: '0.82rem', color: '#2e6930', fontWeight: 600, marginTop: '0.2rem' }}>
                   ● Connected to database stream
@@ -702,11 +695,11 @@ export default function AdminDashboardPage() {
                 <Link href="/admin/products" style={{ fontSize: '0.8rem', color: '#b55933', textDecoration: 'none', fontWeight: 600 }}>Manage →</Link>
               </div>
               {lowStockCount === 0 ? (
-                <div style={{ color: '#2e6930', fontSize: '0.85rem', background: '#f2f8f2', padding: '1rem', borderRadius: '6px' }}>
+                <div style={{ color: '#2e6930', fontSize: '0.85rem', background: '#f2f8f2', padding: '0.85rem', borderRadius: '6px' }}>
                   Inventory levels are optimal. All items are in stock.
                 </div>
               ) : (
-                <div style={{ color: '#992222', fontSize: '0.85rem', background: '#fdf5f5', padding: '1rem', borderRadius: '6px' }}>
+                <div style={{ color: '#992222', fontSize: '0.85rem', background: '#fdf5f5', padding: '0.85rem', borderRadius: '6px' }}>
                   <strong>Low Stock Alerts ({lowStockCount})</strong>
                   <ul style={{ margin: '0.5rem 0 0 0', paddingLeft: '1rem' }}>
                     {stats.lowStockItems.map((item) => (
