@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import Header from '@/components/Header' // Adjust the import path for your header component if needed
+import Header from '@/components/AdminNav' // Adjust the import path for your header component if needed
 
 interface Product {
   id: string
