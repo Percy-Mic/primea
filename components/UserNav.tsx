@@ -73,7 +73,7 @@ export default function UserNav() {
 const styles: { [key: string]: React.CSSProperties } = {
   container: {
     display: 'flex',
-    alignItem: 'center',
+    alignItems: 'center', // Fixed property name here
     fontSize: '0.85rem',
   },
   loggedInContainer: {
