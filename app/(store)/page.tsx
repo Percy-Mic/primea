@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { User } from '@supabase/supabase-js'
 
 function ProductsCatalogContent() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -13,6 +14,10 @@ function ProductsCatalogContent() {
   const [search, setSearch] = useState('')
   const [sort, setSort] = useState('')
   const [loading, setLoading] = useState(true)
+  
+  // Auth state
+  const [user, setUser] = useState<User | null>(null)
+  const [authLoading, setAuthLoading] = useState(true)
 
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -27,25 +32,45 @@ function ProductsCatalogContent() {
     setSort(sortVal)
   }, [searchVal, sortVal])
 
-  // Check if the current user has active orders to show the "My Orders" badge link
+  // Track authentication state & active orders
   useEffect(() => {
-    async function checkClientOrders() {
+    async function checkUserAndOrders() {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      setUser(user)
+      setAuthLoading(false)
 
-      const { data, error } = await supabase
-        .from('orders')
-        .select('id')
-        .eq('user_id', user.id)
-        .limit(1)
+      if (user) {
+        const { data, error } = await supabase
+          .from('orders')
+          .select('id')
+          .eq('user_id', user.id)
+          .limit(1)
 
-      if (!error && data && data.length > 0) {
-        setHasOrders(true)
+        if (!error && data && data.length > 0) {
+          setHasOrders(true)
+        }
       }
     }
 
-    checkClientOrders()
+    checkUserAndOrders()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+      setAuthLoading(false)
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
   }, [supabase])
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut()
+    setUser(null)
+    setHasOrders(false)
+    router.push('/login')
+    router.refresh()
+  }
 
   const loadProducts = async () => {
     setLoading(true)
@@ -174,7 +199,7 @@ function ProductsCatalogContent() {
         .desktop-nav {
           display: none;
           align-items: center;
-          gap: 1.75rem;
+          gap: 1.5rem;
         }
         .nav-link {
           color: #c5bbb3;
@@ -211,6 +236,61 @@ function ProductsCatalogContent() {
           box-shadow: 0 0 6px #4ade80;
           border-radius: 50%;
         }
+        .auth-profile-box {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          border-left: 1px solid rgba(255, 255, 255, 0.15);
+          padding-left: 1.25rem;
+        }
+        .user-meta {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+        }
+        .auth-badge-logged {
+          font-size: 0.55rem;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          background-color: rgba(74, 222, 128, 0.15);
+          color: #4ade80;
+          padding: 0.1rem 0.35rem;
+          border-radius: 4px;
+          font-weight: 600;
+        }
+        .auth-badge-guest {
+          font-size: 0.55rem;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          background-color: rgba(255, 255, 255, 0.1);
+          color: #c5bbb3;
+          padding: 0.1rem 0.35rem;
+          border-radius: 4px;
+          font-weight: 600;
+        }
+        .user-email {
+          font-size: 0.75rem;
+          color: #fefdfa;
+          max-width: 160px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .btn-signout {
+          background: none;
+          border: 1px solid rgba(245, 242, 235, 0.2);
+          color: #f87171;
+          font-size: 0.7rem;
+          padding: 0.3rem 0.6rem;
+          border-radius: 12px;
+          cursor: pointer;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+        }
+        .btn-signout:hover {
+          background-color: rgba(248, 113, 113, 0.1);
+        }
         .menu-toggle {
           background: none;
           border: none;
@@ -245,13 +325,19 @@ function ProductsCatalogContent() {
         .mobile-nav-link:hover {
           color: #fefdfa;
         }
+        .mobile-auth-box {
+          border-top: 1px solid rgba(255, 255, 255, 0.1);
+          padding-top: 1rem;
+          display: flex;
+          flex-direction: column;
+          gap: 0.75rem;
+        }
         .mobile-btn-login {
           border: 1px solid rgba(245, 242, 235, 0.3);
           padding: 0.65rem;
           border-radius: 20px;
           text-align: center;
           color: #fefdfa;
-          margin-top: 0.25rem;
         }
         .mobile-btn-orders {
           display: inline-flex;
@@ -400,7 +486,31 @@ function ProductsCatalogContent() {
               My Orders
             </Link>
           )}
-          <Link href="/login" className="nav-link btn-login">Login</Link>
+
+          {/* Dynamic User Profile Indicator */}
+          {!authLoading && (
+            <div className="auth-profile-box">
+              {user ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <div className="user-meta">
+                    <span className="auth-badge-logged">Logged In</span>
+                    <span className="user-email" title={user.email || ''}>{user.email}</span>
+                  </div>
+                  <button onClick={handleSignOut} className="btn-signout">
+                    Sign Out
+                  </button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <div className="user-meta">
+                    <span className="auth-badge-guest">Guest Mode</span>
+                    <span className="user-email">Shopping as Guest</span>
+                  </div>
+                  <Link href="/login" className="nav-link btn-login">Login</Link>
+                </div>
+              )}
+            </div>
+          )}
         </nav>
 
         <button
@@ -441,9 +551,38 @@ function ProductsCatalogContent() {
               My Orders
             </Link>
           )}
-          <Link href="/login" className="mobile-nav-link mobile-btn-login" onClick={() => setMenuOpen(false)}>
-            Login
-          </Link>
+
+          {/* Mobile Auth Box */}
+          {!authLoading && (
+            <div className="mobile-auth-box">
+              {user ? (
+                <>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <span className="auth-badge-logged">Logged In</span>
+                      <div style={{ fontSize: '0.8rem', color: '#fefdfa', marginTop: '0.15rem' }}>{user.email}</div>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => { setMenuOpen(false); handleSignOut(); }} 
+                    style={{ width: '100%', padding: '0.5rem', background: 'rgba(248, 113, 113, 0.1)', border: '1px solid #f87171', color: '#f87171', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}
+                  >
+                    Sign Out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <span className="auth-badge-guest">Guest Mode</span>
+                    <div style={{ fontSize: '0.8rem', color: '#c5bbb3', marginTop: '0.15rem' }}>Shopping as Guest</div>
+                  </div>
+                  <Link href="/login" className="mobile-nav-link mobile-btn-login" onClick={() => setMenuOpen(false)}>
+                    Login / Register
+                  </Link>
+                </>
+              )}
+            </div>
+          )}
         </nav>
       )}
       
