@@ -41,9 +41,9 @@ export default function AdminHeader({
           flex-direction: column;
           gap: 0.85rem;
           width: 100%;
-          background: #ffffff;
+          background: #faf8f5;
           border-bottom: 1px solid #eae3d8;
-          padding: 1rem 1.25rem;
+          padding: 1.35rem 1.25rem 1rem 1.25rem;
           box-sizing: border-box;
         }
 
@@ -118,7 +118,7 @@ export default function AdminHeader({
           display: inline-flex;
           align-items: center;
           padding: 0.4rem 0.75rem;
-          background-color: #f7f4ef;
+          background-color: #ffffff;
           border: 1px solid #ded7cc;
           border-radius: 6px;
           font-size: 0.78rem;
@@ -130,7 +130,7 @@ export default function AdminHeader({
         }
 
         .nav-chip:hover {
-          background-color: #eee7dc;
+          background-color: #f4efe6;
           border-color: #b55933;
           color: #b55933;
         }
@@ -184,16 +184,17 @@ export default function AdminHeader({
           width: 280px;
           max-width: 80%;
           height: 100%;
-          background: #1f1815;
-          color: #f7f4ef;
+          background: #faf8f5;
+          color: #1f1815;
           padding: 1.5rem;
           display: flex;
           flex-direction: column;
           gap: 1.25rem;
-          box-shadow: -5px 0 25px rgba(0,0,0,0.2);
+          box-shadow: -5px 0 25px rgba(0,0,0,0.15);
           transform: translateX(100%);
           transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
           overflow-y: auto;
+          border-left: 1px solid #eae3d8;
         }
 
         .mobile-drawer-overlay.open .mobile-drawer {
@@ -204,14 +205,14 @@ export default function AdminHeader({
           display: flex;
           justify-content: space-between;
           align-items: center;
-          border-bottom: 1px solid rgba(255,255,255,0.1);
+          border-bottom: 1px solid #eae3d8;
           padding-bottom: 0.75rem;
         }
 
         .mobile-close-btn {
           background: none;
           border: none;
-          color: #f7f4ef;
+          color: #1f1815;
           font-size: 1.5rem;
           cursor: pointer;
         }
@@ -225,15 +226,16 @@ export default function AdminHeader({
         .mobile-links .nav-chip {
           width: 100%;
           justify-content: flex-start;
-          background-color: rgba(255,255,255,0.05);
-          border-color: rgba(255,255,255,0.1);
-          color: #f7f4ef;
+          background-color: #ffffff;
+          border-color: #ded7cc;
+          color: #3b332e;
           padding: 0.6rem 0.8rem;
         }
 
         .mobile-links .nav-chip:hover {
-          background-color: rgba(255,255,255,0.12);
-          color: #ffffff;
+          background-color: #f4efe6;
+          color: #b55933;
+          border-color: #b55933;
         }
 
         .modal-overlay {
@@ -341,7 +343,7 @@ export default function AdminHeader({
       >
         <div className="mobile-drawer" onClick={(e) => e.stopPropagation()}>
           <div className="mobile-drawer-header">
-            <span style={{ fontWeight: 700, fontSize: '1.1rem' }}>MENU</span>
+            <span style={{ fontWeight: 700, fontSize: '1.05rem', color: '#1f1815' }}>MENU</span>
             <button
               type="button"
               className="mobile-close-btn"
@@ -352,12 +354,12 @@ export default function AdminHeader({
             </button>
           </div>
 
-          <div style={{ fontSize: '0.85rem', background: 'rgba(255,255,255,0.06)', padding: '0.75rem', borderRadius: '6px' }}>
+          <div style={{ fontSize: '0.85rem', background: '#f4efe6', padding: '0.75rem', borderRadius: '6px', border: '1px solid #dfd7cc' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
               <span className="online-dot" />
-              <strong style={{ fontSize: '0.8rem', color: '#f7f4ef' }}>LOGGED IN</strong>
+              <strong style={{ fontSize: '0.75rem', color: '#3b332e' }}>LOGGED IN</strong>
             </div>
-            <div style={{ wordBreak: 'break-all', color: '#d0c9be', fontSize: '0.8rem' }}>{userEmail}</div>
+            <div style={{ wordBreak: 'break-all', color: '#595048', fontSize: '0.8rem', fontWeight: 500 }}>{userEmail}</div>
           </div>
 
           <div className="mobile-links">
@@ -400,7 +402,7 @@ export default function AdminHeader({
             </Link>
           </div>
 
-          <div style={{ marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+          <div style={{ marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid #eae3d8' }}>
             <button
               type="button"
               onClick={() => {
