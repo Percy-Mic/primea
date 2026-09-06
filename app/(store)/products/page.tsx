@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import UserNav from '@/components/UserNav'
 
 interface Product {
@@ -15,6 +15,7 @@ interface Product {
 }
 
 export default function ProductsPage() {
+  const router = useRouter()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
@@ -38,8 +39,7 @@ export default function ProductsPage() {
 
   // Functional Add to Cart Handler
   const handleAddToCart = (e: React.MouseEvent, product: Product) => {
-    e.preventDefault() // Prevents link navigation when clicking the button
-    e.stopPropagation()
+    e.stopPropagation() // Stop event from bubbling up to the card
 
     try {
       const existingCart = JSON.parse(localStorage.getItem('cart') || '[]')
@@ -159,7 +159,7 @@ export default function ProductsPage() {
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            text-decoration: none;
+            cursor: pointer;
             color: inherit;
             transition: transform 0.25s ease, box-shadow 0.25s ease;
           }
@@ -309,9 +309,9 @@ export default function ProductsPage() {
                 product.image_url || product.image || '/placeholder.png'
 
               return (
-                <Link
+                <div
                   key={product.id}
-                  href={`/products/${product.id}`}
+                  onClick={() => router.push(`/products/${product.id}`)}
                   className="product-card"
                 >
                   {/* Product Image Frame */}
@@ -407,7 +407,7 @@ export default function ProductsPage() {
                       Add to Cart
                     </button>
                   </div>
-                </Link>
+                </div>
               )
             })}
           </div>
