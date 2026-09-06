@@ -223,105 +223,72 @@ export default function InventoryManagementPage() {
           box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
 
-        .layout-body {
-          display: flex;
-          padding-top: 80px;
-          min-height: calc(100vh - 80px);
-          box-sizing: border-box;
-        }
-
-        .admin-sidebar {
-          width: 240px;
-          background-color: #ffffff;
-          border-right: 1px solid #e5e5e5;
-          display: flex;
-          flex-direction: column;
-          position: sticky;
-          top: 80px;
-          height: calc(100vh - 80px);
-          box-sizing: border-box;
-          padding: 1.5rem 1rem;
-          flex-shrink: 0;
-        }
-
-        .menu-btn-wrapper {
-          margin-bottom: 0.75rem;
-        }
-
-        .menu-toggle-btn {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.5rem;
+        /* Top Sub-Navigation Bar matching your other pages */
+        .sub-nav-bar {
+          position: fixed;
+          top: 73px; /* Adjust based on header height */
+          left: 0;
+          right: 0;
+          height: 52px;
           background: #ffffff;
-          border: 1px solid #d4d4d4;
-          color: #111111;
-          padding: 0.5rem 1rem;
-          border-radius: 8px;
-          font-weight: 600;
-          font-size: 0.9rem;
-          cursor: pointer;
-        }
-
-        .sidebar-divider {
-          height: 1px;
-          background-color: #e5e5e5;
-          margin-bottom: 1.25rem;
-        }
-
-        .sidebar-nav {
+          border-bottom: 1px solid #e5e5e5;
           display: flex;
-          flex-direction: column;
-          gap: 0.5rem;
-          flex: 1;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0 2rem;
+          z-index: 1050;
+          box-sizing: border-box;
         }
 
-        .sidebar-link {
-          padding: 0.6rem 0.8rem;
-          border-radius: 8px;
-          color: #404040;
+        .sub-nav-links {
+          display: flex;
+          gap: 1.5rem;
+          align-items: center;
+        }
+
+        .sub-nav-link {
           text-decoration: none;
-          font-size: 0.95rem;
+          color: #525252;
           font-weight: 500;
+          font-size: 0.92rem;
+          padding: 0.4rem 0.75rem;
+          border-radius: 6px;
           transition: all 0.15s ease;
         }
 
-        .sidebar-link:hover {
-          background-color: #f5f5f5;
+        .sub-nav-link:hover {
           color: #111111;
+          background-color: #f5f5f5;
         }
 
-        .sidebar-link.active {
+        .sub-nav-link.active {
           background-color: #1c1917;
           color: #ffffff;
           font-weight: 600;
         }
 
-        .sidebar-footer {
-          padding-top: 1rem;
-          border-top: 1px solid #e5e5e5;
-        }
-
-        .storefront-link {
+        .storefront-external-link {
           color: #c2410c;
           text-decoration: none;
           font-weight: 600;
           font-size: 0.9rem;
         }
 
-        .storefront-link:hover {
+        .storefront-external-link:hover {
           text-decoration: underline;
         }
 
         .main-content {
-          flex: 1;
-          overflow-x: hidden;
+          padding-top: 145px; /* Offset for fixed header + sub-nav */
+          padding-bottom: 3rem;
+          box-sizing: border-box;
         }
 
         .inventory-container {
           width: 100%;
           max-width: 1040px;
           margin: 0 auto;
-          padding: 2rem 1.5rem 3rem 1.5rem;
+          padding: 0 1.5rem;
           box-sizing: border-box;
         }
 
@@ -673,31 +640,13 @@ export default function InventoryManagementPage() {
         }
 
         @media (max-width: 768px) {
-          .layout-body {
-            flex-direction: column;
-            padding-top: 140px;
-          }
-          .admin-sidebar {
-            width: 100%;
-            height: auto;
-            position: static;
-            border-right: none;
-            border-bottom: 1px solid #e5e5e5;
-            padding: 1rem;
-          }
-          .sidebar-nav {
-            flex-direction: row;
+          .sub-nav-bar {
+            padding: 0 1rem;
             overflow-x: auto;
+          }
+          .sub-nav-links {
             gap: 0.75rem;
-          }
-          .sidebar-link {
             white-space: nowrap;
-          }
-          .sidebar-footer, .sidebar-divider, .menu-btn-wrapper {
-            display: none;
-          }
-          .inventory-container {
-            padding: 1rem 0.75rem;
           }
         }
       ` }} />
@@ -710,262 +659,254 @@ export default function InventoryManagementPage() {
         />
       </div>
 
-      <div className="layout-body">
-        {/* Sidebar Navigation */}
-        <aside className="admin-sidebar">
-          <div className="menu-btn-wrapper">
-            <button className="menu-toggle-btn">
-              <span>☰</span> Menu
+      {/* Top Sub-Navigation Bar */}
+      <div className="sub-nav-bar">
+        <div className="sub-nav-links">
+          <Link href="/admin/dashboard" className="sub-nav-link">
+            Dashboard
+          </Link>
+          <Link href="/admin/orders" className="sub-nav-link">
+            Orders
+          </Link>
+          <Link href="/admin/products" className="sub-nav-link active">
+            Inventory
+          </Link>
+          <Link href="/admin/products/add" className="sub-nav-link">
+            Add Product
+          </Link>
+        </div>
+        <div>
+          <Link href="/" target="_blank" className="storefront-external-link">
+            View Storefront →
+          </Link>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <main className="main-content">
+        <div className="inventory-container">
+          <div className="header-section">
+            <h1 className="page-title">Inventory Management</h1>
+          </div>
+
+          <div className="filter-card">
+            <input
+              type="text"
+              placeholder="Filter products by title..."
+              className="search-input"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <select
+              className="select-input"
+              value={sortOption}
+              onChange={(e) => setSortOption(e.target.value)}
+            >
+              <option value="newest">Sort by: Default (Newest)</option>
+              <option value="price-low">Price: Low to High</option>
+              <option value="price-high">Price: High to Low</option>
+              <option value="stock-low">Stock: Lowest First</option>
+            </select>
+            <button className="btn-apply" onClick={fetchProducts}>
+              Refresh
             </button>
           </div>
-          <div className="sidebar-divider" />
-          <nav className="sidebar-nav">
-            <Link href="/admin/dashboard" className="sidebar-link">
-              Dashboard
-            </Link>
-            <Link href="/admin/orders" className="sidebar-link">
-              Orders
-            </Link>
-            <Link href="/admin/products" className="sidebar-link active">
-              Inventory
-            </Link>
-            <Link href="/admin/products/add" className="sidebar-link">
-              Add Product
-            </Link>
-          </nav>
-          <div className="sidebar-footer">
-            <Link href="/" target="_blank" className="storefront-link">
-              View Storefront →
-            </Link>
-          </div>
-        </aside>
 
-        {/* Main Content Area */}
-        <main className="main-content">
-          <div className="inventory-container">
-            <div className="header-section">
-              <h1 className="page-title">Inventory Management</h1>
-            </div>
-
-            <div className="filter-card">
-              <input
-                type="text"
-                placeholder="Filter products by title..."
-                className="search-input"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <select
-                className="select-input"
-                value={sortOption}
-                onChange={(e) => setSortOption(e.target.value)}
-              >
-                <option value="newest">Sort by: Default (Newest)</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
-                <option value="stock-low">Stock: Lowest First</option>
-              </select>
-              <button className="btn-apply" onClick={fetchProducts}>
-                Refresh
-              </button>
-            </div>
-
-            <div className="inventory-card">
-              <table className="inventory-table">
-                <thead>
+          <div className="inventory-card">
+            <table className="inventory-table">
+              <thead>
+                <tr>
+                  <th>PRODUCT</th>
+                  <th>PRICE</th>
+                  <th>STOCK</th>
+                  <th style={{ textAlign: 'right' }}>ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
                   <tr>
-                    <th>PRODUCT</th>
-                    <th>PRICE</th>
-                    <th>STOCK</th>
-                    <th style={{ textAlign: 'right' }}>ACTIONS</th>
+                    <td colSpan={4} style={{ textAlign: 'center', padding: '3rem', color: '#737373' }}>
+                      Loading inventory...
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {loading ? (
-                    <tr>
-                      <td colSpan={4} style={{ textAlign: 'center', padding: '3rem', color: '#737373' }}>
-                        Loading inventory...
-                      </td>
-                    </tr>
-                  ) : filteredProducts.length > 0 ? (
-                    filteredProducts.map((p) => {
-                      const isAdding = addingId === p.id
-                      const imgUrl = p.image_url
+                ) : filteredProducts.length > 0 ? (
+                  filteredProducts.map((p) => {
+                    const isAdding = addingId === p.id
+                    const imgUrl = p.image_url
 
-                      return (
-                        <tr key={p.id}>
-                          <td>
-                            <div className="product-info-cell">
-                              {imgUrl ? (
-                                <img src={imgUrl} alt={p.title} className="product-thumb" />
-                              ) : (
-                                <div className="thumb-placeholder">No Image</div>
-                              )}
-                              <div>
-                                <div className="product-title">{p.title}</div>
-                                <div className="product-id">ID: {p.id}</div>
+                    return (
+                      <tr key={p.id}>
+                        <td>
+                          <div className="product-info-cell">
+                            {imgUrl ? (
+                              <img src={imgUrl} alt={p.title} className="product-thumb" />
+                            ) : (
+                              <div className="thumb-placeholder">No Image</div>
+                            )}
+                            <div>
+                              <div className="product-title">{p.title}</div>
+                              <div className="product-id">ID: {p.id}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="price-text">{formatCurrency(p.price)}</td>
+                        <td>
+                          <span className="stock-badge">{p.stock} in stock</span>
+                        </td>
+                        <td>
+                          <div className="actions-cell">
+                            {isAdding ? (
+                              <div className="add-box">
+                                <input
+                                  type="number"
+                                  className="add-input"
+                                  value={amountToAdd}
+                                  onChange={(e) => setAmountToAdd(Number(e.target.value))}
+                                  min="1"
+                                />
+                                <button
+                                  className="btn-apply"
+                                  style={{ padding: '0.5rem 0.8rem', fontSize: '0.82rem' }}
+                                  onClick={() => handleAddStock(p.id, p.stock)}
+                                >
+                                  + Add
+                                </button>
+                                <button className="btn-action" onClick={() => setAddingId(null)}>
+                                  Cancel
+                                </button>
                               </div>
-                            </div>
-                          </td>
-                          <td className="price-text">{formatCurrency(p.price)}</td>
-                          <td>
-                            <span className="stock-badge">{p.stock} in stock</span>
-                          </td>
-                          <td>
-                            <div className="actions-cell">
-                              {isAdding ? (
-                                <div className="add-box">
-                                  <input
-                                    type="number"
-                                    className="add-input"
-                                    value={amountToAdd}
-                                    onChange={(e) => setAmountToAdd(Number(e.target.value))}
-                                    min="1"
-                                  />
-                                  <button
-                                    className="btn-apply"
-                                    style={{ padding: '0.5rem 0.8rem', fontSize: '0.82rem' }}
-                                    onClick={() => handleAddStock(p.id, p.stock)}
-                                  >
-                                    + Add
-                                  </button>
-                                  <button className="btn-action" onClick={() => setAddingId(null)}>
-                                    Cancel
-                                  </button>
-                                </div>
-                              ) : (
-                                <>
-                                  <button
-                                    className="btn-action"
-                                    onClick={() => {
-                                      setAddingId(p.id)
-                                      setAmountToAdd(5)
-                                    }}
-                                  >
-                                    + Stock
-                                  </button>
-                                  <button
-                                    className="btn-action"
-                                    onClick={() => {
-                                      setEditingProduct(p)
-                                      setSelectedFile(null)
-                                      setPreviewUrl(null)
-                                    }}
-                                  >
-                                    Edit
-                                  </button>
-                                  <button
-                                    className="btn-action btn-delete-btn"
-                                    onClick={() => handleDeleteProduct(p.id)}
-                                  >
-                                    Delete
-                                  </button>
-                                </>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      )
-                    })
-                  ) : (
-                    <tr>
-                      <td colSpan={4} style={{ textAlign: 'center', padding: '3rem', color: '#737373' }}>
-                        No inventory products found.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+                            ) : (
+                              <>
+                                <button
+                                  className="btn-action"
+                                  onClick={() => {
+                                    setAddingId(p.id)
+                                    setAmountToAdd(5)
+                                  }}
+                                >
+                                  + Stock
+                                </button>
+                                <button
+                                  className="btn-action"
+                                  onClick={() => {
+                                    setEditingProduct(p)
+                                    setSelectedFile(null)
+                                    setPreviewUrl(null)
+                                  }}
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  className="btn-action btn-delete-btn"
+                                  onClick={() => handleDeleteProduct(p.id)}
+                                >
+                                  Delete
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan={4} style={{ textAlign: 'center', padding: '3rem', color: '#737373' }}>
+                      No inventory products found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
 
-            {editingProduct && (
-              <div className="modal-overlay">
-                <div className="modal-card">
-                  <h2 className="modal-title">Edit Product</h2>
-                  <form onSubmit={handleSaveProduct}>
-                    <div className="form-group">
-                      <label>Product Title</label>
+          {editingProduct && (
+            <div className="modal-overlay">
+              <div className="modal-card">
+                <h2 className="modal-title">Edit Product</h2>
+                <form onSubmit={handleSaveProduct}>
+                  <div className="form-group">
+                    <label>Product Title</label>
+                    <input
+                      type="text"
+                      value={editingProduct.title}
+                      onChange={(e) =>
+                        setEditingProduct({ ...editingProduct, title: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Price ($)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={editingProduct.price}
+                      onChange={(e) =>
+                        setEditingProduct({ ...editingProduct, price: Number(e.target.value) })
+                      }
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Stock Count</label>
+                    <input
+                      type="number"
+                      value={editingProduct.stock}
+                      onChange={(e) =>
+                        setEditingProduct({ ...editingProduct, stock: Number(e.target.value) })
+                      }
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>Product Image</label>
+                    <div className="image-upload-wrapper">
                       <input
-                        type="text"
-                        value={editingProduct.title}
-                        onChange={(e) =>
-                          setEditingProduct({ ...editingProduct, title: e.target.value })
-                        }
-                        required
+                        type="file"
+                        accept="image/*"
+                        className="file-hidden-input"
+                        onChange={handleFileChange}
                       />
-                    </div>
-
-                    <div className="form-group">
-                      <label>Price ($)</label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={editingProduct.price}
-                        onChange={(e) =>
-                          setEditingProduct({ ...editingProduct, price: Number(e.target.value) })
-                        }
-                        required
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>Stock Count</label>
-                      <input
-                        type="number"
-                        value={editingProduct.stock}
-                        onChange={(e) =>
-                          setEditingProduct({ ...editingProduct, stock: Number(e.target.value) })
-                        }
-                        required
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>Product Image</label>
-                      <div className="image-upload-wrapper">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="file-hidden-input"
-                          onChange={handleFileChange}
-                        />
-                        <div className="upload-content">
-                          {previewUrl || editingProduct.image_url ? (
-                            <img
-                              src={previewUrl || editingProduct.image_url}
-                              alt="Preview"
-                              className="preview-img"
-                            />
-                          ) : (
-                            <svg className="upload-icon" viewBox="0 0 24 24">
-                              <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" />
-                            </svg>
-                          )}
-                          <div className="upload-text">Click or drag image to upload</div>
-                          <div className="upload-subtext">SVG, PNG, JPG or GIF (max. 800x800px)</div>
-                        </div>
+                      <div className="upload-content">
+                        {previewUrl || editingProduct.image_url ? (
+                          <img
+                            src={previewUrl || editingProduct.image_url}
+                            alt="Preview"
+                            className="preview-img"
+                          />
+                        ) : (
+                          <svg className="upload-icon" viewBox="0 0 24 24">
+                            <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" />
+                          </svg>
+                        )}
+                        <div className="upload-text">Click or drag image to upload</div>
+                        <div className="upload-subtext">SVG, PNG, JPG or GIF (max. 800x800px)</div>
                       </div>
                     </div>
+                  </div>
 
-                    <div className="modal-actions">
-                      <button
-                        type="button"
-                        className="btn-action"
-                        onClick={() => setEditingProduct(null)}
-                      >
-                        Cancel
-                      </button>
-                      <button type="submit" className="btn-apply" disabled={isSaving}>
-                        {isSaving ? 'Saving...' : 'Save Changes'}
-                      </button>
-                    </div>
-                  </form>
-                </div>
+                  <div className="modal-actions">
+                    <button
+                      type="button"
+                      className="btn-action"
+                      onClick={() => setEditingProduct(null)}
+                    >
+                      Cancel
+                    </button>
+                    <button type="submit" className="btn-apply" disabled={isSaving}>
+                      {isSaving ? 'Saving...' : 'Save Changes'}
+                    </button>
+                  </div>
+                </form>
               </div>
-            )}
-          </div>
-        </main>
-      </div>
+            </div>
+          )}
+        </div>
+      </main>
     </div>
   )
 }
