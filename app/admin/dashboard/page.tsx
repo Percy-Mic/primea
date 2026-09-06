@@ -86,7 +86,7 @@ export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
-  // 1. Verify Admin Authentication and fetch real user email
+  // Verify Admin Authentication and fetch real user email
   useEffect(() => {
     const checkAdminAccess = async () => {
       const supabase = createClient()
@@ -97,10 +97,9 @@ export default function AdminDashboardPage() {
         return
       }
 
-      const email = session.user.email || 'admin@primea.com'
+      const email = session.user.email || 'percymicnono@gmail.com'
       setUserEmail(email)
 
-      // Check admin status against profiles / roles table if applicable
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('is_admin, role')
@@ -108,8 +107,6 @@ export default function AdminDashboardPage() {
         .single()
 
       if (profileError || (!profile?.is_admin && profile?.role !== 'admin')) {
-        // Fallback or explicit block if not an admin
-        // Adjust condition based on your exact schema columns (e.g., is_admin or role)
         console.warn('Access check warning: Verify user role settings.')
       }
 
@@ -220,27 +217,35 @@ export default function AdminDashboardPage() {
   const lowStockCount = stats.lowStockItems?.length || 0
 
   return (
-    <div className="dashboard-container">
+    <div className="dashboard-page-wrapper">
       <style>{`
+        /* Page wrapper handles padding so content doesn't hide under the fixed header */
+        .dashboard-page-wrapper {
+          padding-top: 140px; 
+          min-height: 100vh;
+          box-sizing: border-box;
+        }
+
         .dashboard-container {
           max-width: 1200px;
           margin: 0 auto;
           width: 100%;
           box-sizing: border-box;
+          padding: 0 1rem 2rem 1rem;
           overflow-x: hidden;
         }
 
         /* Fixed Top Header Wrapper */
-        .sticky-header-wrapper {
-          position: sticky;
+        .fixed-top-header {
+          position: fixed;
           top: 0;
-          z-index: 100;
-          background-color: #faf8f5; /* Matches layout background color seamlessly */
-          backdrop-filter: blur(8px);
-          padding-top: 1rem;
-          padding-bottom: 0.75rem;
+          left: 0;
+          right: 0;
+          z-index: 1000;
+          background-color: #ffffff; /* Solid background color matching the card styles */
           border-bottom: 1px solid #e8e2d9;
-          margin-bottom: 1.5rem;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+          padding: 0.75rem 2rem;
         }
 
         .header-actions {
@@ -544,12 +549,16 @@ export default function AdminDashboardPage() {
             color: #000000 !important;
           }
 
-          .sticky-header-wrapper,
+          .fixed-top-header,
           .header-actions,
           .filter-bar,
           a,
           button {
             display: none !important;
+          }
+
+          .dashboard-page-wrapper {
+            padding-top: 0 !important;
           }
 
           .dashboard-container {
@@ -568,8 +577,8 @@ export default function AdminDashboardPage() {
         }
       `}</style>
 
-      {/* Fixed Sticky Header with Background Color Match */}
-      <div className="sticky-header-wrapper">
+      {/* Fixed Top Header with solid background color matching cards */}
+      <div className="fixed-top-header">
         <AdminHeader
           title="Storefront Monitor"
           description="Real-time store progress and inventory analytics report"
@@ -618,194 +627,196 @@ export default function AdminDashboardPage() {
         />
       </div>
 
-      {/* Date Filter Bar */}
-      <div className="filter-bar">
-        <span className="filter-label">Viewing Period:</span>
-        <select
-          value={selectedMonth}
-          onChange={(e) => setSelectedMonth(Number(e.target.value))}
-          className="filter-select"
-        >
-          {MONTH_NAMES.map((name, index) => (
-            <option key={index} value={index}>
-              {name}
-            </option>
-          ))}
-        </select>
+      <div className="dashboard-container">
+        {/* Date Filter Bar */}
+        <div className="filter-bar">
+          <span className="filter-label">Viewing Period:</span>
+          <select
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(Number(e.target.value))}
+            className="filter-select"
+          >
+            {MONTH_NAMES.map((name, index) => (
+              <option key={index} value={index}>
+                {name}
+              </option>
+            ))}
+          </select>
 
-        <select
-          value={selectedYear}
-          onChange={(e) => setSelectedYear(Number(e.target.value))}
-          className="filter-select"
-        >
-          {[2024, 2025, 2026, 2027].map((year) => (
-            <option key={year} value={year}>
-              {year}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Lifetime Key Metrics */}
-      <div className="metrics-grid metrics-grid-3">
-        <div className="metric-card">
-          <div className="metric-header">
-            <span className="metric-label">Lifetime Revenue</span>
-          </div>
-          <div className="metric-value">{loading ? '...' : formatCurrency(stats.revenue)}</div>
+          <select
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(Number(e.target.value))}
+            className="filter-select"
+          >
+            {[2024, 2025, 2026, 2027].map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
         </div>
 
-        <div className="metric-card">
-          <div className="metric-header">
-            <span className="metric-label">Completed Orders</span>
-          </div>
-          <div className="metric-value">{loading ? '...' : stats.totalOrders}</div>
-        </div>
-
-        <div className="metric-card">
-          <div className="metric-header">
-            <span className="metric-label">Active Products</span>
-          </div>
-          <div className="metric-value">{loading ? '...' : stats.activeProducts}</div>
-        </div>
-      </div>
-
-      {/* Monthly, Yearly & Comparison Grid */}
-      <div className="metrics-grid metrics-grid-4">
-        <div className="metric-card">
-          <div className="metric-header">
-            <span className="metric-label">{MONTH_NAMES[selectedMonth]} Revenue</span>
-          </div>
-          <div className="metric-value">{loading ? '...' : formatCurrency(summaries.monthly.revenue)}</div>
-          <div className="metric-sublabel">
-            {loading ? '...' : `${summaries.monthly.ordersCount} orders`}
-          </div>
-          {!loading && renderGrowthBadge(summaries.monthly.revenueGrowth)}
-        </div>
-
-        <div className="metric-card">
-          <div className="metric-header">
-            <span className="metric-label">{selectedYear} Year Total</span>
-          </div>
-          <div className="metric-value">{loading ? '...' : formatCurrency(summaries.yearly.revenue)}</div>
-          <div className="metric-sublabel">{loading ? '...' : `${summaries.yearly.ordersCount} orders`}</div>
-        </div>
-
-        <div className="metric-card">
-          <div className="metric-header">
-            <span className="metric-label">Avg Order Value</span>
-          </div>
-          <div className="metric-value">{loading ? '...' : formatCurrency(analytics.averageOrderValue)}</div>
-          <div className="metric-sublabel">Per completed transaction</div>
-        </div>
-
-        <div className="metric-card">
-          <div className="metric-header">
-            <span className="metric-label">Pending Orders</span>
-          </div>
-          <div className="metric-value">{loading ? '...' : analytics.pendingOrdersCount}</div>
-          <div className="metric-sublabel">Requires processing</div>
-        </div>
-      </div>
-
-      {/* Progress & Inventory Bar */}
-      <div className="progress-bar-card">
-        <div className="progress-stat-item">
-          <span className="progress-stat-label">Stock Units Tracked</span>
-          <span className="progress-stat-val">{loading ? '...' : `${stats.totalUnits || 0} Units`}</span>
-        </div>
-        <div className="progress-stat-item">
-          <span className="progress-stat-label">Inventory Valuation</span>
-          <span className="progress-stat-val">{loading ? '...' : formatCurrency(stats.totalInventoryValue || 0)}</span>
-        </div>
-        <div className="progress-stat-item">
-          <span className="progress-stat-label">Low Stock Items</span>
-          <span className="progress-stat-val" style={{ color: lowStockCount > 0 ? '#a82323' : '#275e27' }}>
-            {loading ? '...' : lowStockCount}
-          </span>
-        </div>
-        <div className="progress-stat-item">
-          <span className="progress-stat-label">Storefront Health</span>
-          <span className="progress-stat-val" style={{ color: '#275e27' }}>
-            {loading ? '...' : 'Operational'}
-          </span>
-        </div>
-      </div>
-
-      {/* Recent Activity Section */}
-      <div className="content-grid">
-        <div className="dashboard-section">
-          <div className="section-title-wrap">
-            <h2 className="section-title">Recent Orders</h2>
-            <Link href="/admin/orders" style={{ fontSize: '0.8rem', color: '#c0633b', textDecoration: 'none', fontWeight: 600 }}>
-              View All →
-            </Link>
+        {/* Lifetime Key Metrics */}
+        <div className="metrics-grid metrics-grid-3">
+          <div className="metric-card">
+            <div className="metric-header">
+              <span className="metric-label">Lifetime Revenue</span>
+            </div>
+            <div className="metric-value">{loading ? '...' : formatCurrency(stats.revenue)}</div>
           </div>
 
-          {loading ? (
-            <p style={{ fontSize: '0.85rem', color: '#8c827a', margin: '1rem 0' }}>Loading orders...</p>
-          ) : recentOrders.length === 0 ? (
-            <p style={{ fontSize: '0.85rem', color: '#8c827a', margin: '1rem 0' }}>No recent orders found.</p>
-          ) : (
-            <div className="table-responsive">
-              <table className="orders-table">
-                <thead>
-                  <tr>
-                    <th>Order ID</th>
-                    <th>Customer</th>
-                    <th>Total</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentOrders.map((order) => (
-                    <tr key={order.id}>
-                      <td style={{ fontWeight: 600 }}>{order.id}</td>
-                      <td>{order.customer}</td>
-                      <td>{formatCurrency(order.total)}</td>
-                      <td>
-                        <span className={`status-badge ${order.status?.toLowerCase() === 'completed' ? 'status-completed' : 'status-processing'}`}>
-                          {order.status}
-                        </span>
-                      </td>
+          <div className="metric-card">
+            <div className="metric-header">
+              <span className="metric-label">Completed Orders</span>
+            </div>
+            <div className="metric-value">{loading ? '...' : stats.totalOrders}</div>
+          </div>
+
+          <div className="metric-card">
+            <div className="metric-header">
+              <span className="metric-label">Active Products</span>
+            </div>
+            <div className="metric-value">{loading ? '...' : stats.activeProducts}</div>
+          </div>
+        </div>
+
+        {/* Monthly, Yearly & Comparison Grid */}
+        <div className="metrics-grid metrics-grid-4">
+          <div className="metric-card">
+            <div className="metric-header">
+              <span className="metric-label">{MONTH_NAMES[selectedMonth]} Revenue</span>
+            </div>
+            <div className="metric-value">{loading ? '...' : formatCurrency(summaries.monthly.revenue)}</div>
+            <div className="metric-sublabel">
+              {loading ? '...' : `${summaries.monthly.ordersCount} orders`}
+            </div>
+            {!loading && renderGrowthBadge(summaries.monthly.revenueGrowth)}
+          </div>
+
+          <div className="metric-card">
+            <div className="metric-header">
+              <span className="metric-label">{selectedYear} Year Total</span>
+            </div>
+            <div className="metric-value">{loading ? '...' : formatCurrency(summaries.yearly.revenue)}</div>
+            <div className="metric-sublabel">{loading ? '...' : `${summaries.yearly.ordersCount} orders`}</div>
+          </div>
+
+          <div className="metric-card">
+            <div className="metric-header">
+              <span className="metric-label">Avg Order Value</span>
+            </div>
+            <div className="metric-value">{loading ? '...' : formatCurrency(analytics.averageOrderValue)}</div>
+            <div className="metric-sublabel">Per completed transaction</div>
+          </div>
+
+          <div className="metric-card">
+            <div className="metric-header">
+              <span className="metric-label">Pending Orders</span>
+            </div>
+            <div className="metric-value">{loading ? '...' : analytics.pendingOrdersCount}</div>
+            <div className="metric-sublabel">Requires processing</div>
+          </div>
+        </div>
+
+        {/* Progress & Inventory Bar */}
+        <div className="progress-bar-card">
+          <div className="progress-stat-item">
+            <span className="progress-stat-label">Stock Units Tracked</span>
+            <span className="progress-stat-val">{loading ? '...' : `${stats.totalUnits || 0} Units`}</span>
+          </div>
+          <div className="progress-stat-item">
+            <span className="progress-stat-label">Inventory Valuation</span>
+            <span className="progress-stat-val">{loading ? '...' : formatCurrency(stats.totalInventoryValue || 0)}</span>
+          </div>
+          <div className="progress-stat-item">
+            <span className="progress-stat-label">Low Stock Items</span>
+            <span className="progress-stat-val" style={{ color: lowStockCount > 0 ? '#a82323' : '#275e27' }}>
+              {loading ? '...' : lowStockCount}
+            </span>
+          </div>
+          <div className="progress-stat-item">
+            <span className="progress-stat-label">Storefront Health</span>
+            <span className="progress-stat-val" style={{ color: '#275e27' }}>
+              {loading ? '...' : 'Operational'}
+            </span>
+          </div>
+        </div>
+
+        {/* Recent Activity Section */}
+        <div className="content-grid">
+          <div className="dashboard-section">
+            <div className="section-title-wrap">
+              <h2 className="section-title">Recent Orders</h2>
+              <Link href="/admin/orders" style={{ fontSize: '0.8rem', color: '#c0633b', textDecoration: 'none', fontWeight: 600 }}>
+                View All →
+              </Link>
+            </div>
+
+            {loading ? (
+              <p style={{ fontSize: '0.85rem', color: '#8c827a', margin: '1rem 0' }}>Loading orders...</p>
+            ) : recentOrders.length === 0 ? (
+              <p style={{ fontSize: '0.85rem', color: '#8c827a', margin: '1rem 0' }}>No recent orders found.</p>
+            ) : (
+              <div className="table-responsive">
+                <table className="orders-table">
+                  <thead>
+                    <tr>
+                      <th>Order ID</th>
+                      <th>Customer</th>
+                      <th>Total</th>
+                      <th>Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-
-        <div className="dashboard-section">
-          <div className="section-title-wrap">
-            <h2 className="section-title">Inventory Health</h2>
-            <Link href="/admin/products" style={{ fontSize: '0.8rem', color: '#c0633b', textDecoration: 'none', fontWeight: 600 }}>
-              Manage →
-            </Link>
+                  </thead>
+                  <tbody>
+                    {recentOrders.map((order) => (
+                      <tr key={order.id}>
+                        <td style={{ fontWeight: 600 }}>{order.id}</td>
+                        <td>{order.customer}</td>
+                        <td>{formatCurrency(order.total)}</td>
+                        <td>
+                          <span className={`status-badge ${order.status?.toLowerCase() === 'completed' ? 'status-completed' : 'status-processing'}`}>
+                            {order.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
 
-          {loading ? (
-            <p style={{ fontSize: '0.85rem', color: '#8c827a' }}>Checking stock...</p>
-          ) : lowStockCount === 0 ? (
-            <div className="alert-box-success">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                <polyline points="22 4 12 14.01 9 11.01" />
-              </svg>
-              <span>Inventory levels look good. All items are in stock.</span>
+          <div className="dashboard-section">
+            <div className="section-title-wrap">
+              <h2 className="section-title">Inventory Health</h2>
+              <Link href="/admin/products" style={{ fontSize: '0.8rem', color: '#c0633b', textDecoration: 'none', fontWeight: 600 }}>
+                Manage →
+              </Link>
             </div>
-          ) : (
-            <div className="alert-box-warning">
-              <strong style={{ fontWeight: 700 }}>Low Stock Alerts ({lowStockCount})</strong>
-              <ul style={{ margin: 0, paddingLeft: '1.2rem' }}>
-                {stats.lowStockItems.map((item) => (
-                  <li key={item.id}>
-                    {item.title} — <strong>{item.stock} left</strong>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+
+            {loading ? (
+              <p style={{ fontSize: '0.85rem', color: '#8c827a' }}>Checking stock...</p>
+            ) : lowStockCount === 0 ? (
+              <div className="alert-box-success">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                  <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+                <span>Inventory levels look good. All items are in stock.</span>
+              </div>
+            ) : (
+              <div className="alert-box-warning">
+                <strong style={{ fontWeight: 700 }}>Low Stock Alerts ({lowStockCount})</strong>
+                <ul style={{ margin: 0, paddingLeft: '1.2rem' }}>
+                  {stats.lowStockItems.map((item) => (
+                    <li key={item.id}>
+                      {item.title} — <strong>{item.stock} left</strong>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
