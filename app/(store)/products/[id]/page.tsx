@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import AddToCartButton from '@/components/AddToCartButton'
+import UserNav from '@/components/UserNav'
 
 interface ProductPageProps {
   params: Promise<{ id: string }>
@@ -136,14 +137,30 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   return (
     <div className="product-details-page">
+      {/* Fixed Custom UserNav Header Container */}
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 1000,
+          width: '100%',
+          backgroundColor: '#faf8f5',
+        }}
+      >
+        <UserNav />
+      </div>
+
       <style>{`
         .product-details-page {
           background-color: #faf8f5;
           min-height: 100vh;
           font-family: serif;
           color: #1f1815;
-          padding-top: 160px;
+          padding-top: 100px;
           padding-bottom: 5rem;
+          position: relative;
         }
         .container {
           max-width: 1100px;
