@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import AdminHeader from '@/components/AdminNav'
 
@@ -58,6 +58,7 @@ const MONTH_NAMES = [
 
 export default function AdminDashboardPage() {
   const router = useRouter()
+  const pathname = usePathname()
   const currentDate = new Date()
   const [selectedMonth, setSelectedMonth] = useState<number>(currentDate.getMonth())
   const [selectedYear, setSelectedYear] = useState<number>(currentDate.getFullYear())
@@ -86,7 +87,6 @@ export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
-  // Verify Admin Authentication and fetch real user email
   useEffect(() => {
     const checkAdminAccess = async () => {
       const supabase = createClient()
@@ -217,49 +217,124 @@ export default function AdminDashboardPage() {
   const lowStockCount = stats.lowStockItems?.length || 0
 
   return (
-    <div className="dashboard-page-wrapper">
+    <div className="admin-layout-wrapper">
       <style>{`
-        /* Page wrapper handles padding so content doesn't hide under the fixed header */
-        .dashboard-page-wrapper {
-          padding-top: 140px; 
+        body {
+          margin: 0;
+          background-color: #fcfbfa;
+          font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        .admin-layout-wrapper {
+          display: flex;
           min-height: 100vh;
+          position: relative;
+        }
+
+        /* Fixed Left Sidebar */
+        .admin-sidebar {
+          width: 240px;
+          background-color: #ffffff;
+          border-right: 1px solid #e8e2d9;
+          display: flex;
+          flex-direction: column;
+          position: fixed;
+          top: 0;
+          bottom: 0;
+          left: 0;
+          z-index: 1001;
+          padding: 1.5rem 1rem;
           box-sizing: border-box;
         }
 
-        .dashboard-container {
-          max-width: 1200px;
-          margin: 0 auto;
-          width: 100%;
+        .sidebar-heading {
+          font-size: 0.7rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          color: #8c827a;
+          margin-bottom: 0.75rem;
+          padding-left: 0.5rem;
+        }
+
+        .sidebar-nav-list {
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+          list-style: none;
+          padding: 0;
+          margin: 0 0 auto 0;
+        }
+
+        .sidebar-link {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 0.65rem 0.75rem;
+          border-radius: 8px;
+          font-size: 0.875rem;
+          font-weight: 600;
+          color: #3b332e;
+          text-decoration: none;
+          transition: all 0.2s ease;
+        }
+
+        .sidebar-link:hover {
+          background-color: #f7f4ef;
+          color: #c0633b;
+        }
+
+        .sidebar-link.active {
+          background-color: #1f1815;
+          color: #ffffff;
+        }
+
+        .sidebar-footer {
+          border-top: 1px solid #f2ede4;
+          padding-top: 1rem;
+          margin-top: auto;
+        }
+
+        /* Main Content Area beside Sidebar */
+        .admin-main-content {
+          margin-left: 240px;
+          flex: 1;
+          display: flex;
+          flex-direction: column;
           box-sizing: border-box;
-          padding: 0 1rem 2rem 1rem;
-          overflow-x: hidden;
+          padding-top: 140px; /* leaves room for fixed top header */
+          min-height: 100vh;
         }
 
         /* Fixed Top Header Wrapper */
         .fixed-top-header {
           position: fixed;
           top: 0;
-          left: 0;
+          left: 240px;
           right: 0;
           z-index: 1000;
-          background-color: #ffffff; /* Solid background color matching the card styles */
+          background-color: #ffffff;
           border-bottom: 1px solid #e8e2d9;
           box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
           padding: 0.75rem 2rem;
+          box-sizing: border-box;
         }
 
-        .header-actions {
-          display: flex;
-          gap: 0.5rem;
-          align-items: center;
-          flex-wrap: wrap;
+        .dashboard-container {
+          max-width: 1150px;
+          margin: 0 auto;
           width: 100%;
+          box-sizing: border-box;
+          padding: 0 1.5rem 2.5rem 1.5rem;
         }
 
-        @media (min-width: 640px) {
-          .header-actions {
-            width: auto;
-          }
+        .dashboard-actions-bar {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 1.5rem;
+          flex-wrap: wrap;
+          gap: 1rem;
         }
 
         .filter-bar {
@@ -270,7 +345,6 @@ export default function AdminDashboardPage() {
           border: 1px solid #e8e2d9;
           padding: 0.75rem 1rem;
           border-radius: 10px;
-          margin-bottom: 1.5rem;
           flex-wrap: wrap;
         }
 
@@ -280,13 +354,6 @@ export default function AdminDashboardPage() {
           text-transform: uppercase;
           letter-spacing: 0.05em;
           color: #8c827a;
-          width: 100%;
-        }
-
-        @media (min-width: 480px) {
-          .filter-label {
-            width: auto;
-          }
         }
 
         .filter-select {
@@ -298,7 +365,12 @@ export default function AdminDashboardPage() {
           font-weight: 600;
           color: #1f1815;
           cursor: pointer;
-          flex: 1;
+        }
+
+        .action-buttons-group {
+          display: flex;
+          gap: 0.5rem;
+          align-items: center;
         }
 
         .btn-action {
@@ -306,7 +378,7 @@ export default function AdminDashboardPage() {
           align-items: center;
           justify-content: center;
           gap: 0.4rem;
-          padding: 0.55rem 0.9rem;
+          padding: 0.6rem 1rem;
           background-color: #ffffff;
           color: #1f1815;
           border: 1px solid #dcd5ca;
@@ -314,16 +386,8 @@ export default function AdminDashboardPage() {
           font-size: 0.85rem;
           font-weight: 600;
           cursor: pointer;
-          flex: 1;
           box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
           transition: all 0.2s ease;
-        }
-
-        @media (min-width: 640px) {
-          .btn-action {
-            flex: initial;
-            padding: 0.6rem 1.15rem;
-          }
         }
 
         .btn-action:hover {
@@ -395,7 +459,6 @@ export default function AdminDashboardPage() {
           font-weight: 700;
           color: #1f1815;
           line-height: 1.2;
-          word-break: break-word;
         }
 
         .progress-bar-card {
@@ -433,7 +496,6 @@ export default function AdminDashboardPage() {
           font-weight: 700;
           color: #1f1815;
           margin-top: 0.15rem;
-          word-break: break-word;
         }
 
         .content-grid {
@@ -499,7 +561,6 @@ export default function AdminDashboardPage() {
         .table-responsive {
           width: 100%;
           overflow-x: auto;
-          -webkit-overflow-scrolling: touch;
         }
 
         .orders-table {
@@ -544,54 +605,96 @@ export default function AdminDashboardPage() {
         }
 
         @media print {
-          body {
-            background-color: #ffffff !important;
-            color: #000000 !important;
-          }
-
+          .admin-sidebar,
           .fixed-top-header,
-          .header-actions,
-          .filter-bar,
+          .dashboard-actions-bar,
           a,
           button {
             display: none !important;
           }
-
-          .dashboard-page-wrapper {
+          .admin-main-content {
+            margin-left: 0 !important;
             padding-top: 0 !important;
-          }
-
-          .dashboard-container {
-            max-width: 100% !important;
-            margin: 0 !important;
-            padding: 0 !important;
-          }
-
-          .dashboard-section,
-          .metric-card,
-          .progress-bar-card {
-            border: 1px solid #ccc !important;
-            box-shadow: none !important;
-            break-inside: avoid;
           }
         }
       `}</style>
 
-      {/* Fixed Top Header with solid background color matching cards */}
-      <div className="fixed-top-header">
-        <AdminHeader
-          title="Storefront Monitor"
-          description="Real-time store progress and inventory analytics report"
-          userEmail={userEmail}
-          onLogout={handleLogout}
-          action={
-            <div className="header-actions">
-              <Link href="/admin/settings" className="btn-action" style={{ textDecoration: 'none' }}>
-                <span>Edit Profile</span>
-              </Link>
-              <Link href="/admin/team" className="btn-action" style={{ textDecoration: 'none' }}>
-                <span>Admins</span>
-              </Link>
+      {/* Left Sidebar */}
+      <aside className="admin-sidebar">
+        <div className="sidebar-heading">Management</div>
+        <ul className="sidebar-nav-list">
+          <li>
+            <Link href="/admin/dashboard" className={`sidebar-link ${pathname === '/admin/dashboard' ? 'active' : ''}`}>
+              📊 Dashboard
+            </Link>
+          </li>
+          <li>
+            <Link href="/admin/orders" className={`sidebar-link ${pathname === '/admin/orders' ? 'active' : ''}`}>
+              📦 Orders
+            </Link>
+          </li>
+          <li>
+            <Link href="/admin/products" className={`sidebar-link ${pathname === '/admin/products' ? 'active' : ''}`}>
+              🏷️ Inventory
+            </Link>
+          </li>
+          <li>
+            <Link href="/admin/products/new" className={`sidebar-link ${pathname === '/admin/products/new' ? 'active' : ''}`}>
+              ➕ Add Product
+            </Link>
+          </li>
+        </ul>
+
+        <div className="sidebar-footer">
+          <Link href="/" target="_blank" className="sidebar-link" style={{ color: '#c0633b' }}>
+            🏠 View Storefront
+          </Link>
+        </div>
+      </aside>
+
+      {/* Main Content Pane */}
+      <div className="admin-main-content">
+        {/* Fixed Top Header */}
+        <div className="fixed-top-header">
+          <AdminHeader
+            title="Storefront Monitor"
+            description="Real-time store progress and inventory analytics report"
+            userEmail={userEmail}
+            onLogout={handleLogout}
+          />
+        </div>
+
+        <div className="dashboard-container">
+          {/* Dashboard Actions & Filter Bar */}
+          <div className="dashboard-actions-bar">
+            <div className="filter-bar">
+              <span className="filter-label">Viewing Period:</span>
+              <select
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(Number(e.target.value))}
+                className="filter-select"
+              >
+                {MONTH_NAMES.map((name, index) => (
+                  <option key={index} value={index}>
+                    {name}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(Number(e.target.value))}
+                className="filter-select"
+              >
+                {[2024, 2025, 2026, 2027].map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="action-buttons-group">
               <button
                 type="button"
                 onClick={fetchDashboardData}
@@ -599,8 +702,8 @@ export default function AdminDashboardPage() {
                 className="btn-action"
               >
                 <svg
-                  width="16"
-                  height="16"
+                  width="15"
+                  height="15"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -615,7 +718,7 @@ export default function AdminDashboardPage() {
               </button>
 
               <button type="button" onClick={handlePrint} className="btn-action">
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <polyline points="6 9 6 2 18 2 18 9" />
                   <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
                   <rect x="6" y="14" width="12" height="8" />
@@ -623,199 +726,169 @@ export default function AdminDashboardPage() {
                 <span>Print</span>
               </button>
             </div>
-          }
-        />
-      </div>
-
-      <div className="dashboard-container">
-        {/* Date Filter Bar */}
-        <div className="filter-bar">
-          <span className="filter-label">Viewing Period:</span>
-          <select
-            value={selectedMonth}
-            onChange={(e) => setSelectedMonth(Number(e.target.value))}
-            className="filter-select"
-          >
-            {MONTH_NAMES.map((name, index) => (
-              <option key={index} value={index}>
-                {name}
-              </option>
-            ))}
-          </select>
-
-          <select
-            value={selectedYear}
-            onChange={(e) => setSelectedYear(Number(e.target.value))}
-            className="filter-select"
-          >
-            {[2024, 2025, 2026, 2027].map((year) => (
-              <option key={year} value={year}>
-                {year}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Lifetime Key Metrics */}
-        <div className="metrics-grid metrics-grid-3">
-          <div className="metric-card">
-            <div className="metric-header">
-              <span className="metric-label">Lifetime Revenue</span>
-            </div>
-            <div className="metric-value">{loading ? '...' : formatCurrency(stats.revenue)}</div>
           </div>
 
-          <div className="metric-card">
-            <div className="metric-header">
-              <span className="metric-label">Completed Orders</span>
-            </div>
-            <div className="metric-value">{loading ? '...' : stats.totalOrders}</div>
-          </div>
-
-          <div className="metric-card">
-            <div className="metric-header">
-              <span className="metric-label">Active Products</span>
-            </div>
-            <div className="metric-value">{loading ? '...' : stats.activeProducts}</div>
-          </div>
-        </div>
-
-        {/* Monthly, Yearly & Comparison Grid */}
-        <div className="metrics-grid metrics-grid-4">
-          <div className="metric-card">
-            <div className="metric-header">
-              <span className="metric-label">{MONTH_NAMES[selectedMonth]} Revenue</span>
-            </div>
-            <div className="metric-value">{loading ? '...' : formatCurrency(summaries.monthly.revenue)}</div>
-            <div className="metric-sublabel">
-              {loading ? '...' : `${summaries.monthly.ordersCount} orders`}
-            </div>
-            {!loading && renderGrowthBadge(summaries.monthly.revenueGrowth)}
-          </div>
-
-          <div className="metric-card">
-            <div className="metric-header">
-              <span className="metric-label">{selectedYear} Year Total</span>
-            </div>
-            <div className="metric-value">{loading ? '...' : formatCurrency(summaries.yearly.revenue)}</div>
-            <div className="metric-sublabel">{loading ? '...' : `${summaries.yearly.ordersCount} orders`}</div>
-          </div>
-
-          <div className="metric-card">
-            <div className="metric-header">
-              <span className="metric-label">Avg Order Value</span>
-            </div>
-            <div className="metric-value">{loading ? '...' : formatCurrency(analytics.averageOrderValue)}</div>
-            <div className="metric-sublabel">Per completed transaction</div>
-          </div>
-
-          <div className="metric-card">
-            <div className="metric-header">
-              <span className="metric-label">Pending Orders</span>
-            </div>
-            <div className="metric-value">{loading ? '...' : analytics.pendingOrdersCount}</div>
-            <div className="metric-sublabel">Requires processing</div>
-          </div>
-        </div>
-
-        {/* Progress & Inventory Bar */}
-        <div className="progress-bar-card">
-          <div className="progress-stat-item">
-            <span className="progress-stat-label">Stock Units Tracked</span>
-            <span className="progress-stat-val">{loading ? '...' : `${stats.totalUnits || 0} Units`}</span>
-          </div>
-          <div className="progress-stat-item">
-            <span className="progress-stat-label">Inventory Valuation</span>
-            <span className="progress-stat-val">{loading ? '...' : formatCurrency(stats.totalInventoryValue || 0)}</span>
-          </div>
-          <div className="progress-stat-item">
-            <span className="progress-stat-label">Low Stock Items</span>
-            <span className="progress-stat-val" style={{ color: lowStockCount > 0 ? '#a82323' : '#275e27' }}>
-              {loading ? '...' : lowStockCount}
-            </span>
-          </div>
-          <div className="progress-stat-item">
-            <span className="progress-stat-label">Storefront Health</span>
-            <span className="progress-stat-val" style={{ color: '#275e27' }}>
-              {loading ? '...' : 'Operational'}
-            </span>
-          </div>
-        </div>
-
-        {/* Recent Activity Section */}
-        <div className="content-grid">
-          <div className="dashboard-section">
-            <div className="section-title-wrap">
-              <h2 className="section-title">Recent Orders</h2>
-              <Link href="/admin/orders" style={{ fontSize: '0.8rem', color: '#c0633b', textDecoration: 'none', fontWeight: 600 }}>
-                View All →
-              </Link>
+          {/* Lifetime Key Metrics */}
+          <div className="metrics-grid metrics-grid-3">
+            <div className="metric-card">
+              <div className="metric-header">
+                <span className="metric-label">Lifetime Revenue</span>
+              </div>
+              <div className="metric-value">{loading ? '...' : formatCurrency(stats.revenue)}</div>
             </div>
 
-            {loading ? (
-              <p style={{ fontSize: '0.85rem', color: '#8c827a', margin: '1rem 0' }}>Loading orders...</p>
-            ) : recentOrders.length === 0 ? (
-              <p style={{ fontSize: '0.85rem', color: '#8c827a', margin: '1rem 0' }}>No recent orders found.</p>
-            ) : (
-              <div className="table-responsive">
-                <table className="orders-table">
-                  <thead>
-                    <tr>
-                      <th>Order ID</th>
-                      <th>Customer</th>
-                      <th>Total</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {recentOrders.map((order) => (
-                      <tr key={order.id}>
-                        <td style={{ fontWeight: 600 }}>{order.id}</td>
-                        <td>{order.customer}</td>
-                        <td>{formatCurrency(order.total)}</td>
-                        <td>
-                          <span className={`status-badge ${order.status?.toLowerCase() === 'completed' ? 'status-completed' : 'status-processing'}`}>
-                            {order.status}
-                          </span>
-                        </td>
+            <div className="metric-card">
+              <div className="metric-header">
+                <span className="metric-label">Completed Orders</span>
+              </div>
+              <div className="metric-value">{loading ? '...' : stats.totalOrders}</div>
+            </div>
+
+            <div className="metric-card">
+              <div className="metric-header">
+                <span className="metric-label">Active Products</span>
+              </div>
+              <div className="metric-value">{loading ? '...' : stats.activeProducts}</div>
+            </div>
+          </div>
+
+          {/* Monthly, Yearly & Comparison Grid */}
+          <div className="metrics-grid metrics-grid-4">
+            <div className="metric-card">
+              <div className="metric-header">
+                <span className="metric-label">{MONTH_NAMES[selectedMonth]} Revenue</span>
+              </div>
+              <div className="metric-value">{loading ? '...' : formatCurrency(summaries.monthly.revenue)}</div>
+              <div className="metric-sublabel">
+                {loading ? '...' : `${summaries.monthly.ordersCount} orders`}
+              </div>
+              {!loading && renderGrowthBadge(summaries.monthly.revenueGrowth)}
+            </div>
+
+            <div className="metric-card">
+              <div className="metric-header">
+                <span className="metric-label">{selectedYear} Year Total</span>
+              </div>
+              <div className="metric-value">{loading ? '...' : formatCurrency(summaries.yearly.revenue)}</div>
+              <div className="metric-sublabel">{loading ? '...' : `${summaries.yearly.ordersCount} orders`}</div>
+            </div>
+
+            <div className="metric-card">
+              <div className="metric-header">
+                <span className="metric-label">Avg Order Value</span>
+              </div>
+              <div className="metric-value">{loading ? '...' : formatCurrency(analytics.averageOrderValue)}</div>
+              <div className="metric-sublabel">Per completed transaction</div>
+            </div>
+
+            <div className="metric-card">
+              <div className="metric-header">
+                <span className="metric-label">Pending Orders</span>
+              </div>
+              <div className="metric-value">{loading ? '...' : analytics.pendingOrdersCount}</div>
+              <div className="metric-sublabel">Requires processing</div>
+            </div>
+          </div>
+
+          {/* Progress & Inventory Bar */}
+          <div className="progress-bar-card">
+            <div className="progress-stat-item">
+              <span className="progress-stat-label">Stock Units Tracked</span>
+              <span className="progress-stat-val">{loading ? '...' : `${stats.totalUnits || 0} Units`}</span>
+            </div>
+            <div className="progress-stat-item">
+              <span className="progress-stat-label">Inventory Valuation</span>
+              <span className="progress-stat-val">{loading ? '...' : formatCurrency(stats.totalInventoryValue || 0)}</span>
+            </div>
+            <div className="progress-stat-item">
+              <span className="progress-stat-label">Low Stock Items</span>
+              <span className="progress-stat-val" style={{ color: lowStockCount > 0 ? '#a82323' : '#275e27' }}>
+                {loading ? '...' : lowStockCount}
+              </span>
+            </div>
+            <div className="progress-stat-item">
+              <span className="progress-stat-label">Storefront Health</span>
+              <span className="progress-stat-val" style={{ color: '#275e27' }}>
+                {loading ? '...' : 'Operational'}
+              </span>
+            </div>
+          </div>
+
+          {/* Recent Activity Section */}
+          <div className="content-grid">
+            <div className="dashboard-section">
+              <div className="section-title-wrap">
+                <h2 className="section-title">Recent Orders</h2>
+                <Link href="/admin/orders" style={{ fontSize: '0.8rem', color: '#c0633b', textDecoration: 'none', fontWeight: 600 }}>
+                  View All →
+                </Link>
+              </div>
+
+              {loading ? (
+                <p style={{ fontSize: '0.85rem', color: '#8c827a', margin: '1rem 0' }}>Loading orders...</p>
+              ) : recentOrders.length === 0 ? (
+                <p style={{ fontSize: '0.85rem', color: '#8c827a', margin: '1rem 0' }}>No recent orders found.</p>
+              ) : (
+                <div className="table-responsive">
+                  <table className="orders-table">
+                    <thead>
+                      <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Total</th>
+                        <th>Status</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-
-          <div className="dashboard-section">
-            <div className="section-title-wrap">
-              <h2 className="section-title">Inventory Health</h2>
-              <Link href="/admin/products" style={{ fontSize: '0.8rem', color: '#c0633b', textDecoration: 'none', fontWeight: 600 }}>
-                Manage →
-              </Link>
+                    </thead>
+                    <tbody>
+                      {recentOrders.map((order) => (
+                        <tr key={order.id}>
+                          <td style={{ fontWeight: 600 }}>{order.id}</td>
+                          <td>{order.customer}</td>
+                          <td>{formatCurrency(order.total)}</td>
+                          <td>
+                            <span className={`status-badge ${order.status?.toLowerCase() === 'completed' ? 'status-completed' : 'status-processing'}`}>
+                              {order.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
 
-            {loading ? (
-              <p style={{ fontSize: '0.85rem', color: '#8c827a' }}>Checking stock...</p>
-            ) : lowStockCount === 0 ? (
-              <div className="alert-box-success">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                  <polyline points="22 4 12 14.01 9 11.01" />
-                </svg>
-                <span>Inventory levels look good. All items are in stock.</span>
+            <div className="dashboard-section">
+              <div className="section-title-wrap">
+                <h2 className="section-title">Inventory Health</h2>
+                <Link href="/admin/products" style={{ fontSize: '0.8rem', color: '#c0633b', textDecoration: 'none', fontWeight: 600 }}>
+                  Manage →
+                </Link>
               </div>
-            ) : (
-              <div className="alert-box-warning">
-                <strong style={{ fontWeight: 700 }}>Low Stock Alerts ({lowStockCount})</strong>
-                <ul style={{ margin: 0, paddingLeft: '1.2rem' }}>
-                  {stats.lowStockItems.map((item) => (
-                    <li key={item.id}>
-                      {item.title} — <strong>{item.stock} left</strong>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+
+              {loading ? (
+                <p style={{ fontSize: '0.85rem', color: '#8c827a' }}>Checking stock...</p>
+              ) : lowStockCount === 0 ? (
+                <div className="alert-box-success">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                  </svg>
+                  <span>Inventory levels look good. All items are in stock.</span>
+                </div>
+              ) : (
+                <div className="alert-box-warning">
+                  <strong style={{ fontWeight: 700 }}>Low Stock Alerts ({lowStockCount})</strong>
+                  <ul style={{ margin: 0, paddingLeft: '1.2rem' }}>
+                    {stats.lowStockItems.map((item) => (
+                      <li key={item.id}>
+                        {item.title} — <strong>{item.stock} left</strong>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
