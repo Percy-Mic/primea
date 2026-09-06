@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import UserNav from '@/components/UserNav'
+/*import UserNav from '@/components/UserNav'*/
 
 interface Product {
   id: string
