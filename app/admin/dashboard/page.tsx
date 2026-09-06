@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import AdminHeader from '@/components/AdminNav'
 
 interface Order {
   id: string
@@ -161,6 +162,12 @@ export default function AdminDashboardPage() {
     window.print()
   }
 
+  const handleLogout = async () => {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    window.location.href = '/login'
+  }
+
   const lowStockCount = stats.lowStockItems?.length || 0
 
   return (
@@ -174,29 +181,6 @@ export default function AdminDashboardPage() {
           overflow-x: hidden;
         }
 
-        .dashboard-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          margin-bottom: 1.5rem;
-          flex-wrap: wrap;
-          gap: 1rem;
-        }
-
-        .dashboard-title {
-          font-family: serif;
-          font-size: 1.75rem;
-          font-weight: 700;
-          color: #1f1815;
-          margin: 0;
-        }
-
-        .dashboard-subtitle {
-          font-size: 0.85rem;
-          color: #786f66;
-          margin-top: 0.25rem;
-        }
-
         .header-actions {
           display: flex;
           gap: 0.5rem;
@@ -208,9 +192,6 @@ export default function AdminDashboardPage() {
         @media (min-width: 640px) {
           .header-actions {
             width: auto;
-          }
-          .dashboard-title {
-            font-size: 2rem;
           }
         }
 
@@ -503,7 +484,6 @@ export default function AdminDashboardPage() {
 
           .header-actions,
           .filter-bar,
-          .dashboard-subtitle,
           a,
           button {
             display: none !important;
@@ -525,45 +505,47 @@ export default function AdminDashboardPage() {
         }
       `}</style>
 
-      {/* Header */}
-      <div className="dashboard-header">
-        <div>
-          <h1 className="dashboard-title">Storefront Monitor</h1>
-          <p className="dashboard-subtitle">Real-time store progress and inventory analytics report</p>
-        </div>
-        <div className="header-actions">
-          <button
-            type="button"
-            onClick={fetchDashboardData}
-            disabled={isRefreshing}
-            className="btn-action"
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              className={isRefreshing ? 'animate-spin' : ''}
+      {/* Admin Header Component */}
+      <AdminHeader
+        title="Storefront Monitor"
+        description="Real-time store progress and inventory analytics report"
+        userEmail="admin@primea.com"
+        onLogout={handleLogout}
+        action={
+          <div className="header-actions">
+            <button
+              type="button"
+              onClick={fetchDashboardData}
+              disabled={isRefreshing}
+              className="btn-action"
             >
-              <path d="M23 4v6h-6" />
-              <path d="M1 20v-6h6" />
-              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-            </svg>
-            <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
-          </button>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                className={isRefreshing ? 'animate-spin' : ''}
+              >
+                <path d="M23 4v6h-6" />
+                <path d="M1 20v-6h6" />
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+              </svg>
+              <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
+            </button>
 
-          <button type="button" onClick={handlePrint} className="btn-action">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="6 9 6 2 18 2 18 9" />
-              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-              <rect x="6" y="14" width="12" height="8" />
-            </svg>
-            <span>Print</span>
-          </button>
-        </div>
-      </div>
+            <button type="button" onClick={handlePrint} className="btn-action">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="6 9 6 2 18 2 18 9" />
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                <rect x="6" y="14" width="12" height="8" />
+              </svg>
+              <span>Print</span>
+            </button>
+          </div>
+        }
+      />
 
       {/* Date Filter Bar */}
       <div className="filter-bar">
