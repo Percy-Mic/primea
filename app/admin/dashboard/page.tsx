@@ -172,8 +172,8 @@ export default function AdminDashboardPage() {
 
   const renderGrowthBadge = (value: number) => {
     const isPositive = value >= 0
-    const color = isPositive ? '#275e27' : '#a82323'
-    const bgColor = isPositive ? '#f0f7f0' : '#fff8f8'
+    const color = isPositive ? '#2e6930' : '#992222'
+    const bgColor = isPositive ? '#f0f7f0' : '#fcf0f0'
     const arrow = isPositive ? '↑' : '↓'
 
     return (
@@ -183,7 +183,7 @@ export default function AdminDashboardPage() {
           alignItems: 'center',
           gap: '0.2rem',
           fontSize: '0.75rem',
-          fontWeight: 700,
+          fontWeight: 600,
           color: color,
           backgroundColor: bgColor,
           padding: '0.15rem 0.45rem',
@@ -271,22 +271,23 @@ export default function AdminDashboardPage() {
           align-items: center;
           gap: 0.75rem;
           padding: 0.65rem 0.75rem;
-          border-radius: 8px;
-          font-size: 0.875rem;
-          font-weight: 600;
+          border-radius: 6px;
+          font-size: 0.85rem;
+          font-weight: 500;
           color: #3b332e;
           text-decoration: none;
-          transition: all 0.2s ease;
+          transition: all 0.15s ease;
         }
 
         .sidebar-link:hover {
           background-color: #f7f4ef;
-          color: #c0633b;
+          color: #b55933;
         }
 
         .sidebar-link.active {
           background-color: #1f1815;
           color: #ffffff;
+          font-weight: 600;
         }
 
         .sidebar-footer {
@@ -302,11 +303,11 @@ export default function AdminDashboardPage() {
           display: flex;
           flex-direction: column;
           box-sizing: border-box;
-          padding-top: 140px; /* leaves room for fixed top header */
+          padding-top: 145px;
           min-height: 100vh;
         }
 
-        /* Fixed Top Header Wrapper */
+        /* Professional Fixed Top Header with Theme Background */
         .fixed-top-header {
           position: fixed;
           top: 0;
@@ -314,9 +315,9 @@ export default function AdminDashboardPage() {
           right: 0;
           z-index: 1000;
           background-color: #ffffff;
-          border-bottom: 1px solid #e8e2d9;
-          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-          padding: 0.75rem 2rem;
+          border-bottom: 1px solid #e2dacf;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+          padding: 0.9rem 2rem;
           box-sizing: border-box;
         }
 
@@ -343,8 +344,8 @@ export default function AdminDashboardPage() {
           gap: 0.5rem;
           background-color: #ffffff;
           border: 1px solid #e8e2d9;
-          padding: 0.75rem 1rem;
-          border-radius: 10px;
+          padding: 0.65rem 1rem;
+          border-radius: 8px;
           flex-wrap: wrap;
         }
 
@@ -358,11 +359,11 @@ export default function AdminDashboardPage() {
 
         .filter-select {
           padding: 0.4rem 0.75rem;
-          background-color: #faf8f5;
-          border: 1px solid #dcd5ca;
+          background-color: #f7f4ef;
+          border: 1px solid #ded7cc;
           border-radius: 6px;
-          font-size: 0.875rem;
-          font-weight: 600;
+          font-size: 0.85rem;
+          font-weight: 500;
           color: #1f1815;
           cursor: pointer;
         }
@@ -378,20 +379,19 @@ export default function AdminDashboardPage() {
           align-items: center;
           justify-content: center;
           gap: 0.4rem;
-          padding: 0.6rem 1rem;
+          padding: 0.55rem 0.95rem;
           background-color: #ffffff;
           color: #1f1815;
-          border: 1px solid #dcd5ca;
-          border-radius: 8px;
-          font-size: 0.85rem;
-          font-weight: 600;
+          border: 1px solid #ded7cc;
+          border-radius: 6px;
+          font-size: 0.82rem;
+          font-weight: 500;
           cursor: pointer;
-          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-          transition: all 0.2s ease;
+          transition: all 0.15s ease;
         }
 
         .btn-action:hover {
-          background-color: #faf8f5;
+          background-color: #f7f4ef;
           border-color: #1f1815;
         }
 
@@ -425,9 +425,9 @@ export default function AdminDashboardPage() {
         .metric-card {
           background-color: #ffffff;
           border: 1px solid #e8e2d9;
-          border-radius: 12px;
+          border-radius: 8px;
           padding: 1.25rem;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.01);
           display: flex;
           flex-direction: column;
           justify-content: space-between;
@@ -455,7 +455,7 @@ export default function AdminDashboardPage() {
         }
 
         .metric-value {
-          font-size: 1.5rem;
+          font-size: 1.45rem;
           font-weight: 700;
           color: #1f1815;
           line-height: 1.2;
@@ -464,7 +464,7 @@ export default function AdminDashboardPage() {
         .progress-bar-card {
           background-color: #ffffff;
           border: 1px solid #e8e2d9;
-          border-radius: 12px;
+          border-radius: 8px;
           padding: 1.25rem;
           margin-bottom: 1.5rem;
           display: grid;
@@ -513,7 +513,7 @@ export default function AdminDashboardPage() {
         .dashboard-section {
           background-color: #ffffff;
           border: 1px solid #e8e2d9;
-          border-radius: 12px;
+          border-radius: 8px;
           padding: 1.25rem;
           overflow-x: auto;
         }
@@ -539,10 +539,10 @@ export default function AdminDashboardPage() {
           align-items: center;
           gap: 0.75rem;
           padding: 1rem;
-          background-color: #f3f8f3;
-          border: 1px solid #d4e6d4;
-          border-radius: 8px;
-          color: #275e27;
+          background-color: #f2f8f2;
+          border: 1px solid #d0e4d0;
+          border-radius: 6px;
+          color: #2e6930;
           font-size: 0.85rem;
         }
 
@@ -551,10 +551,10 @@ export default function AdminDashboardPage() {
           flex-direction: column;
           gap: 0.5rem;
           padding: 1rem;
-          background-color: #fff8f8;
-          border: 1px solid #f5c6c6;
-          border-radius: 8px;
-          color: #a82323;
+          background-color: #fdf5f5;
+          border: 1px solid #f0bcbc;
+          border-radius: 6px;
+          color: #992222;
           font-size: 0.85rem;
         }
 
@@ -596,12 +596,12 @@ export default function AdminDashboardPage() {
 
         .status-completed {
           background-color: #f0f7f0;
-          color: #2b6e2b;
+          color: #2e6930;
         }
 
         .status-processing {
-          background-color: #fff8eb;
-          color: #9c6800;
+          background-color: #fcf8ee;
+          color: #8a6200;
         }
 
         @media print {
@@ -625,29 +625,29 @@ export default function AdminDashboardPage() {
         <ul className="sidebar-nav-list">
           <li>
             <Link href="/admin/dashboard" className={`sidebar-link ${pathname === '/admin/dashboard' ? 'active' : ''}`}>
-              📊 Dashboard
+              Dashboard
             </Link>
           </li>
           <li>
             <Link href="/admin/orders" className={`sidebar-link ${pathname === '/admin/orders' ? 'active' : ''}`}>
-              📦 Orders
+              Orders
             </Link>
           </li>
           <li>
             <Link href="/admin/products" className={`sidebar-link ${pathname === '/admin/products' ? 'active' : ''}`}>
-              🏷️ Inventory
+              Inventory
             </Link>
           </li>
           <li>
             <Link href="/admin/products/new" className={`sidebar-link ${pathname === '/admin/products/new' ? 'active' : ''}`}>
-              ➕ Add Product
+              Add Product
             </Link>
           </li>
         </ul>
 
         <div className="sidebar-footer">
-          <Link href="/" target="_blank" className="sidebar-link" style={{ color: '#c0633b' }}>
-            🏠 View Storefront
+          <Link href="/" target="_blank" className="sidebar-link" style={{ color: '#b55933', fontWeight: 600 }}>
+            View Storefront
           </Link>
         </div>
       </aside>
@@ -702,8 +702,8 @@ export default function AdminDashboardPage() {
                 className="btn-action"
               >
                 <svg
-                  width="15"
-                  height="15"
+                  width="14"
+                  height="14"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -718,7 +718,7 @@ export default function AdminDashboardPage() {
               </button>
 
               <button type="button" onClick={handlePrint} className="btn-action">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <polyline points="6 9 6 2 18 2 18 9" />
                   <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
                   <rect x="6" y="14" width="12" height="8" />
@@ -802,13 +802,13 @@ export default function AdminDashboardPage() {
             </div>
             <div className="progress-stat-item">
               <span className="progress-stat-label">Low Stock Items</span>
-              <span className="progress-stat-val" style={{ color: lowStockCount > 0 ? '#a82323' : '#275e27' }}>
+              <span className="progress-stat-val" style={{ color: lowStockCount > 0 ? '#992222' : '#2e6930' }}>
                 {loading ? '...' : lowStockCount}
               </span>
             </div>
             <div className="progress-stat-item">
               <span className="progress-stat-label">Storefront Health</span>
-              <span className="progress-stat-val" style={{ color: '#275e27' }}>
+              <span className="progress-stat-val" style={{ color: '#2e6930' }}>
                 {loading ? '...' : 'Operational'}
               </span>
             </div>
@@ -819,7 +819,7 @@ export default function AdminDashboardPage() {
             <div className="dashboard-section">
               <div className="section-title-wrap">
                 <h2 className="section-title">Recent Orders</h2>
-                <Link href="/admin/orders" style={{ fontSize: '0.8rem', color: '#c0633b', textDecoration: 'none', fontWeight: 600 }}>
+                <Link href="/admin/orders" style={{ fontSize: '0.8rem', color: '#b55933', textDecoration: 'none', fontWeight: 600 }}>
                   View All →
                 </Link>
               </div>
@@ -861,7 +861,7 @@ export default function AdminDashboardPage() {
             <div className="dashboard-section">
               <div className="section-title-wrap">
                 <h2 className="section-title">Inventory Health</h2>
-                <Link href="/admin/products" style={{ fontSize: '0.8rem', color: '#c0633b', textDecoration: 'none', fontWeight: 600 }}>
+                <Link href="/admin/products" style={{ fontSize: '0.8rem', color: '#b55933', textDecoration: 'none', fontWeight: 600 }}>
                   Manage →
                 </Link>
               </div>
@@ -870,7 +870,7 @@ export default function AdminDashboardPage() {
                 <p style={{ fontSize: '0.85rem', color: '#8c827a' }}>Checking stock...</p>
               ) : lowStockCount === 0 ? (
                 <div className="alert-box-success">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
                     <polyline points="22 4 12 14.01 9 11.01" />
                   </svg>
