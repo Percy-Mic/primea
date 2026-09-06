@@ -1,60 +1,71 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
+import { supabase } from '@/lib/supabase'
+import Image from 'next/image'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import UserNav from '@/components/UserNav'
 
 interface Product {
   id: string
   title: string
-  category?: string
   price: number
   description?: string
   image_url?: string
   image?: string
+  stock?: number
 }
 
 export default function ProductsPage() {
-  const router = useRouter()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState('featured')
+  const [menuOpen, setMenuOpen] = useState(false)
   const [notification, setNotification] = useState<string | null>(null)
+  const router = useRouter()
 
   useEffect(() => {
-    async function loadProducts() {
+    async function fetchProducts() {
       try {
-        const res = await fetch('/api/products')
-        const data = await res.json()
-        setProducts(Array.isArray(data) ? data : data.products || [])
+        const { data, error } = await supabase.from('products').select('*')
+        if (error) throw error
+        setProducts(data || [])
       } catch (err) {
         console.error('Failed to load products:', err)
       } finally {
         setLoading(false)
       }
     }
-    loadProducts()
+    fetchProducts()
   }, [])
 
-  // Functional Add to Cart Handler
-  const handleAddToCart = (e: React.MouseEvent, product: Product) => {
-    e.stopPropagation() // Stop event from bubbling up to the card
+  const handleAddToCart = (product: Product, e: React.MouseEvent) => {
+    e.stopPropagation() // Prevents triggering card navigation if wrapped
 
     try {
-      const existingCart = JSON.parse(localStorage.getItem('cart') || '[]')
-      const productIndex = existingCart.findIndex((item: any) => item.id === product.id)
+      const savedCart = JSON.parse(localStorage.getItem('elara_cart') || '[]')
+      const existingIndex = savedCart.findIndex((item: any) => item.id === product.id)
+      const imageUrl = product.image_url || product.image || ''
 
-      if (productIndex > -1) {
-        existingCart[productIndex].quantity = (existingCart[productIndex].quantity || 1) + 1
+      if (existingIndex > -1) {
+        savedCart[existingIndex].quantity = (savedCart[existingIndex].quantity || 1) + 1
       } else {
-        existingCart.push({ ...product, quantity: 1 })
+        savedCart.push({
+          id: product.id,
+          title: product.title,
+          price: product.price,
+          image: imageUrl,
+          quantity: 1,
+          stock: product.stock,
+        })
       }
 
-      localStorage.setItem('cart', JSON.stringify(existingCart))
-      
+      localStorage.setItem('elara_cart', JSON.stringify(savedCart))
+      window.dispatchEvent(new Event('cartUpdated'))
+
       // Trigger temporary visual toast notification
-      setNotification(`Added "${product.title}" to your shopping bag!`)
+      setNotification(`Added "${product.title}" to your shopping bag.`)
       setTimeout(() => setNotification(null), 3000)
     } catch (error) {
       console.error('Error saving to cart:', error)
@@ -72,8 +83,46 @@ export default function ProductsPage() {
     })
 
   return (
-    <div style={{ backgroundColor: '#faf8f5', minHeight: '100vh', position: 'relative' }}>
-      {/* Toast Notification Banner */}
+    <div
+      style={{
+        backgroundColor: '#f5f2eb',
+        minHeight: '100vh',
+        paddingTop: '65px',
+        fontFamily: 'system-ui, -apple-system, sans-serif',
+        color: '#1f1815',
+        position: 'relative',
+      }}
+    >
+      <style>{`
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        .site-header {
+          position: fixed; top: 0; left: 0; width: 100%; height: 65px;
+          background-color: #1f1815; color: #f5f2eb; display: flex;
+          align-items: center; justify-content: space-between; padding: 0 1.5rem; z-index: 1000;
+        }
+        .site-logo {
+          font-family: serif; font-size: 1.5rem; letter-spacing: 3px;
+          color: #f5f2eb; text-decoration: none; font-weight: 600;
+        }
+        .mobile-dropdown {
+          position: fixed; top: 65px; left: 0; width: 100%; background-color: #1f1815;
+          padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; z-index: 999;
+          border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .product-grid {
+          display: grid;
+          grid-template-columns: repeat(1, minmax(0, 1fr));
+          gap: 2rem;
+        }
+        @media (min-width: 640px) {
+          .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (min-width: 1024px) {
+          .product-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        }
+      `}</style>
+
+      {/* Toast Notification */}
       {notification && (
         <div
           style={{
@@ -86,187 +135,95 @@ export default function ProductsPage() {
             padding: '12px 20px',
             borderRadius: '8px',
             boxShadow: '0 8px 20px rgba(0,0,0,0.2)',
-            fontFamily: 'sans-serif',
             fontSize: '13px',
             fontWeight: 500,
-            animation: 'fadeIn 0.3s ease',
           }}
         >
           {notification}
         </div>
       )}
 
-      {/* Isolated Fixed Header */}
-      <header
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 1000,
-          width: '100%',
-          backgroundColor: '#16120f',
-          borderBottom: '1px solid #2a221e',
-        }}
-      >
-        <UserNav brandName="PRIMEA" />
+      {/* Header */}
+      <header className="site-header">
+        <Link href="/" className="site-logo">
+          PRIMEA
+        </Link>
+        <button
+          onClick={() => setMenuOpen(!menuOpen)}
+          style={{ background: 'none', border: 'none', color: '#f5f2eb', cursor: 'pointer', padding: '0.5rem' }}
+          aria-label="Toggle navigation"
+        >
+          {menuOpen ? (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          ) : (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          )}
+        </button>
       </header>
 
-      {/* Main Content View with Safe Padding-Top */}
-      <main
-        style={{
-          paddingTop: '110px',
-          paddingBottom: '80px',
-          paddingLeft: '24px',
-          paddingRight: '24px',
-          color: '#1f1815',
-          fontFamily: 'serif',
-          maxWidth: '1200px',
-          margin: '0 auto',
-        }}
-      >
-        <style>{`
-          .product-grid {
-            display: grid;
-            grid-template-columns: repeat(1, minmax(0, 1fr));
-            gap: 32px;
-          }
-          @media (min-width: 640px) {
-            .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-          }
-          @media (min-width: 1024px) {
-            .product-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-          }
+      {/* Navigation Overlay */}
+      {menuOpen && (
+        <nav className="mobile-dropdown">
+          <Link href="/" style={{ color: '#f5f2eb', textDecoration: 'none', fontSize: '0.85rem', letterSpacing: '2px' }} onClick={() => setMenuOpen(false)}>
+            STOREFRONT
+          </Link>
+          <Link href="/products" style={{ color: '#f5f2eb', textDecoration: 'none', fontSize: '0.85rem', letterSpacing: '2px' }} onClick={() => setMenuOpen(false)}>
+            PRODUCTS
+          </Link>
+          <Link href="/cart" style={{ color: '#f5f2eb', textDecoration: 'none', fontSize: '0.85rem', letterSpacing: '2px' }} onClick={() => setMenuOpen(false)}>
+            CART
+          </Link>
+          <Link href="/login" style={{ border: '1px solid rgba(245, 242, 235, 0.4)', padding: '0.65rem', borderRadius: '20px', textAlign: 'center', color: '#f5f2eb', textDecoration: 'none', fontSize: '0.85rem' }} onClick={() => setMenuOpen(false)}>
+            LOGIN
+          </Link>
+        </nav>
+      )}
 
-          .controls-bar {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            margin-bottom: 40px;
-          }
-          @media (min-width: 640px) {
-            .controls-bar {
-              flex-direction: row;
-              justify-content: space-between;
-              align-items: center;
-            }
-          }
-
-          .product-card {
-            background-color: #ffffff;
-            border: 1px solid #e8e2d9;
-            border-radius: 12px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            cursor: pointer;
-            color: inherit;
-            transition: transform 0.25s ease, box-shadow 0.25s ease;
-          }
-          .product-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 24px -8px rgba(31, 24, 21, 0.1);
-          }
-
-          .add-btn {
-            width: 100%;
-            background-color: #1f1815;
-            color: #ffffff;
-            border: none;
-            padding: 12px;
-            border-radius: 6px;
-            font-family: sans-serif;
-            font-size: 13px;
-            font-weight: 600;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-          }
-          .add-btn:hover {
-            background-color: #3b302a;
-          }
-        `}</style>
-
-        {/* Section Header */}
-        <section
-          style={{
-            textAlign: 'center',
-            marginBottom: '40px',
-            paddingBottom: '32px',
-            borderBottom: '1px solid #e2dad0',
-          }}
-        >
-          <span
-            style={{
-              fontSize: '11px',
-              textTransform: 'uppercase',
-              letterSpacing: '0.25em',
-              color: '#786e65',
-              fontWeight: 600,
-              display: 'block',
-              marginBottom: '8px',
-              fontFamily: 'sans-serif',
-            }}
-          >
-            Curated Luxury
-          </span>
-          <h1
-            style={{
-              fontSize: '2.5rem',
-              margin: '0 0 12px 0',
-              fontWeight: 400,
-              letterSpacing: '-0.02em',
-            }}
-          >
-            All Products
+      {/* Main Content */}
+      <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '2.5rem 1.5rem' }}>
+        <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+          <h1 style={{ fontFamily: 'serif', fontSize: '2.5rem', marginBottom: '0.5rem', fontWeight: 400 }}>
+            Curated Collection
           </h1>
-          <p
-            style={{
-              color: '#786e65',
-              fontSize: '15px',
-              maxWidth: '520px',
-              margin: '0 auto',
-              fontFamily: 'sans-serif',
-              lineHeight: '1.5',
-            }}
-          >
-            Explore our carefully curated selection of timeless artisanal pieces.
-          </p>
-        </section>
+          <p style={{ color: '#786e65', fontSize: '0.95rem' }}>Explore our selection of timeless pieces.</p>
+        </div>
 
         {/* Controls Bar */}
-        <div className="controls-bar">
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem', gap: '1rem', flexWrap: 'wrap' }}>
           <input
             type="text"
-            placeholder="Search catalog..."
+            placeholder="Search products..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             style={{
-              backgroundColor: '#ffffff',
-              border: '1px solid #e2dad0',
-              padding: '10px 16px',
-              fontSize: '14px',
+              padding: '0.65rem 1rem',
               borderRadius: '6px',
+              border: '1px solid #e2dad0',
+              background: '#ffffff',
+              fontSize: '0.9rem',
               outline: 'none',
-              width: '100%',
-              maxWidth: '280px',
-              fontFamily: 'sans-serif',
+              flex: '1',
+              maxWidth: '300px',
             }}
           />
-
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
             style={{
-              backgroundColor: '#ffffff',
-              border: '1px solid #e2dad0',
-              padding: '10px 16px',
-              fontSize: '14px',
+              padding: '0.65rem 1rem',
               borderRadius: '6px',
+              border: '1px solid #e2dad0',
+              background: '#ffffff',
+              fontSize: '0.9rem',
               outline: 'none',
               cursor: 'pointer',
-              fontFamily: 'sans-serif',
             }}
           >
             <option value="featured">Featured</option>
@@ -275,134 +232,64 @@ export default function ProductsPage() {
           </select>
         </div>
 
-        {/* Product Grid / Loading / Empty States */}
         {loading ? (
-          <div
-            style={{
-              textAlign: 'center',
-              padding: '80px 0',
-              color: '#786e65',
-              fontFamily: 'sans-serif',
-            }}
-          >
-            Loading collection...
-          </div>
+          <div style={{ textAlign: 'center', padding: '4rem 0', color: '#786e65' }}>Loading products...</div>
         ) : filteredProducts.length === 0 ? (
-          <div
-            style={{
-              textAlign: 'center',
-              padding: '64px 24px',
-              backgroundColor: '#ffffff',
-              border: '1px solid #e2dad0',
-              borderRadius: '8px',
-              color: '#786e65',
-              fontFamily: 'sans-serif',
-              fontSize: '14px',
-            }}
-          >
-            No products found matching your search.
+          <div style={{ textAlign: 'center', padding: '4rem 0', background: '#ffffff', borderRadius: '12px', border: '1px solid #e2dad0' }}>
+            <p style={{ color: '#786e65' }}>No products found matching your search.</p>
           </div>
         ) : (
           <div className="product-grid">
             {filteredProducts.map((product) => {
-              const imgSrc =
-                product.image_url || product.image || '/placeholder.png'
-
+              const imgSrc = product.image_url || product.image || '/placeholder.png'
               return (
                 <div
                   key={product.id}
                   onClick={() => router.push(`/products/${product.id}`)}
-                  className="product-card"
+                  style={{
+                    background: '#ffffff',
+                    borderRadius: '12px',
+                    border: '1px solid #e2dad0',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    cursor: 'pointer',
+                    transition: 'transform 0.2s ease',
+                  }}
                 >
-                  {/* Product Image Frame */}
-                  <div
-                    style={{
-                      aspectRatio: '1/1',
-                      backgroundColor: '#f5f2ed',
-                      overflow: 'hidden',
-                      width: '100%',
-                    }}
-                  >
-                    <img
+                  <div style={{ position: 'relative', width: '100%', aspectRatio: '1/1', background: '#eae4d8' }}>
+                    <Image
                       src={imgSrc}
                       alt={product.title}
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                      }}
+                      fill
+                      unoptimized
+                      style={{ objectFit: 'cover' }}
                     />
                   </div>
-
-                  {/* Card Details */}
-                  <div
-                    style={{
-                      padding: '20px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                      flexGrow: 1,
-                    }}
-                  >
+                  <div style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', flexGrow: 1, justifyContent: 'space-between' }}>
                     <div>
-                      <h3
-                        style={{
-                          margin: '0 0 8px 0',
-                          fontSize: '1.25rem',
-                          fontWeight: 600,
-                          color: '#1f1815',
-                        }}
-                      >
+                      <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '0.5rem', color: '#1f1815' }}>
                         {product.title}
                       </h3>
-
-                      {/* Ratings */}
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '6px',
-                          fontSize: '13px',
-                          color: '#a03b1e',
-                          fontFamily: 'sans-serif',
-                          marginBottom: '12px',
-                        }}
-                      >
-                        <span>★ 5.0</span>
-                        <span style={{ color: '#786e65' }}>(0 reviews)</span>
-                      </div>
-
-                      {/* Price */}
-                      <div
-                        style={{
-                          fontSize: '1.25rem',
-                          fontWeight: 700,
-                          color: '#a03b1e',
-                          fontFamily: 'sans-serif',
-                          marginBottom: '12px',
-                        }}
-                      >
-                        ${Number(product.price).toFixed(2)}
-                      </div>
-
-                      {/* Description */}
-                      <p
-                        style={{
-                          fontSize: '13px',
-                          color: '#786e65',
-                          fontFamily: 'sans-serif',
-                          margin: '0 0 20px 0',
-                          lineHeight: '1.4',
-                        }}
-                      >
-                        {product.description || 'Exclusive luxury item.'}
+                      <p style={{ color: '#b06d50', fontWeight: 700, fontSize: '1rem', marginBottom: '1rem' }}>
+                        ${product.price.toFixed(2)}
                       </p>
                     </div>
-
-                    {/* Functional Add to Cart Button */}
                     <button
-                      className="add-btn"
-                      onClick={(e) => handleAddToCart(e, product)}
+                      onClick={(e) => handleAddToCart(product, e)}
+                      style={{
+                        width: '100%',
+                        background: '#1f1815',
+                        color: '#ffffff',
+                        border: 'none',
+                        padding: '0.75rem',
+                        borderRadius: '6px',
+                        fontWeight: 600,
+                        fontSize: '0.8rem',
+                        letterSpacing: '1px',
+                        textTransform: 'uppercase',
+                        cursor: 'pointer',
+                      }}
                     >
                       Add to Cart
                     </button>
