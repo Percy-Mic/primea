@@ -18,6 +18,7 @@ export default function AdminHeader({
 }: AdminHeaderProps) {
   const [showNotifications, setShowNotifications] = useState(false)
   const [showAttendanceModal, setShowAttendanceModal] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [attendanceStatus, setAttendanceStatus] = useState<'Out' | 'In'>('Out')
   const [timeLogs, setTimeLogs] = useState<string[]>([])
 
@@ -40,6 +41,10 @@ export default function AdminHeader({
           flex-direction: column;
           gap: 0.85rem;
           width: 100%;
+          background: #ffffff;
+          border-bottom: 1px solid #eae3d8;
+          padding: 1rem 1.25rem;
+          box-sizing: border-box;
         }
 
         .admin-top-row {
@@ -47,7 +52,6 @@ export default function AdminHeader({
           justify-content: space-between;
           align-items: center;
           gap: 1rem;
-          flex-wrap: wrap;
         }
 
         .admin-title-area h1 {
@@ -62,6 +66,12 @@ export default function AdminHeader({
           font-size: 0.8rem;
           color: #786f66;
           margin: 0;
+        }
+
+        .admin-desktop-actions {
+          display: flex;
+          align-items: center;
+          gap: 0.6rem;
         }
 
         .admin-profile-badge {
@@ -90,6 +100,18 @@ export default function AdminHeader({
           flex-wrap: wrap;
           padding-top: 0.6rem;
           border-top: 1px solid #eae3d8;
+        }
+
+        .hamburger-btn {
+          display: none;
+          background: none;
+          border: 1px solid #dfd7cc;
+          padding: 0.4rem 0.6rem;
+          border-radius: 6px;
+          cursor: pointer;
+          font-size: 1.2rem;
+          color: #1f1815;
+          background-color: #f7f4ef;
         }
 
         .nav-chip {
@@ -137,6 +159,83 @@ export default function AdminHeader({
           border-color: #e0a8a8;
         }
 
+        /* Mobile Drawer Styling */
+        .mobile-drawer-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.5);
+          z-index: 1999;
+          display: flex;
+          justify-content: flex-end;
+          opacity: 0;
+          visibility: hidden;
+          transition: opacity 0.25s ease, visibility 0.25s ease;
+        }
+
+        .mobile-drawer-overlay.open {
+          opacity: 1;
+          visibility: visible;
+        }
+
+        .mobile-drawer {
+          width: 280px;
+          max-width: 80%;
+          height: 100%;
+          background: #1f1815;
+          color: #f7f4ef;
+          padding: 1.5rem;
+          display: flex;
+          flex-direction: column;
+          gap: 1.25rem;
+          box-shadow: -5px 0 25px rgba(0,0,0,0.2);
+          transform: translateX(100%);
+          transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          overflow-y: auto;
+        }
+
+        .mobile-drawer-overlay.open .mobile-drawer {
+          transform: translateX(0);
+        }
+
+        .mobile-drawer-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          border-bottom: 1px solid rgba(255,255,255,0.1);
+          padding-bottom: 0.75rem;
+        }
+
+        .mobile-close-btn {
+          background: none;
+          border: none;
+          color: #f7f4ef;
+          font-size: 1.5rem;
+          cursor: pointer;
+        }
+
+        .mobile-links {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+
+        .mobile-links .nav-chip {
+          width: 100%;
+          justify-content: flex-start;
+          background-color: rgba(255,255,255,0.05);
+          border-color: rgba(255,255,255,0.1);
+          color: #f7f4ef;
+          padding: 0.6rem 0.8rem;
+        }
+
+        .mobile-links .nav-chip:hover {
+          background-color: rgba(255,255,255,0.12);
+          color: #ffffff;
+        }
+
         .modal-overlay {
           position: fixed;
           top: 0;
@@ -148,6 +247,7 @@ export default function AdminHeader({
           display: flex;
           justify-content: center;
           align-items: center;
+          padding: 1rem;
         }
 
         .modal-card {
@@ -159,6 +259,21 @@ export default function AdminHeader({
           box-shadow: 0 10px 25px rgba(0,0,0,0.08);
           border: 1px solid #e8e2d9;
         }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 768px) {
+          .admin-desktop-actions {
+            display: none;
+          }
+          .admin-nav-links-bar {
+            display: none;
+          }
+          .hamburger-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+          }
+        }
       `}</style>
 
       <div className="admin-header-wrapper">
@@ -168,7 +283,8 @@ export default function AdminHeader({
             {description && <p>{description}</p>}
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+          {/* Desktop Actions */}
+          <div className="admin-desktop-actions">
             <div className="admin-profile-badge">
               <span className="online-dot" title="Online Status Active" />
               <span style={{ fontWeight: 600, color: '#1f1815' }}>{userEmail}</span>
@@ -178,8 +294,19 @@ export default function AdminHeader({
               Logout
             </button>
           </div>
+
+          {/* Mobile Hamburger Toggle */}
+          <button
+            type="button"
+            className="hamburger-btn"
+            onClick={() => setMobileMenuOpen(true)}
+            aria-label="Open Menu"
+          >
+            ☰
+          </button>
         </div>
 
+        {/* Desktop Navigation Bar */}
         <div className="admin-nav-links-bar">
           <Link href="/admin/team" className="nav-chip">
             Admins List
@@ -207,6 +334,89 @@ export default function AdminHeader({
         </div>
       </div>
 
+      {/* Mobile Slide-out Drawer */}
+      <div
+        className={`mobile-drawer-overlay ${mobileMenuOpen ? 'open' : ''}`}
+        onClick={() => setMobileMenuOpen(false)}
+      >
+        <div className="mobile-drawer" onClick={(e) => e.stopPropagation()}>
+          <div className="mobile-drawer-header">
+            <span style={{ fontWeight: 700, fontSize: '1.1rem' }}>MENU</span>
+            <button
+              type="button"
+              className="mobile-close-btn"
+              onClick={() => setMobileMenuOpen(false)}
+              aria-label="Close Menu"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div style={{ fontSize: '0.85rem', background: 'rgba(255,255,255,0.06)', padding: '0.75rem', borderRadius: '6px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+              <span className="online-dot" />
+              <strong style={{ fontSize: '0.8rem', color: '#f7f4ef' }}>LOGGED IN</strong>
+            </div>
+            <div style={{ wordBreak: 'break-all', color: '#d0c9be', fontSize: '0.8rem' }}>{userEmail}</div>
+          </div>
+
+          <div className="mobile-links">
+            <Link href="/admin/team" className="nav-chip" onClick={() => setMobileMenuOpen(false)}>
+              Admins List
+            </Link>
+
+            <button
+              type="button"
+              onClick={() => {
+                setMobileMenuOpen(false)
+                setShowAttendanceModal(true)
+              }}
+              className="nav-chip"
+            >
+              Attendance ({attendanceStatus === 'In' ? 'In' : 'Out'})
+            </button>
+
+            <Link href="/admin/settings" className="nav-chip" onClick={() => setMobileMenuOpen(false)}>
+              Edit Profile
+            </Link>
+
+            <button
+              type="button"
+              onClick={() => {
+                setMobileMenuOpen(false)
+                setShowNotifications(true)
+              }}
+              className="nav-chip"
+            >
+              Notifications
+            </button>
+
+            <Link href="/admin/chats" className="nav-chip" onClick={() => setMobileMenuOpen(false)}>
+              Chats
+            </Link>
+
+            <Link href="/admin/ranking" className="nav-chip nav-chip-primary" onClick={() => setMobileMenuOpen(false)}>
+              Ranking & Productivity
+            </Link>
+          </div>
+
+          <div style={{ marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+            <button
+              type="button"
+              onClick={() => {
+                setMobileMenuOpen(false)
+                onLogout()
+              }}
+              className="nav-chip logout-btn"
+              style={{ width: '100%', justifyContent: 'center' }}
+            >
+              Sign Out
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Attendance Modal */}
       {showAttendanceModal && (
         <div className="modal-overlay" onClick={() => setShowAttendanceModal(false)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
@@ -250,6 +460,7 @@ export default function AdminHeader({
         </div>
       )}
 
+      {/* Notifications Modal */}
       {showNotifications && (
         <div className="modal-overlay" onClick={() => setShowNotifications(false)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
