@@ -223,6 +223,15 @@ export default function CustomerOrdersPage() {
           font-family: inherit;
         }
 
+        .fixed-usernav-wrapper {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          z-index: 1000;
+          background-color: #ffffff;
+        }
+
         .orders-container {
           max-width: 800px;
           margin: 0 auto;
@@ -804,7 +813,10 @@ export default function CustomerOrdersPage() {
         }
       `}</style>
 
-      <UserNav />
+      {/* Fixed UserNav Wrapper */}
+      <div className="fixed-usernav-wrapper">
+        <UserNav />
+      </div>
 
       <div className="page-header">
         <h1 className="page-title">My Orders</h1>
