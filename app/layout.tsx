@@ -1,5 +1,6 @@
 import '@/app/globals.css'
-import { CartProvider } from '@/context/CartContext'Navbar'
+import { CartProvider } from '@/context/CartContext'
+import Navbar from '@/components/Navbar'
 
 export const metadata = {
   title: 'PRIMEA Fashion | High-End Storefront',
