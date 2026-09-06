@@ -213,7 +213,6 @@ export default function InventoryManagementPage() {
           color: #1c1917;
         }
 
-        /* Fixed Header Wrapper */
         .fixed-header-container {
           position: fixed;
           top: 0;
@@ -224,15 +223,13 @@ export default function InventoryManagementPage() {
           box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
 
-        /* Layout Body containing Sidebar and Content */
         .layout-body {
           display: flex;
-          padding-top: 80px; /* Offset for the fixed header height */
+          padding-top: 80px;
           min-height: calc(100vh - 80px);
           box-sizing: border-box;
         }
 
-        /* Sidebar Styles matching your reference image */
         .admin-sidebar {
           width: 240px;
           background-color: #ffffff;
@@ -315,7 +312,6 @@ export default function InventoryManagementPage() {
           text-decoration: underline;
         }
 
-        /* Main Content Styles */
         .main-content {
           flex: 1;
           overflow-x: hidden;
