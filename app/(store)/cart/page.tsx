@@ -130,8 +130,8 @@ export default function CartPage() {
         * { box-sizing: border-box; margin: 0; padding: 0; }
       `}</style>
 
-      {/* Cart Container with top padding to clear the fixed header */}
-      <main style={{ maxWidth: '800px', margin: '0 auto', width: '100%', padding: '7rem 1rem 2.5rem 1.rem' }}>
+      {/* Cart Container with top padding updated to 100px */}
+      <main style={{ maxWidth: '800px', margin: '0 auto', width: '100%', padding: '100px 1rem 2.5rem 1rem' }}>
         <h1
           style={{
             fontFamily: 'serif',
