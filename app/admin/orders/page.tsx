@@ -1,13 +1,53 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import Link from 'next/link'
+import { usePathname, useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import AdminHeader from '@/components/AdminNav'
 
 export default function AdminOrdersPage() {
+  const router = useRouter()
+  const pathname = usePathname()
+
   const [orders, setOrders] = useState<any[]>([])
   const [notification, setNotification] = useState<string | null>(null)
   const [isMobile, setIsMobile] = useState<boolean>(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false)
+  const [userEmail, setUserEmail] = useState<string>('percymicnono@gmail.com')
+  const [authLoading, setAuthLoading] = useState<boolean>(true)
+
   const previousOrderCount = useRef<number>(0)
   const isUpdating = useRef<boolean>(false)
+
+  // Verify Admin Access
+  useEffect(() => {
+    const checkAdminAccess = async () => {
+      const supabase = createClient()
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+
+      if (sessionError || !session) {
+        router.push('/login')
+        return
+      }
+
+      setUserEmail(session.user.email || 'percymicnono@gmail.com')
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_admin, role')
+        .eq('id', session.user.id)
+        .single()
+
+      if (profile && (!profile.is_admin && profile.role !== 'admin')) {
+        console.warn('Access check warning: Verify user role settings.')
+      }
+
+      setAuthLoading(false)
+    }
+
+    checkAdminAccess()
+  }, [router])
 
   // SSR-safe viewport listener
   useEffect(() => {
@@ -47,7 +87,6 @@ export default function AdminOrdersPage() {
   }, [])
 
   const handleStatusChange = async (id: string, newStatus: string) => {
-    // Safety check for critical status changes to prevent accidental clicks
     if (newStatus === 'Completed' || newStatus === 'Cancelled') {
       const confirmed = window.confirm(
         `Are you sure you want to mark order #${String(id).slice(0, 8)} as ${newStatus.toUpperCase()}? This will remove it from the active dashboard.`
@@ -72,14 +111,20 @@ export default function AdminOrdersPage() {
         const errData = await res.json()
         console.error('Server error updating status:', errData)
         alert(`Failed to update status: ${errData.error || 'Server error'}`)
-        fetchOrders() // Revert local optimistic update on error
+        fetchOrders()
       }
     } catch (err) {
       console.error('Network error updating status:', err)
-      fetchOrders() // Revert local optimistic update on error
+      fetchOrders()
     } finally {
       isUpdating.current = false
     }
+  }
+
+  const handleLogout = async () => {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    window.location.href = '/login'
   }
 
   // Filter out completed and cancelled orders from the active list
@@ -171,190 +216,241 @@ export default function AdminOrdersPage() {
     )
   }
 
+  if (authLoading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontFamily: 'sans-serif', color: '#666' }}>
+        Verifying administrator credentials...
+      </div>
+    )
+  }
+
   return (
-    <div
-      style={{
-        padding: isMobile ? '1rem' : '1.5rem',
-        fontFamily: 'serif',
-        color: '#1f1815',
-        maxWidth: '1000px',
-        margin: '0 auto',
-        boxSizing: 'border-box',
-      }}
-    >
-      {/* Header */}
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: isMobile ? 'column' : 'row',
-          justifyContent: 'space-between',
-          alignItems: isMobile ? 'flex-start' : 'center',
-          gap: isMobile ? '1rem' : '0',
-          marginBottom: '2rem',
-        }}
-      >
-        <div>
-          <h1 style={{ fontSize: isMobile ? '1.5rem' : '2rem', margin: 0, fontWeight: 'normal' }}>
-            Admin Order Dashboard
-          </h1>
-          <p style={{ fontFamily: 'sans-serif', fontSize: '0.85rem', color: '#786e65', marginTop: '0.3rem' }}>
-            Manage active storefront orders in real-time
-          </p>
+    <div className="admin-layout-wrapper">
+      <style>{`
+        body {
+          margin: 0;
+          background-color: #fcfbfa;
+          font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        .admin-layout-wrapper {
+          display: flex;
+          flex-direction: column;
+          min-height: 100vh;
+          padding-top: 240px;
+        }
+
+        @media (max-width: 768px) {
+          .admin-layout-wrapper {
+            padding-top: 290px;
+          }
+        }
+
+        .header-group-fixed {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          z-index: 1050;
+          background-color: #ffffff;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .fixed-top-header {
+          background-color: #ffffff;
+          border-bottom: 1px solid #e2dacf;
+          padding: 0.5rem 1rem;
+          width: 100%;
+          box-sizing: border-box;
+        }
+
+        .top-nav-bar {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          background-color: #ffffff;
+          border-bottom: 1px solid #e8e2d9;
+          padding: 0.6rem 1rem;
+          flex-wrap: wrap;
+          gap: 0.75rem;
+        }
+
+        .nav-links-group {
+          display: flex;
+          list-style: none;
+          padding: 0;
+          margin: 0;
+          gap: 0.4rem;
+          align-items: center;
+          flex-wrap: wrap;
+        }
+
+        .nav-link {
+          display: inline-flex;
+          align-items: center;
+          padding: 0.4rem 0.75rem;
+          border-radius: 6px;
+          font-size: 0.85rem;
+          font-weight: 500;
+          color: #3b332e;
+          text-decoration: none;
+          transition: all 0.15s ease;
+        }
+
+        .nav-link:hover {
+          background-color: #f7f4ef;
+          color: #b55933;
+        }
+
+        .nav-link.active {
+          background-color: #1f1815;
+          color: #ffffff;
+          font-weight: 600;
+        }
+
+        .mobile-menu-btn {
+          display: none;
+          background: none;
+          border: 1px solid #ded7cc;
+          padding: 0.4rem 0.75rem;
+          border-radius: 6px;
+          font-size: 0.9rem;
+          font-weight: 600;
+          cursor: pointer;
+          color: #1f1815;
+        }
+
+        @media (max-width: 768px) {
+          .mobile-menu-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+          }
+          .nav-links-group {
+            display: ${mobileMenuOpen ? 'flex' : 'none'};
+            width: 100%;
+            flex-direction: column;
+            align-items: stretch;
+            padding-bottom: 0.5rem;
+            border-top: 1px solid #f2ede4;
+            margin-top: 0.4rem;
+            padding-top: 0.4rem;
+          }
+        }
+
+        .admin-main-content {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          box-sizing: border-box;
+          padding: 1.5rem;
+          width: 100%;
+          max-width: 1000px;
+          margin: 0 auto;
+        }
+      `}</style>
+
+      {/* Fixed Header & Navigation Group */}
+      <div className="header-group-fixed">
+        <div className="fixed-top-header">
+          <AdminHeader
+            title="Storefront Monitor"
+            description="Real-time store progress and order management dashboard"
+            userEmail={userEmail}
+            onLogout={handleLogout}
+          />
         </div>
-        <div
-          style={{
-            background: '#1f1815',
-            color: '#fff',
-            padding: '0.5rem 1.2rem',
-            borderRadius: '4px',
-            fontFamily: 'sans-serif',
-            fontSize: '0.85rem',
-            alignSelf: isMobile ? 'stretch' : 'auto',
-            textAlign: 'center',
-          }}
-        >
-          Active Orders: {activeOrders.length}
-        </div>
+
+        <nav className="top-nav-bar">
+          <button 
+            type="button" 
+            className="mobile-menu-btn" 
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            ☰ Menu
+          </button>
+          <ul className="nav-links-group">
+            <li><Link href="/admin/dashboard" className={`nav-link ${pathname === '/admin/dashboard' ? 'active' : ''}`}>Dashboard</Link></li>
+            <li><Link href="/admin/orders" className={`nav-link ${pathname === '/admin/orders' ? 'active' : ''}`}>Orders</Link></li>
+            <li><Link href="/admin/products" className={`nav-link ${pathname === '/admin/products' ? 'active' : ''}`}>Inventory</Link></li>
+            <li><Link href="/admin/products/new" className={`nav-link ${pathname === '/admin/products/new' ? 'active' : ''}`}>Add Product</Link></li>
+          </ul>
+          <Link href="/" target="_blank" className="nav-link" style={{ color: '#b55933', fontWeight: 600 }}>View Storefront →</Link>
+        </nav>
       </div>
 
-      {/* Live Notification */}
-      {notification && (
+      {/* Main Content */}
+      <div className="admin-main-content">
+        {/* Header */}
         <div
           style={{
-            background: '#1f1815',
-            color: '#fff',
-            padding: '1rem',
-            borderRadius: '4px',
-            marginBottom: '1.5rem',
-            fontFamily: 'sans-serif',
-            fontWeight: 'bold',
+            display: 'flex',
+            flexDirection: isMobile ? 'column' : 'row',
+            justifyContent: 'space-between',
+            alignItems: isMobile ? 'flex-start' : 'center',
+            gap: isMobile ? '1rem' : '0',
+            marginBottom: '2rem',
           }}
         >
-          {notification}
+          <div>
+            <h1 style={{ fontSize: isMobile ? '1.5rem' : '2rem', margin: 0, fontWeight: 'normal', fontFamily: 'serif' }}>
+              Admin Order Dashboard
+            </h1>
+            <p style={{ fontFamily: 'sans-serif', fontSize: '0.85rem', color: '#786e65', marginTop: '0.3rem' }}>
+              Manage active storefront orders in real-time
+            </p>
+          </div>
+          <div
+            style={{
+              background: '#1f1815',
+              color: '#fff',
+              padding: '0.5rem 1.2rem',
+              borderRadius: '4px',
+              fontFamily: 'sans-serif',
+              fontSize: '0.85rem',
+              alignSelf: isMobile ? 'stretch' : 'auto',
+              textAlign: 'center',
+            }}
+          >
+            Active Orders: {activeOrders.length}
+          </div>
         </div>
-      )}
 
-      {/* Empty State */}
-      {activeOrders.length === 0 ? (
-        <div
-          style={{
-            padding: '3rem',
-            textAlign: 'center',
-            color: '#786e65',
-            fontFamily: 'sans-serif',
-            background: '#fff',
-            border: '1px solid #e2dad0',
-            borderRadius: '6px',
-          }}
-        >
-          No active pending orders.
-        </div>
-      ) : isMobile ? (
-        /* MOBILE CARDS VIEW */
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', fontFamily: 'sans-serif' }}>
-          {activeOrders.map((order) => {
-            const customerName = order.customer_name || order.shipping?.fullName || 'Guest'
-            const email = order.email || order.shipping?.email || 'N/A'
-            const address = order.address || order.shipping?.address || 'N/A'
-            const paymentMethod = order.payment_method || order.shipping?.paymentMethod || 'COD'
-            const total = order.total_amount ?? order.total ?? 0
-            const currentStatus = order.status || 'Pending'
-            const items = order.order_items || order.items || []
+        {/* Live Notification */}
+        {notification && (
+          <div
+            style={{
+              background: '#1f1815',
+              color: '#fff',
+              padding: '1rem',
+              borderRadius: '4px',
+              marginBottom: '1.5rem',
+              fontFamily: 'sans-serif',
+              fontWeight: 'bold',
+            }}
+          >
+            {notification}
+          </div>
+        )}
 
-            return (
-              <div
-                key={order.id}
-                style={{
-                  background: '#fff',
-                  border: '1px solid #e2dad0',
-                  borderRadius: '6px',
-                  padding: '1rem',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '0.75rem',
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid #eee', paddingBottom: '0.5rem' }}>
-                  <div>
-                    <div style={{ fontWeight: 'bold', fontSize: '0.95rem' }}>#{String(order.id).slice(0, 8)}</div>
-                    <div style={{ fontSize: '0.75rem', color: '#786e65', marginTop: '2px' }}>
-                      {order.created_at ? new Date(order.created_at).toLocaleString() : 'N/A'}
-                    </div>
-                  </div>
-                  <span
-                    style={{
-                      padding: '0.25rem 0.5rem',
-                      borderRadius: '3px',
-                      fontSize: '0.75rem',
-                      fontWeight: 'bold',
-                      background: currentStatus === 'Shipped' ? '#e0f2fe' : currentStatus === 'Processing' ? '#fef08a' : '#fef3c7',
-                      color: currentStatus === 'Shipped' ? '#0369a1' : currentStatus === 'Processing' ? '#854d0e' : '#b45309',
-                    }}
-                  >
-                    {currentStatus}
-                  </span>
-                </div>
-
-                {/* Product Items Preview for Mobile */}
-                {renderProductItems(items)}
-
-                <div style={{ fontSize: '0.85rem' }}>
-                  <div style={{ fontWeight: '600' }}>{customerName}</div>
-                  <div style={{ color: '#786e65', fontSize: '0.8rem', wordBreak: 'break-all' }}>{email}</div>
-                  <div style={{ color: '#786e65', fontSize: '0.75rem', marginTop: '2px' }}>{address}</div>
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem', borderTop: '1px solid #eee', paddingTop: '0.5rem' }}>
-                  <span style={{ textTransform: 'uppercase', color: '#786e65' }}>{paymentMethod}</span>
-                  <span style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>${Number(total).toFixed(2)}</span>
-                </div>
-
-                <div>
-                  <select
-                    value={currentStatus}
-                    onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '0.6rem',
-                      borderRadius: '4px',
-                      border: '1px solid #ccc',
-                      fontSize: '0.85rem',
-                      background: '#fff',
-                    }}
-                  >
-                    <option value="Pending">Pending</option>
-                    <option value="Processing">Processing</option>
-                    <option value="Shipped">Shipped</option>
-                    <option value="Completed">Mark Completed</option>
-                    <option value="Cancelled">Mark Cancelled</option>
-                  </select>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      ) : (
-        /* DESKTOP TABLE VIEW */
-        <table
-          style={{
-            width: '100%',
-            borderCollapse: 'collapse',
-            background: '#fff',
-            border: '1px solid #e2dad0',
-            fontFamily: 'sans-serif',
-          }}
-        >
-          <thead>
-            <tr style={{ background: '#1f1815', color: '#fff', textAlign: 'left', fontSize: '0.8rem', letterSpacing: '1px', textTransform: 'uppercase' }}>
-              <th style={{ padding: '14px', width: '35%' }}>Order Details & Time</th>
-              <th style={{ padding: '14px', width: '25%' }}>Customer</th>
-              <th style={{ padding: '14px', width: '15%' }}>Payment</th>
-              <th style={{ padding: '14px', width: '10%' }}>Total</th>
-              <th style={{ padding: '14px', width: '8%' }}>Status</th>
-              <th style={{ padding: '14px', width: '7%' }}>Action</th>
-            </tr>
-          </thead>
-          <tbody>
+        {/* Empty State / Content View */}
+        {activeOrders.length === 0 ? (
+          <div
+            style={{
+              padding: '3rem',
+              textAlign: 'center',
+              color: '#786e65',
+              fontFamily: 'sans-serif',
+              background: '#fff',
+              border: '1px solid #e2dad0',
+              borderRadius: '6px',
+            }}
+          >
+            No active pending orders.
+          </div>
+        ) : isMobile ? (
+          /* MOBILE CARDS VIEW */
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', fontFamily: 'sans-serif' }}>
             {activeOrders.map((order) => {
               const customerName = order.customer_name || order.shipping?.fullName || 'Guest'
               const email = order.email || order.shipping?.email || 'N/A'
@@ -365,31 +461,28 @@ export default function AdminOrdersPage() {
               const items = order.order_items || order.items || []
 
               return (
-                <tr key={order.id} style={{ borderBottom: '1px solid #e2dad0', verticalAlign: 'top' }}>
-                  <td style={{ padding: '14px' }}>
-                    <div style={{ fontWeight: 'bold', fontSize: '0.95rem' }}>#{String(order.id).slice(0, 8)}</div>
-                    <div style={{ fontSize: '0.75rem', color: '#786e65', marginTop: '4px' }}>
-                      {order.created_at ? new Date(order.created_at).toLocaleString() : 'N/A'}
+                <div
+                  key={order.id}
+                  style={{
+                    background: '#fff',
+                    border: '1px solid #e2dad0',
+                    borderRadius: '6px',
+                    padding: '1rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.75rem',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid #eee', paddingBottom: '0.5rem' }}>
+                    <div>
+                      <div style={{ fontWeight: 'bold', fontSize: '0.95rem' }}>#{String(order.id).slice(0, 8)}</div>
+                      <div style={{ fontSize: '0.75rem', color: '#786e65', marginTop: '2px' }}>
+                        {order.created_at ? new Date(order.created_at).toLocaleString() : 'N/A'}
+                      </div>
                     </div>
-
-                    {/* Product Items Preview for Desktop */}
-                    {renderProductItems(items)}
-                  </td>
-                  <td style={{ padding: '14px' }}>
-                    <div style={{ fontWeight: '600' }}>{customerName}</div>
-                    <div style={{ fontSize: '0.8rem', color: '#786e65' }}>{email}</div>
-                    <div style={{ fontSize: '0.75rem', color: '#786e65' }}>{address}</div>
-                  </td>
-                  <td style={{ padding: '14px', textTransform: 'uppercase', fontSize: '0.8rem' }}>
-                    {paymentMethod}
-                  </td>
-                  <td style={{ padding: '14px', fontWeight: 'bold' }}>
-                    ${Number(total).toFixed(2)}
-                  </td>
-                  <td style={{ padding: '14px' }}>
                     <span
                       style={{
-                        padding: '0.3rem 0.6rem',
+                        padding: '0.25rem 0.5rem',
                         borderRadius: '3px',
                         fontSize: '0.75rem',
                         fontWeight: 'bold',
@@ -399,12 +492,33 @@ export default function AdminOrdersPage() {
                     >
                       {currentStatus}
                     </span>
-                  </td>
-                  <td style={{ padding: '14px' }}>
+                  </div>
+
+                  {renderProductItems(items)}
+
+                  <div style={{ fontSize: '0.85rem' }}>
+                    <div style={{ fontWeight: '600' }}>{customerName}</div>
+                    <div style={{ color: '#786e65', fontSize: '0.8rem', wordBreak: 'break-all' }}>{email}</div>
+                    <div style={{ color: '#786e65', fontSize: '0.75rem', marginTop: '2px' }}>{address}</div>
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem', borderTop: '1px solid #eee', paddingTop: '0.5rem' }}>
+                    <span style={{ textTransform: 'uppercase', color: '#786e65' }}>{paymentMethod}</span>
+                    <span style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>${Number(total).toFixed(2)}</span>
+                  </div>
+
+                  <div>
                     <select
                       value={currentStatus}
                       onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                      style={{ padding: '0.4rem', borderRadius: '4px', border: '1px solid #ccc', fontSize: '0.85rem' }}
+                      style={{
+                        width: '100%',
+                        padding: '0.6rem',
+                        borderRadius: '4px',
+                        border: '1px solid #ccc',
+                        fontSize: '0.85rem',
+                        background: '#fff',
+                      }}
                     >
                       <option value="Pending">Pending</option>
                       <option value="Processing">Processing</option>
@@ -412,13 +526,96 @@ export default function AdminOrdersPage() {
                       <option value="Completed">Mark Completed</option>
                       <option value="Cancelled">Mark Cancelled</option>
                     </select>
-                  </td>
-                </tr>
+                  </div>
+                </div>
               )
             })}
-          </tbody>
-        </table>
-      )}
+          </div>
+        ) : (
+          /* DESKTOP TABLE VIEW */
+          <table
+            style={{
+              width: '100%',
+              borderCollapse: 'collapse',
+              background: '#fff',
+              border: '1px solid #e2dad0',
+              fontFamily: 'sans-serif',
+            }}
+          >
+            <thead>
+              <tr style={{ background: '#1f1815', color: '#fff', textAlign: 'left', fontSize: '0.8rem', letterSpacing: '1px', textTransform: 'uppercase' }}>
+                <th style={{ padding: '14px', width: '35%' }}>Order Details & Time</th>
+                <th style={{ padding: '14px', width: '25%' }}>Customer</th>
+                <th style={{ padding: '14px', width: '15%' }}>Payment</th>
+                <th style={{ padding: '14px', width: '10%' }}>Total</th>
+                <th style={{ padding: '14px', width: '8%' }}>Status</th>
+                <th style={{ padding: '14px', width: '7%' }}>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {activeOrders.map((order) => {
+                const customerName = order.customer_name || order.shipping?.fullName || 'Guest'
+                const email = order.email || order.shipping?.email || 'N/A'
+                const address = order.address || order.shipping?.address || 'N/A'
+                const paymentMethod = order.payment_method || order.shipping?.paymentMethod || 'COD'
+                const total = order.total_amount ?? order.total ?? 0
+                const currentStatus = order.status || 'Pending'
+                const items = order.order_items || order.items || []
+
+                return (
+                  <tr key={order.id} style={{ borderBottom: '1px solid #e2dad0', verticalAlign: 'top' }}>
+                    <td style={{ padding: '14px' }}>
+                      <div style={{ fontWeight: 'bold', fontSize: '0.95rem' }}>#{String(order.id).slice(0, 8)}</div>
+                      <div style={{ fontSize: '0.75rem', color: '#786e65', marginTop: '4px' }}>
+                        {order.created_at ? new Date(order.created_at).toLocaleString() : 'N/A'}
+                      </div>
+                      {renderProductItems(items)}
+                    </td>
+                    <td style={{ padding: '14px' }}>
+                      <div style={{ fontWeight: '600' }}>{customerName}</div>
+                      <div style={{ fontSize: '0.8rem', color: '#786e65' }}>{email}</div>
+                      <div style={{ fontSize: '0.75rem', color: '#786e65' }}>{address}</div>
+                    </td>
+                    <td style={{ padding: '14px', textTransform: 'uppercase', fontSize: '0.8rem' }}>
+                      {paymentMethod}
+                    </td>
+                    <td style={{ padding: '14px', fontWeight: 'bold' }}>
+                      ${Number(total).toFixed(2)}
+                    </td>
+                    <td style={{ padding: '14px' }}>
+                      <span
+                        style={{
+                          padding: '0.3rem 0.6rem',
+                          borderRadius: '3px',
+                          fontSize: '0.75rem',
+                          fontWeight: 'bold',
+                          background: currentStatus === 'Shipped' ? '#e0f2fe' : currentStatus === 'Processing' ? '#fef08a' : '#fef3c7',
+                          color: currentStatus === 'Shipped' ? '#0369a1' : currentStatus === 'Processing' ? '#854d0e' : '#b45309',
+                        }}
+                      >
+                        {currentStatus}
+                      </span>
+                    </td>
+                    <td style={{ padding: '14px' }}>
+                      <select
+                        value={currentStatus}
+                        onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                        style={{ padding: '0.4rem', borderRadius: '4px', border: '1px solid #ccc', fontSize: '0.85rem' }}
+                      >
+                        <option value="Pending">Pending</option>
+                        <option value="Processing">Processing</option>
+                        <option value="Shipped">Shipped</option>
+                        <option value="Completed">Mark Completed</option>
+                        <option value="Cancelled">Mark Cancelled</option>
+                      </select>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
   )
 }
