@@ -214,7 +214,7 @@ export default function InventoryManagementPage() {
           background-color: #fcfcfc;
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
           color: #1c1917;
-          padding-top: 140px;
+          padding-top: 240px; /* Added additional top padding */
         }
 
         .fixed-header-container {
@@ -336,7 +336,6 @@ export default function InventoryManagementPage() {
         }
 
         .main-content {
-          padding-top: 2rem;
           padding-bottom: 3rem;
           box-sizing: border-box;
         }
@@ -707,7 +706,7 @@ export default function InventoryManagementPage() {
             display: flex;
           }
           .page-wrapper {
-            padding-top: 135px;
+            padding-top: 250px; /* Generous top padding for mobile view with active menu expansion */
           }
         }
       ` }} />
