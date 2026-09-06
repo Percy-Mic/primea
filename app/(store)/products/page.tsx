@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import Image from 'next/image'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import Navbar from '@/components/userNav'
 
 interface Product {
   id: string
@@ -21,7 +21,6 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState('featured')
-  const [menuOpen, setMenuOpen] = useState(false)
   const [notification, setNotification] = useState<string | null>(null)
   const router = useRouter()
 
@@ -41,7 +40,7 @@ export default function ProductsPage() {
   }, [])
 
   const handleAddToCart = (product: Product, e: React.MouseEvent) => {
-    e.stopPropagation() // Prevents triggering card navigation if wrapped
+    e.stopPropagation()
 
     try {
       const savedCart = JSON.parse(localStorage.getItem('elara_cart') || '[]')
@@ -64,7 +63,6 @@ export default function ProductsPage() {
       localStorage.setItem('elara_cart', JSON.stringify(savedCart))
       window.dispatchEvent(new Event('cartUpdated'))
 
-      // Trigger temporary visual toast notification
       setNotification(`Added "${product.title}" to your shopping bag.`)
       setTimeout(() => setNotification(null), 3000)
     } catch (error) {
@@ -87,7 +85,7 @@ export default function ProductsPage() {
       style={{
         backgroundColor: '#f5f2eb',
         minHeight: '100vh',
-        paddingTop: '65px',
+        paddingTop: '85px',
         fontFamily: 'system-ui, -apple-system, sans-serif',
         color: '#1f1815',
         position: 'relative',
@@ -95,20 +93,6 @@ export default function ProductsPage() {
     >
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        .site-header {
-          position: fixed; top: 0; left: 0; width: 100%; height: 65px;
-          background-color: #1f1815; color: #f5f2eb; display: flex;
-          align-items: center; justify-content: space-between; padding: 0 1.5rem; z-index: 1000;
-        }
-        .site-logo {
-          font-family: serif; font-size: 1.5rem; letter-spacing: 3px;
-          color: #f5f2eb; text-decoration: none; font-weight: 600;
-        }
-        .mobile-dropdown {
-          position: fixed; top: 65px; left: 0; width: 100%; background-color: #1f1815;
-          padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; z-index: 999;
-          border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
         .product-grid {
           display: grid;
           grid-template-columns: repeat(1, minmax(0, 1fr));
@@ -127,7 +111,7 @@ export default function ProductsPage() {
         <div
           style={{
             position: 'fixed',
-            top: '80px',
+            top: '95px',
             right: '24px',
             zIndex: 1100,
             backgroundColor: '#1f1815',
@@ -143,48 +127,8 @@ export default function ProductsPage() {
         </div>
       )}
 
-      {/* Header */}
-      <header className="site-header">
-        <Link href="/" className="site-logo">
-          PRIMEA
-        </Link>
-        <button
-          onClick={() => setMenuOpen(!menuOpen)}
-          style={{ background: 'none', border: 'none', color: '#f5f2eb', cursor: 'pointer', padding: '0.5rem' }}
-          aria-label="Toggle navigation"
-        >
-          {menuOpen ? (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          ) : (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="3" y1="6" x2="21" y2="6"></line>
-              <line x1="3" y1="12" x2="21" y2="12"></line>
-              <line x1="3" y1="18" x2="21" y2="18"></line>
-            </svg>
-          )}
-        </button>
-      </header>
-
-      {/* Navigation Overlay */}
-      {menuOpen && (
-        <nav className="mobile-dropdown">
-          <Link href="/" style={{ color: '#f5f2eb', textDecoration: 'none', fontSize: '0.85rem', letterSpacing: '2px' }} onClick={() => setMenuOpen(false)}>
-            STOREFRONT
-          </Link>
-          <Link href="/products" style={{ color: '#f5f2eb', textDecoration: 'none', fontSize: '0.85rem', letterSpacing: '2px' }} onClick={() => setMenuOpen(false)}>
-            PRODUCTS
-          </Link>
-          <Link href="/cart" style={{ color: '#f5f2eb', textDecoration: 'none', fontSize: '0.85rem', letterSpacing: '2px' }} onClick={() => setMenuOpen(false)}>
-            CART
-          </Link>
-          <Link href="/login" style={{ border: '1px solid rgba(245, 242, 235, 0.4)', padding: '0.65rem', borderRadius: '20px', textAlign: 'center', color: '#f5f2eb', textDecoration: 'none', fontSize: '0.85rem' }} onClick={() => setMenuOpen(false)}>
-            LOGIN
-          </Link>
-        </nav>
-      )}
+      {/* Reusable Navbar Component */}
+      <Navbar />
 
       {/* Main Content */}
       <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '2.5rem 1.5rem' }}>
