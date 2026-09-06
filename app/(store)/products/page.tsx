@@ -46,15 +46,28 @@ export default function ProductsPage() {
 
   return (
     <>
-      {/* Reusable Header with UserNav */}
-      <UserNav brandName="PRIMEA" />
+      {/* Fixed Header Container */}
+      <header
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 1000,
+          width: '100%',
+          backgroundColor: '#16120f',
+          borderBottom: '1px solid #2a221e',
+        }}
+      >
+        <UserNav brandName="PRIMEA" />
+      </header>
 
       {/* Main Content */}
       <main
         style={{
           minHeight: '100vh',
           backgroundColor: '#faf8f5',
-          paddingTop: '60px',
+          paddingTop: '100px', // Clears the fixed header height
           paddingBottom: '80px',
           paddingLeft: '24px',
           paddingRight: '24px',
@@ -127,7 +140,7 @@ export default function ProductsPage() {
         <section
           style={{
             maxWidth: '1200px',
-            margin: '40px auto 40px auto',
+            margin: '20px auto 40px auto',
             textAlign: 'center',
             paddingBottom: '32px',
             borderBottom: '1px solid #e2dad0',
