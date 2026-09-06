@@ -43,8 +43,17 @@ export default function LoginPage() {
     }
 
     setLoading(true)
+    
+    // Safely determine base URL for production vs localhost
+    const getBaseUrl = () => {
+      if (typeof window !== 'undefined') {
+        return window.location.origin
+      }
+      return process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+    }
+
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/update-password`,
+      redirectTo: `${getBaseUrl()}/auth/update-password`,
     })
 
     setLoading(false)
