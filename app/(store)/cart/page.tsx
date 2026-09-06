@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@supabase/supabase-js'
+import UserNav from '@/components/UserNav'
 
 interface CartItem {
   id: string
@@ -105,75 +105,33 @@ export default function CartPage() {
       style={{
         backgroundColor: '#f5f2eb',
         minHeight: '100vh',
-        paddingTop: '65px',
         fontFamily: 'system-ui, -apple-system, sans-serif',
         boxSizing: 'border-box',
         color: '#1f1815',
+        position: 'relative',
       }}
     >
+      {/* Fixed Custom UserNav Header Container */}
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 1000,
+          width: '100%',
+          backgroundColor: '#f5f2eb',
+        }}
+      >
+        <UserNav />
+      </div>
+
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        .site-header {
-          position: fixed; top: 0; left: 0; width: 100%; height: 65px;
-          background-color: #1f1815; color: #f5f2eb; display: flex;
-          align-items: center; justify-content: space-between; padding: 0 1.5rem; z-index: 1000;
-        }
-        .site-logo {
-          font-family: serif; font-size: 1.5rem; letter-spacing: 3px;
-          color: #f5f2eb; text-decoration: none; font-weight: 600;
-        }
-        .mobile-dropdown {
-          position: fixed; top: 65px; left: 0; width: 100%; background-color: #1f1815;
-          padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; z-index: 999;
-          border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
       `}</style>
 
-      {/* Header */}
-      <header className="site-header">
-        <Link href="/" className="site-logo">
-          PRIMEA
-        </Link>
-        <button
-          onClick={() => setMenuOpen(!menuOpen)}
-          style={{ background: 'none', border: 'none', color: '#f5f2eb', cursor: 'pointer', padding: '0.5rem' }}
-          aria-label="Toggle navigation"
-        >
-          {menuOpen ? (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          ) : (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="3" y1="6" x2="21" y2="6"></line>
-              <line x1="3" y1="12" x2="21" y2="12"></line>
-              <line x1="3" y1="18" x2="21" y2="18"></line>
-            </svg>
-          )}
-        </button>
-      </header>
-
-      {/* Navigation Overlay */}
-      {menuOpen && (
-        <nav className="mobile-dropdown">
-          <Link href="/" style={{ color: '#f5f2eb', textDecoration: 'none', fontSize: '0.85rem', letterSpacing: '2px' }} onClick={() => setMenuOpen(false)}>
-            STOREFRONT
-          </Link>
-          <Link href="/products" style={{ color: '#f5f2eb', textDecoration: 'none', fontSize: '0.85rem', letterSpacing: '2px' }} onClick={() => setMenuOpen(false)}>
-            PRODUCTS
-          </Link>
-          <Link href="/cart" style={{ color: '#f5f2eb', textDecoration: 'none', fontSize: '0.85rem', letterSpacing: '2px' }} onClick={() => setMenuOpen(false)}>
-            CART
-          </Link>
-          <Link href="/login" style={{ border: '1px solid rgba(245, 242, 235, 0.4)', padding: '0.65rem', borderRadius: '20px', textAlign: 'center', color: '#f5f2eb', textDecoration: 'none', fontSize: '0.85rem' }} onClick={() => setMenuOpen(false)}>
-            LOGIN
-          </Link>
-        </nav>
-      )}
-
-      {/* Cart Container */}
-      <div style={{ maxWidth: '800px', margin: '0 auto', width: '100%', padding: '2rem 1rem' }}>
+      {/* Cart Container with top padding to clear the fixed header */}
+      <main style={{ maxWidth: '800px', margin: '0 auto', width: '100%', padding: '7rem 1rem 2.5rem 1.rem' }}>
         <h1
           style={{
             fontFamily: 'serif',
@@ -388,7 +346,7 @@ export default function CartPage() {
             </div>
           </div>
         )}
-      </div>
+      </main>
     </div>
   )
 }
