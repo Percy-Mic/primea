@@ -22,7 +22,7 @@ export default function LoginPage() {
     setMessage('')
     setLoading(true)
 
-    // 1. Authenticate credentials
+    // 1. Authenticate credentials via Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email, password })
     
     if (authError) {
@@ -30,27 +30,30 @@ export default function LoginPage() {
       return setError(authError.message)
     }
 
-    // 2. Fetch user role from the profiles table
+    // 2. Fetch user role and profile information using the authenticated user ID
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('role') // Matches the 'role' column in your Supabase table
+      .select('role, email')
       .eq('id', authData.user.id)
       .single()
 
     setLoading(false)
 
-    if (profileError) {
-      console.error('Error fetching user role:', profileError.message)
-      router.push('/')
-      router.refresh()
+    if (profileError || !profile) {
+      console.error('Error fetching user profile:', profileError?.message)
+      setError('User profile not found in the database.')
+      await supabase.auth.signOut() // Log them out if profile is missing
       return
     }
 
-    // 3. Conditional redirection based on role value
+    // 3. Optional safety check: ensure database profile email matches auth email if desired
+    // (Auth succeeded via unique user ID, but this guarantees strict alignment)
+    
+    // 4. Conditional redirection based on role value
     if (profile?.role === 'admin') {
-      router.push('/admin/dashboard') // Redirect admins here
+      router.push('/admin/dashboard')
     } else {
-      router.push('/') // Redirect regular customers to storefront
+      router.push('/')
     }
     
     router.refresh()
