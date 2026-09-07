@@ -22,14 +22,37 @@ export default function LoginPage() {
     setMessage('')
     setLoading(true)
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    // 1. Authenticate credentials
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email, password })
     
+    if (authError) {
+      setLoading(false)
+      return setError(authError.message)
+    }
+
+    // 2. Fetch user role from the profiles table
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('role') // Matches the 'role' column in your Supabase table
+      .eq('id', authData.user.id)
+      .single()
+
     setLoading(false)
-    if (error) {
-      return setError(error.message)
+
+    if (profileError) {
+      console.error('Error fetching user role:', profileError.message)
+      router.push('/')
+      router.refresh()
+      return
+    }
+
+    // 3. Conditional redirection based on role value
+    if (profile?.role === 'admin') {
+      router.push('/admin/dashboard') // Redirect admins here
+    } else {
+      router.push('/') // Redirect regular customers to storefront
     }
     
-    router.push('/')
     router.refresh()
   }
 
@@ -44,7 +67,6 @@ export default function LoginPage() {
 
     setLoading(true)
     
-    // Safely determine base URL for production vs localhost
     const getBaseUrl = () => {
       if (typeof window !== 'undefined') {
         return window.location.origin
