@@ -39,7 +39,32 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  await supabase.auth.getUser()
+  // 1. Refresh/Get the session user
+  const { data: { user } } = await supabase.auth.getUser()
+
+  // 2. Protect any route starting with /admin
+  if (request.nextUrl.pathname.startsWith('/admin')) {
+    // If user is completely unauthenticated, redirect to login
+    if (!user) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/login'
+      return NextResponse.redirect(url)
+    }
+
+    // Check user role from the profiles table
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    // If the role is not admin, redirect them to the storefront homepage
+    if (!profile || profile.role !== 'admin') {
+      const url = request.nextUrl.clone()
+      url.pathname = '/'
+      return NextResponse.redirect(url)
+    }
+  }
 
   return response
 }
