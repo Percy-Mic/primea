@@ -1,12 +1,10 @@
 'use client'
 
-export const dynamic = 'force-dynamic'
-
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, useSearchParams } from 'next/navigation'
 
-export default function UpdatePasswordPage() {
+function UpdatePasswordForm() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
@@ -66,56 +64,64 @@ export default function UpdatePasswordPage() {
   }
 
   return (
-    <main style={styles.main}>
-      <div style={styles.card}>
-        <div style={styles.header}>
-          <h1 style={styles.title}>Update Password</h1>
-          <p style={styles.subtitle}>Enter your new password below</p>
-        </div>
-
-        {error && <div style={styles.errorBox}>{error}</div>}
-        {message && <div style={styles.successBox}>{message}</div>}
-
-        {isReady && (
-          <form onSubmit={handleUpdatePassword} style={styles.form}>
-            <div style={styles.inputGroup}>
-              <label style={styles.label}>New Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                style={styles.input}
-                required
-              />
-            </div>
-
-            <div style={styles.inputGroup}>
-              <label style={styles.label}>Confirm New Password</label>
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="••••••••"
-                style={styles.input}
-                required
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              style={{
-                ...styles.submitButton,
-                opacity: loading ? 0.6 : 1,
-                cursor: loading ? 'not-allowed' : 'pointer',
-              }}
-            >
-              {loading ? 'Updating...' : 'Update Password'}
-            </button>
-          </form>
-        )}
+    <div style={styles.card}>
+      <div style={styles.header}>
+        <h1 style={styles.title}>Update Password</h1>
+        <p style={styles.subtitle}>Enter your new password below</p>
       </div>
+
+      {error && <div style={styles.errorBox}>{error}</div>}
+      {message && <div style={styles.successBox}>{message}</div>}
+
+      {isReady && (
+        <form onSubmit={handleUpdatePassword} style={styles.form}>
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>New Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              style={styles.input}
+              required
+            />
+          </div>
+
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>Confirm New Password</label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="••••••••"
+              style={styles.input}
+              required
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              ...styles.submitButton,
+              opacity: loading ? 0.6 : 1,
+              cursor: loading ? 'not-allowed' : 'pointer',
+            }}
+          >
+            {loading ? 'Updating...' : 'Update Password'}
+          </button>
+        </form>
+      )}
+    </div>
+  )
+}
+
+export default function UpdatePasswordPage() {
+  return (
+    <main style={styles.main}>
+      <Suspense fallback={<div style={{ textAlign: 'center', color: '#786f66' }}>Loading...</div>}>
+        <UpdatePasswordForm />
+      </Suspense>
     </main>
   )
 }
