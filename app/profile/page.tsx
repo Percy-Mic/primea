@@ -57,27 +57,34 @@ export default function ProfilePage() {
       }
 
       const file = e.target.files[0]
+      
+      // 1. Instant local preview
       const localPreviewUrl = URL.createObjectURL(file)
-      setAvatarUrl(localPreviewUrl) // Instant local preview
+      setAvatarUrl(localPreviewUrl)
 
       const fileExt = file.name.split('.').pop()
-      const fileName = `${user.id}-${Math.random()}.${fileExt}`
+      const fileName = `${user.id}-${Date.now()}.${fileExt}`
       const filePath = `${fileName}`
 
+      // 2. Upload to Supabase Storage 'avatars' bucket
       const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(filePath, file, { upsert: true })
 
       if (uploadError) throw uploadError
 
-      const { data: { publicUrl } } = supabase.storage
+      // 3. Get public URL
+      const { data } = supabase.storage
         .from('avatars')
         .getPublicUrl(filePath)
 
-      setAvatarUrl(publicUrl)
-      setMessage({ text: 'Avatar uploaded successfully!', type: 'success' })
+      if (data?.publicUrl) {
+        setAvatarUrl(data.publicUrl)
+      }
+
+      setMessage({ text: 'Avatar uploaded and saved successfully!', type: 'success' })
     } catch (error: any) {
-      setMessage({ text: error.message || 'Error uploading avatar.', type: 'error' })
+      setMessage({ text: error.message || 'Error uploading avatar. Make sure your "avatars" bucket is set to Public in Supabase.', type: 'error' })
     } finally {
       setUploading(false)
     }
@@ -140,7 +147,12 @@ export default function ProfilePage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', background: '#f8fafc', padding: '1rem', borderRadius: '10px', border: '1px solid #e2e8f0', boxSizing: 'border-box', width: '100%' }}>
             <div style={{ width: '65px', height: '65px', borderRadius: '50%', background: '#e2e8f0', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #cbd5e1', flexShrink: 0 }}>
               {avatarUrl ? (
-                <img src={avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <img 
+                  src={avatarUrl} 
+                  alt="Avatar" 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                  onError={() => console.error("Failed to load image URL:", avatarUrl)}
+                />
               ) : (
                 <span style={{ fontSize: '1.3rem', fontWeight: 700, color: '#64748b' }}>
                   {fullName ? fullName.charAt(0).toUpperCase() : '?'}
