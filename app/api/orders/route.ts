@@ -83,7 +83,8 @@ export async function POST(request: Request) {
       user_id: user ? user.id : null,
       items: typeof items === 'string' ? items : JSON.stringify(items || []),
       total_amount: orderTotal,
-      status: 'Pending', // Capitalized to line up seamlessly with your admin filter components
+      status: 'Pending',
+      order_status: 'pending', // Explicitly populate both to prevent column mismatch
       address: shipping_address || '',
       customer_name: full_name || '',
       email: customerEmail,
@@ -117,28 +118,32 @@ export async function PATCH(request: Request) {
     }
 
     const formattedStatus = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+    const lowercaseStatus = status.toLowerCase();
 
     const { data: currentOrder, error: fetchError } = await supabaseAdmin
       .from('orders')
-      .select('status, items')
+      .select('status, order_status, items')
       .eq('id', orderId)
       .single();
 
     if (fetchError) throw fetchError;
 
+    // Update BOTH columns so they never get out of sync
     const { error: updateError } = await supabaseAdmin
       .from('orders')
-      .update({ status: formattedStatus })
+      .update({ 
+        status: formattedStatus,
+        order_status: lowercaseStatus 
+      })
       .eq('id', orderId);
 
     if (updateError) throw updateError;
 
     const fulfillmentStatuses = ['shipped', 'completed', 'complete', 'delivered'];
-    const oldStatus = (currentOrder.status || '').toLowerCase();
-    const newStatus = formattedStatus.toLowerCase();
+    const oldStatus = (currentOrder.status || currentOrder.order_status || '').toLowerCase();
 
     if (
-      fulfillmentStatuses.includes(newStatus) && 
+      fulfillmentStatuses.includes(lowercaseStatus) && 
       !fulfillmentStatuses.includes(oldStatus)
     ) {
       let orderItems = [];
