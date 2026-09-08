@@ -8,9 +8,19 @@ import { useRouter } from 'next/navigation'
 
 interface UserNavProps {
   brandName?: string
+  title?: string
+  description?: string
+  userEmail?: string
+  onLogout?: () => Promise<void> | void
 }
 
-export default function UserNav({ brandName = 'PRIMEA' }: UserNavProps) {
+export default function UserNav({ 
+  brandName = 'PRIMEA', 
+  title, 
+  description, 
+  userEmail, 
+  onLogout 
+}: UserNavProps) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -18,6 +28,11 @@ export default function UserNav({ brandName = 'PRIMEA' }: UserNavProps) {
   const router = useRouter()
 
   useEffect(() => {
+    if (userEmail) {
+      setLoading(false)
+      return
+    }
+
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
@@ -34,13 +49,20 @@ export default function UserNav({ brandName = 'PRIMEA' }: UserNavProps) {
     return () => {
       subscription.unsubscribe()
     }
-  }, [supabase])
+  }, [supabase, userEmail])
 
   const handleSignOut = async () => {
+    if (onLogout) {
+      await onLogout()
+      return
+    }
     await supabase.auth.signOut()
     router.push('/login')
     router.refresh()
   }
+
+  const displayEmail = userEmail || user?.email
+  const isAuthed = !!userEmail || !!user
 
   return (
     <header style={styles.header}>
@@ -60,17 +82,28 @@ export default function UserNav({ brandName = 'PRIMEA' }: UserNavProps) {
       `}</style>
 
       <div style={styles.navContainer}>
-        {/* Brand Logo */}
-        <Link href="/" style={styles.brandLink}>
-          {brandName}
-        </Link>
+        {/* Brand Logo & Optional Page Title */}
+        <div style={styles.brandWrapper}>
+          <Link href="/" style={styles.brandLink}>
+            {brandName}
+          </Link>
+          {title && (
+            <div style={styles.titleWrapper}>
+              <span style={styles.divider}>/</span>
+              <div>
+                <span style={styles.pageTitle}>{title}</span>
+                {description && <p style={styles.pageDescription}>{description}</p>}
+              </div>
+            </div>
+          )}
+        </div>
         
         {/* Desktop Nav Links */}
         <div className="desktop-nav-links" style={styles.desktopNav}>
           <Link href="/" style={styles.navLink}>ATTENDANCE</Link>
           <Link href="/products" style={styles.navLink}>PROFILE</Link>
           <Link href="/cart" style={styles.navLink}>ADMIN LIST</Link>
-          {user && (
+          {isAuthed && (
             <Link href="/orders" style={styles.ordersButton}>
               <span style={styles.activeDot} /> LOGGED ACTION
             </Link>
@@ -81,11 +114,11 @@ export default function UserNav({ brandName = 'PRIMEA' }: UserNavProps) {
         <div className="desktop-auth-container" style={styles.rightContainer}>
           {loading ? (
             <span style={styles.guestText}>Loading...</span>
-          ) : user ? (
+          ) : isAuthed ? (
             <div style={styles.loggedInContainer}>
               <div style={styles.userInfo}>
                 <span style={styles.badge}>LOGGED IN</span>
-                <span style={styles.email}>{user.email}</span>
+                <span style={styles.email}>{displayEmail}</span>
               </div>
               <button onClick={handleSignOut} style={styles.signOutButton}>
                 Sign Out
@@ -117,7 +150,7 @@ export default function UserNav({ brandName = 'PRIMEA' }: UserNavProps) {
             <Link href="/" style={styles.mobileNavLink} onClick={() => setMobileMenuOpen(false)}>ATTENDANCE</Link>
             <Link href="/products" style={styles.mobileNavLink} onClick={() => setMobileMenuOpen(false)}>PROFILE</Link>
             <Link href="/cart" style={styles.mobileNavLink} onClick={() => setMobileMenuOpen(false)}>ADMIN LIST</Link>
-            {user && (
+            {isAuthed && (
               <Link href="/orders" style={styles.mobileOrdersButton} onClick={() => setMobileMenuOpen(false)}>
                 <span style={styles.activeDot} /> LOGGED ACTION
               </Link>
@@ -125,11 +158,11 @@ export default function UserNav({ brandName = 'PRIMEA' }: UserNavProps) {
           </div>
 
           <div style={styles.mobileAuthSection}>
-            {user ? (
+            {isAuthed ? (
               <div style={styles.mobileLoggedIn}>
                 <div style={styles.userInfo}>
                   <span style={styles.badge}>LOGGED IN</span>
-                  <span style={styles.email}>{user.email}</span>
+                  <span style={styles.email}>{displayEmail}</span>
                 </div>
                 <button onClick={handleSignOut} style={styles.signOutButton}>
                   Sign Out
@@ -165,6 +198,11 @@ const styles: { [key: string]: React.CSSProperties } = {
     maxWidth: '1400px',
     margin: '0 auto',
   },
+  brandWrapper: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '1rem',
+  },
   brandLink: {
     fontFamily: 'serif',
     fontSize: '1.5rem',
@@ -172,6 +210,27 @@ const styles: { [key: string]: React.CSSProperties } = {
     color: '#f5efe6',
     textDecoration: 'none',
     fontWeight: 'bold',
+  },
+  titleWrapper: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '1rem',
+  },
+  divider: {
+    color: '#4a3d35',
+    fontSize: '1.2rem',
+  },
+  pageTitle: {
+    color: '#f5efe6',
+    fontSize: '0.95rem',
+    fontWeight: 600,
+    letterSpacing: '0.05em',
+    display: 'block',
+  },
+  pageDescription: {
+    color: '#a89f91',
+    fontSize: '0.75rem',
+    margin: 0,
   },
   desktopNav: {
     display: 'flex',
