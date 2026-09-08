@@ -34,7 +34,7 @@ export default function CartPage() {
           .select('id, stock')
           .in('id', productIds)
 
-        const stockMap = new Map((dbProducts || []).map((p) => [p.id, p.stock]))
+        const stockMap = new Map((dbProducts || []).map((p: any) => [p.id, p.stock]))
 
         const updatedWithStock = savedCart.map((item) => ({
           ...item,
