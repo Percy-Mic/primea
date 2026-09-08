@@ -33,7 +33,7 @@ export default function ProfilePage() {
       if (data) {
         setFullName(data.full_name || '')
         setBio(data.bio || '')
-        setAvatarUrl(data.avatar_url || '')
+        if (data.avatar_url) setAvatarUrl(data.avatar_url)
       } else if (error) {
         console.warn('Profile fetch warning:', error.message)
       }
@@ -53,32 +53,27 @@ export default function ProfilePage() {
       }
 
       const file = e.target.files[0]
-      
-      // Instant local preview for immediate feedback
       const localPreviewUrl = URL.createObjectURL(file)
-      setAvatarUrl(localPreviewUrl)
+      setAvatarUrl(localPreviewUrl) // Instant local preview
 
       const fileExt = file.name.split('.').pop()
       const fileName = `${user.id}-${Math.random()}.${fileExt}`
       const filePath = `${fileName}`
 
-      // Upload to Supabase Storage 'avatars' bucket
       const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(filePath, file, { upsert: true })
 
-      if (uploadError) {
-        throw uploadError
-      }
+      if (uploadError) throw uploadError
 
       const { data: { publicUrl } } = supabase.storage
         .from('avatars')
         .getPublicUrl(filePath)
 
       setAvatarUrl(publicUrl)
-      setMessage({ text: 'Avatar uploaded and saved successfully!', type: 'success' })
+      setMessage({ text: 'Avatar uploaded successfully!', type: 'success' })
     } catch (error: any) {
-      setMessage({ text: error.message || 'Error uploading avatar. Ensure your "avatars" bucket has public policies enabled.', type: 'error' })
+      setMessage({ text: error.message || 'Error uploading avatar.', type: 'error' })
     } finally {
       setUploading(false)
     }
@@ -91,18 +86,21 @@ export default function ProfilePage() {
     setLoading(true)
     setMessage({ text: '', type: '' })
 
-    const updates = {
+    const updates: any = {
       id: user.id,
       full_name: fullName,
       bio: bio,
-      avatar_url: avatarUrl,
       updated_at: new Date().toISOString(),
+    }
+
+    if (avatarUrl) {
+      updates.avatar_url = avatarUrl
     }
 
     const { error } = await supabase.from('profiles').upsert(updates)
 
     if (error) {
-      setMessage({ text: `Error updating profile: ${error.message}. Make sure you ran the SQL command to add 'avatar_url' and 'bio' columns to your profiles table.`, type: 'error' })
+      setMessage({ text: `Error updating profile: ${error.message}`, type: 'error' })
     } else {
       setMessage({ text: 'Profile updated successfully!', type: 'success' })
     }
@@ -149,7 +147,6 @@ export default function ProfilePage() {
             <div style={{ flex: 1, minWidth: '180px', overflow: 'hidden' }}>
               <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#334155', marginBottom: '0.4rem' }}>Profile Picture</label>
               
-              {/* Custom Styled Upload Button */}
               <label style={{ display: 'inline-block', padding: '0.45rem 0.9rem', background: '#fff', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: '6px', fontWeight: 600, fontSize: '0.78rem', cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,0.02)', textAlign: 'center' }}>
                 {uploading ? 'Uploading...' : 'Choose Image'}
                 <input type="file" accept="image/*" onChange={handleAvatarChange} disabled={uploading} style={{ display: 'none' }} />
