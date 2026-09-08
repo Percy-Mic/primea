@@ -19,12 +19,10 @@ export default function AdminProfilePage() {
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState({ text: '', type: '' })
 
-  // Real-time productivity metrics simulation / state
-  const [metrics, setMetrics] = useState({
+  const [metrics] = useState({
     ordersManaged: 142,
     stockAudits: 28,
-    efficiencyScore: '94.8%',
-    pendingDispatches: 5
+    efficiencyScore: '94.8%'
   })
 
   const supabase = createClient()
@@ -38,7 +36,7 @@ export default function AdminProfilePage() {
       }
       setUser(user)
 
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
@@ -53,8 +51,6 @@ export default function AdminProfilePage() {
             month: 'short', day: 'numeric', year: 'numeric'
           }))
         }
-      } else if (error) {
-        console.warn('Profile fetch warning:', error.message)
       }
       setLoading(false)
     }
@@ -127,7 +123,7 @@ export default function AdminProfilePage() {
   return (
     <div style={{ width: '100%', minHeight: '100vh', background: '#f5f2eb', color: '#2c221e', fontFamily: 'system-ui, -apple-system, sans-serif', paddingBottom: '3rem', boxSizing: 'border-box' }}>
       
-      {/* Dark Luxury Header Bar matching Storefront */}
+      {/* Dark Luxury Header Bar */}
       <div style={{ width: '100%', background: '#1e1614', padding: '1rem 2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #3a2e2b', boxSizing: 'border-box' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
           <span style={{ color: '#f5f2eb', fontWeight: 800, fontSize: '1.2rem', letterSpacing: '2px' }}>PRIMEA</span>
@@ -139,13 +135,12 @@ export default function AdminProfilePage() {
         </Link>
       </div>
 
-      {/* Main Container Layout Filling Screen */}
+      {/* Main Container Layout */}
       <div style={{ maxWidth: '1400px', margin: '2rem auto', padding: '0 2rem', boxSizing: 'border-box' }}>
         
         {/* Top Profile Banner Card */}
         <div style={{ background: '#ffffff', border: '1px solid #e3ded6', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(44,34,30,0.04)', marginBottom: '2rem' }}>
           
-          {/* Decorative Luxury Header Banner with Subtle Gradient */}
           <div style={{ height: '160px', background: 'linear-gradient(135deg, #2c221e 0%, #4a3b35 100%)', padding: '2rem', display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-start', position: 'relative' }}>
             <div style={{ position: 'absolute', bottom: '-40px', left: '2.5rem', display: 'flex', alignItems: 'flex-end', gap: '1.5rem' }}>
               <div 
@@ -178,7 +173,6 @@ export default function AdminProfilePage() {
             )}
           </div>
 
-          {/* Profile Details Header Info */}
           <div style={{ padding: '3rem 2.5rem 1.5rem 2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.3rem' }}>
@@ -188,7 +182,6 @@ export default function AdminProfilePage() {
               <p style={{ margin: 0, fontSize: '0.9rem', color: '#7a6b63' }}>{user?.email || 'Loading credentials...'}</p>
             </div>
 
-            {/* Quick KPI Overview Counters */}
             <div style={{ display: 'flex', gap: '1.5rem', background: '#f5f2eb', padding: '0.75rem 1.5rem', borderRadius: '12px', border: '1px solid #e3ded6' }}>
               <div>
                 <div style={{ fontSize: '0.7rem', color: '#7a6b63', fontWeight: 600, textTransform: 'uppercase' }}>Orders Handled</div>
@@ -205,7 +198,6 @@ export default function AdminProfilePage() {
             </div>
           </div>
 
-          {/* Navigation Tabs */}
           <div style={{ display: 'flex', borderTop: '1px solid #e3ded6', padding: '0 2.5rem', background: '#faf8f5' }}>
             {[
               { id: 'overview', label: 'Profile Overview' },
@@ -229,17 +221,15 @@ export default function AdminProfilePage() {
           </div>
         </div>
 
-        {/* Status Notification Message */}
         {message.text && (
           <div style={{ padding: '1rem 1.25rem', borderRadius: '10px', marginBottom: '1.5rem', fontSize: '0.9rem', background: message.type === 'error' ? '#fff5f5' : '#f0fff4', color: message.type === 'error' ? '#c53030' : '#276749', border: `1px solid ${message.type === 'error' ? '#feb2b2' : '#c6f6d5'}` }}>
             {message.text}
           </div>
         )}
 
-        {/* TAB CONTENT AREAS */}
+        {/* CONTENT PANELS */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '2rem', alignItems: 'start' }}>
           
-          {/* Main Left Dynamic Pane */}
           <div style={{ background: '#ffffff', border: '1px solid #e3ded6', borderRadius: '16px', padding: '2rem', boxShadow: '0 4px 20px rgba(44,34,30,0.02)' }}>
             
             {activeTab === 'overview' && (
@@ -402,7 +392,6 @@ export default function AdminProfilePage() {
           {/* Right Sidebar Utility Panel */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             
-            {/* Quick Productivity Widget */}
             <div style={{ background: '#ffffff', border: '1px solid #e3ded6', borderRadius: '16px', padding: '1.5rem', boxShadow: '0 4px 20px rgba(44,34,30,0.02)' }}>
               <h4 style={{ margin: '0 0 1rem 0', fontSize: '0.95rem', fontWeight: 700, color: '#1e1614' }}>Isolated Admin Tools</h4>
               <p style={{ margin: '0 0 1rem 0', fontSize: '0.8rem', color: '#7a6b63', lineHeight: '1.4' }}>Tools here operate exclusively on your administrative session without altering customer data.</p>
@@ -412,18 +401,17 @@ export default function AdminProfilePage() {
                   onClick={() => alert('Clearing local admin cache session...')} 
                   style={{ width: '100%', padding: '0.65rem', background: '#f5f2eb', color: '#2c221e', border: '1px solid #e3ded6', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}
                 >
-                  ⚡ Clear Session Cache
+                  Clear Session Cache
                 </button>
                 <button 
                   onClick={() => alert('Generating full admin session productivity summary report...')} 
                   style={{ width: '100%', padding: '0.65rem', background: '#f5f2eb', color: '#2c221e', border: '1px solid #e3ded6', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}
                 >
-                  📊 Export Performance Log
+                  Export Performance Log
                 </button>
               </div>
             </div>
 
-            {/* Profile Metadata Card */}
             <div style={{ background: '#ffffff', border: '1px solid #e3ded6', borderRadius: '16px', padding: '1.5rem', boxShadow: '0 4px 20px rgba(44,34,30,0.02)' }}>
               <h4 style={{ margin: '0 0 0.75rem 0', fontSize: '0.95rem', fontWeight: 700, color: '#1e1614' }}>System Timestamps</h4>
               <div style={{ fontSize: '0.83rem', color: '#7a6b63', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -460,7 +448,7 @@ export default function AdminProfilePage() {
                 onClick={() => setShowLightbox(false)}
                 style={{ background: '#f5f2eb', border: 'none', borderRadius: '50%', width: '30px', height: '30px', fontWeight: 700, cursor: 'pointer', color: '#2c221e' }}
               >
-                ✕
+                X
               </button>
             </div>
             
@@ -475,7 +463,7 @@ export default function AdminProfilePage() {
                 rel="noopener noreferrer"
                 style={{ flex: 1, padding: '0.65rem', background: '#fff', color: '#2c221e', border: '1px solid #dcd4cc', borderRadius: '8px', textDecoration: 'none', fontWeight: 600, fontSize: '0.85rem', textAlign: 'center' }}
               >
-                Open Original ↗
+                Open Original
               </a>
               <button 
                 onClick={() => setShowLightbox(false)}
