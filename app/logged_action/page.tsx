@@ -18,7 +18,6 @@ export default function LoggedActionPage() {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
 
-      // Fetch Logs & Messages
       const { data: logData } = await supabase.from('logged_actions').select('*').order('created_at', { ascending: false })
       if (logData) setLogs(logData)
 
