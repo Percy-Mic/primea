@@ -2,13 +2,12 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createServiceRoleClient } from '@supabase/supabase-js';
 
-// Service role client for backend operations and database writes
 const supabaseAdmin = createServiceRoleClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-// GET: Fetch ONLY the logged-in user's orders safely
+// GET: Fetch orders (All orders for admin, user-specific orders for customers)
 export async function GET() {
   try {
     const supabase = createClient();
@@ -18,12 +17,23 @@ export async function GET() {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { data, error } = await supabase
-      .from('orders')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
+    // Check if the user is an admin
+    const { data: profile } = await supabaseAdmin
+      .from('profiles')
+      .select('is_admin, role')
+      .eq('id', user.id)
+      .single();
 
+    const isAdmin = profile?.is_admin || profile?.role === 'admin';
+
+    let query = supabaseAdmin.from('orders').select('*').order('created_at', { ascending: false });
+
+    // If NOT an admin, restrict results strictly to their own user ID
+    if (!isAdmin) {
+      query = query.eq('user_id', user.id);
+    }
+
+    const { data, error } = await query;
     if (error) throw error;
 
     const ordersWithItems = (data || []).map((order) => {
@@ -55,33 +65,27 @@ export async function POST(request: Request) {
     const customerEmail = email || (user ? user.email : '');
     const orderTotal = total || 0;
 
-    // ==========================================
-    // DEDUPLICATION CHECK (Ignores rapid duplicates)
-    // ==========================================
+    // DEDUPLICATION CHECK
     const tenSecondsAgo = new Date(Date.now() - 10000).toISOString();
-    
     const { data: recentOrders } = await supabaseAdmin
       .from('orders')
       .select('*')
       .eq('email', customerEmail)
       .eq('total_amount', orderTotal)
       .gte('created_at', tenSecondsAgo)
-      .order('created_at', { ascending: true }); // Always pin to the original/oldest order
+      .order('created_at', { ascending: true });
 
     if (recentOrders && recentOrders.length > 0) {
-      // Return the original order gracefully so the client succeeds without extra DB insertion
       return NextResponse.json({ success: true, order: recentOrders[0], message: 'Order already processed' });
     }
-    // ==========================================
 
-    // Map payload explicitly to match your Supabase table schema exactly
     const newOrder = {
       user_id: user ? user.id : null,
       items: typeof items === 'string' ? items : JSON.stringify(items || []),
-      total_amount: orderTotal,             // Matches 'total_amount' column
-      status: 'pending',
-      address: shipping_address || '',            // Matches 'address' column
-      customer_name: full_name || '',             // Matches 'customer_name' column
+      total_amount: orderTotal,
+      status: 'Pending', // Capitalized to line up seamlessly with your admin filter components
+      address: shipping_address || '',
+      customer_name: full_name || '',
       email: customerEmail,
       payment_method: payment_method || 'Card / Digital Payment',
     };
@@ -105,7 +109,6 @@ export async function POST(request: Request) {
 export async function PATCH(request: Request) {
   try {
     const body = await request.json();
-    
     const orderId = body.orderId || body.id || body.order_id;
     let status = body.status;
 
