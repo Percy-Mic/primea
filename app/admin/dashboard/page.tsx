@@ -239,13 +239,13 @@ export default function AdminDashboardPage() {
           display: flex;
           flex-direction: column;
           min-height: 100vh;
-          padding-top: 240px;
+          padding-top: 115px;
           width: 100%;
         }
 
         @media (max-width: 768px) {
           .admin-layout-wrapper {
-            padding-top: 250px;
+            padding-top: 135px;
           }
         }
 
@@ -263,7 +263,7 @@ export default function AdminDashboardPage() {
         }
 
         .fixed-top-header {
-          padding: 0.5rem 1rem;
+          padding: 0;
           width: 100%;
           box-sizing: border-box;
         }
@@ -275,7 +275,7 @@ export default function AdminDashboardPage() {
           background-color: #ffffff;
           border-top: 1px solid #e8e2d9;
           border-bottom: 1px solid #e8e2d9;
-          padding: 0.5rem 1.5rem;
+          padding: 0.4rem 1.5rem;
           width: 100%;
           box-sizing: border-box;
           flex-wrap: wrap;
@@ -295,7 +295,7 @@ export default function AdminDashboardPage() {
         .nav-link {
           display: inline-flex;
           align-items: center;
-          padding: 0.4rem 0.75rem;
+          padding: 0.35rem 0.65rem;
           border-radius: 6px;
           font-size: 0.85rem;
           font-weight: 500;
@@ -319,7 +319,7 @@ export default function AdminDashboardPage() {
           display: none;
           background: none;
           border: 1px solid #ded7cc;
-          padding: 0.4rem 0.75rem;
+          padding: 0.3rem 0.6rem;
           border-radius: 6px;
           font-size: 0.9rem;
           font-weight: 600;
@@ -622,7 +622,7 @@ export default function AdminDashboardPage() {
         .status-processing { background-color: #fcf8ee; color: #8a6200; }
       `}</style>
 
-      {/* Fixed Header with Dynamic Header Height and Safe Padding Matching Inventory Page */}
+      {/* Fixed Header */}
       <div className="header-fixed-container">
         <div className="fixed-top-header">
           <AdminHeader
