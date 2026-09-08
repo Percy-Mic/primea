@@ -19,11 +19,7 @@ export default function AddAdminModal({ onClose, onAdminAdded }: { onClose: () =
     setError('')
 
     try {
-      // 1. Invite user through Supabase Auth (or create user record)
-      // Note: In production, use Supabase Server Actions or Admin API to invite via email.
-      // Here we simulate profile creation and invitation dispatch.
       const tempId = crypto.randomUUID()
-
       const defaultPermissions = role === 'CEO' 
         ? { all: ['*'] }
         : role === 'Manager' 
@@ -43,13 +39,12 @@ export default function AddAdminModal({ onClose, onAdminAdded }: { onClose: () =
 
       if (insertError) throw insertError
 
-      // Log the audit event
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         await supabase.from('admin_audit_logs').insert({
           admin_id: user.id,
           action_type: 'CREATED_ADMIN',
-          description: `Added new admin ${email} with rank ${role}`,
+          description: `Added administrator ${email} (${role})`,
           metadata: { email, role, department }
         })
       }
@@ -57,49 +52,50 @@ export default function AddAdminModal({ onClose, onAdminAdded }: { onClose: () =
       onAdminAdded()
       onClose()
     } catch (err: any) {
-      setError(err.message || 'Failed to create admin account.')
+      setError(err.message || 'Failed to complete registration.')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-      <div style={{ background: '#fff', padding: '2.5rem', borderRadius: '16px', width: '100%', maxWidth: '500px', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
-        <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.4rem', fontWeight: 700 }}>Add New Administrator</h2>
-        <p style={{ margin: '0 0 1.5rem 0', fontSize: '0.85rem', color: '#7a6b63' }}>Assign ranking tier and system permissions for the new team member.</p>
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(18,14,12,0.65)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
+      <div style={{ background: '#ffffff', padding: '2rem', borderRadius: '16px', width: '100%', maxWidth: '460px', boxShadow: '0 24px 48px rgba(0,0,0,0.15)', border: '1px solid #e6e1da', boxSizing: 'border-box' }}>
+        
+        <h2 style={{ margin: '0 0 0.4rem 0', fontSize: '1.25rem', fontWeight: 700, color: '#1a1412' }}>Add Administrator</h2>
+        <p style={{ margin: '0 0 1.5rem 0', fontSize: '0.85rem', color: '#6e5f57' }}>Assign system authority tiers and department parameters.</p>
 
-        {error && <div style={{ padding: '0.75rem', background: '#fff5f5', color: '#c53030', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.85rem' }}>{error}</div>}
+        {error && <div style={{ padding: '0.75rem', background: '#fff5f5', color: '#c53030', borderRadius: '8px', marginBottom: '1.25rem', fontSize: '0.85rem', border: '1px solid #feb2b2' }}>{error}</div>}
 
         <form onSubmit={handleCreateAdmin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.3rem' }}>Email Address</label>
-            <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="admin@primea.com" style={{ width: '100%', padding: '0.75rem', border: '1px solid #dcd4cc', borderRadius: '8px', boxSizing: 'border-box' }} />
+            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.35rem', color: '#4a3f39' }}>EMAIL ADDRESS</label>
+            <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="name@primea.com" style={{ width: '100%', padding: '0.75rem', border: '1px solid #dcd4cc', borderRadius: '8px', fontSize: '0.9rem', boxSizing: 'border-box', outline: 'none' }} />
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.3rem' }}>Full Name</label>
-            <input type="text" value={fullName} onChange={e => setFullName(e.target.value)} required placeholder="Jane Doe" style={{ width: '100%', padding: '0.75rem', border: '1px solid #dcd4cc', borderRadius: '8px', boxSizing: 'border-box' }} />
+            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.35rem', color: '#4a3f39' }}>FULL NAME</label>
+            <input type="text" value={fullName} onChange={e => setFullName(e.target.value)} required placeholder="Jane Doe" style={{ width: '100%', padding: '0.75rem', border: '1px solid #dcd4cc', borderRadius: '8px', fontSize: '0.9rem', boxSizing: 'border-box', outline: 'none' }} />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.3rem' }}>Admin Rank</label>
-              <select value={role} onChange={e => setRole(e.target.value)} style={{ width: '100%', padding: '0.75rem', border: '1px solid #dcd4cc', borderRadius: '8px', background: '#fff' }}>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.35rem', color: '#4a3f39' }}>RANK LEVEL</label>
+              <select value={role} onChange={e => setRole(e.target.value)} style={{ width: '100%', padding: '0.75rem', border: '1px solid #dcd4cc', borderRadius: '8px', fontSize: '0.9rem', background: '#fff', outline: 'none' }}>
                 <option value="CEO">CEO / Owner</option>
                 <option value="Manager">Store Manager</option>
                 <option value="Staff">Support Staff</option>
               </select>
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.3rem' }}>Department</label>
-              <input type="text" value={department} onChange={e => setDepartment(e.target.value)} style={{ width: '100%', padding: '0.75rem', border: '1px solid #dcd4cc', borderRadius: '8px', boxSizing: 'border-box' }} />
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.35rem', color: '#4a3f39' }}>DEPARTMENT</label>
+              <input type="text" value={department} onChange={e => setDepartment(e.target.value)} style={{ width: '100%', padding: '0.75rem', border: '1px solid #dcd4cc', borderRadius: '8px', fontSize: '0.9rem', boxSizing: 'border-box', outline: 'none' }} />
             </div>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1.5rem' }}>
-            <button type="button" onClick={onClose} style={{ padding: '0.75rem 1.25rem', background: '#e3ded6', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
-            <button type="submit" disabled={loading} style={{ padding: '0.75rem 1.25rem', background: '#2c221e', color: '#f5f2eb', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}>{loading ? 'Creating...' : 'Create Admin Account'}</button>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.25rem' }}>
+            <button type="button" onClick={onClose} style={{ padding: '0.75rem 1rem', background: '#f3efe6', border: 'none', borderRadius: '8px', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', color: '#4a3f39' }}>Cancel</button>
+            <button type="submit" disabled={loading} style={{ padding: '0.75rem 1.25rem', background: '#1a1412', color: '#f8f6f0', border: 'none', borderRadius: '8px', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer' }}>{loading ? 'Processing...' : 'Confirm Account'}</button>
           </div>
         </form>
       </div>
