@@ -15,11 +15,13 @@ export default function AdminUsersPage() {
     const fetchAdmins = async () => {
       try {
         setLoading(true)
-        // Fetch only accounts that are NOT customers (filtering for administrative roles)
+        setError('')
+
+        // Fetch only profiles where the role is explicitly 'admin'
         const { data, error } = await supabase
           .from('profiles')
           .select('*')
-          .in('role', ['CEO', 'Manager', 'Staff', 'Admin', 'admin', 'manager', 'CEO / Owner', 'Store Manager'])
+          .eq('role', 'admin')
           .order('full_name', { ascending: true })
 
         if (error) throw error
@@ -104,7 +106,7 @@ export default function AdminUsersPage() {
                         </td>
                         <td style={{ padding: '1rem 1.25rem' }}>
                           <span style={{ background: '#1a1412', color: '#d4af37', fontSize: '0.7rem', padding: '0.25rem 0.6rem', borderRadius: '4px', fontWeight: 700, letterSpacing: '0.5px' }}>
-                            {admin.role || 'ADMIN'}
+                            {admin.rank_tier ? admin.rank_tier.toUpperCase() : 'ADMIN'}
                           </span>
                         </td>
                         <td style={{ padding: '1rem 1.25rem', color: '#4a3f39' }}>{admin.department || 'Operations'}</td>
