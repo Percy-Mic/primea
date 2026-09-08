@@ -89,6 +89,10 @@ export default function AdminUsersPage() {
                     const displayName = admin.full_name || admin.email?.split('@')[0] || 'Unnamed Admin'
                     const initial = displayName.charAt(0).toUpperCase()
                     
+                    // Automatically determine if Main Admin or Staff based on email or flags, or fallback to Job Title
+                    const isMainAdmin = admin.email === 'percymicnono@gmail.com' || admin.job_title?.toLowerCase().includes('main') || admin.job_title?.toLowerCase().includes('ceo')
+                    const rankDisplay = admin.rank_tier || (isMainAdmin ? 'MAIN ADMIN' : 'STAFF')
+
                     return (
                       <tr key={admin.id} style={{ borderBottom: '1px solid #f8f6f0', transition: 'background 0.2s' }}>
                         <td style={{ padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -106,7 +110,7 @@ export default function AdminUsersPage() {
                         </td>
                         <td style={{ padding: '1rem 1.25rem' }}>
                           <span style={{ background: '#1a1412', color: '#d4af37', fontSize: '0.7rem', padding: '0.25rem 0.6rem', borderRadius: '4px', fontWeight: 700, letterSpacing: '0.5px' }}>
-                            {admin.rank_tier ? admin.rank_tier.toUpperCase() : 'ADMIN'}
+                            {rankDisplay}
                           </span>
                         </td>
                         <td style={{ padding: '1rem 1.25rem', color: '#4a3f39' }}>{admin.department || 'Operations'}</td>
@@ -115,7 +119,7 @@ export default function AdminUsersPage() {
                             ● {admin.status || 'Active'}
                           </span>
                         </td>
-                        <td style={{ padding: '1rem 1.25rem', color: '#4a3f39' }}>{admin.job_title || 'Store Manager'}</td>
+                        <td style={{ padding: '1rem 1.25rem', color: '#4a3f39' }}>{admin.job_title || (isMainAdmin ? 'Main Administrator' : 'Staff Member')}</td>
                       </tr>
                     )
                   })}
