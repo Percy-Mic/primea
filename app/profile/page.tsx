@@ -12,9 +12,8 @@ export default function AdminProfilePage() {
   const [updatedAt, setUpdatedAt] = useState('')
   
   // Navigation & UI States
-  const [activeTab, setActiveTab] = useState<'overview' | 'activity' | 'tools' | 'security'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'activity' | 'security'>('overview')
   const [isEditing, setIsEditing] = useState(false)
-  const [showLightbox, setShowLightbox] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState({ text: '', type: '' })
@@ -184,8 +183,8 @@ export default function AdminProfilePage() {
       {/* Top Header Bar */}
       <div style={{ width: '100%', background: '#1e1614', padding: '1rem 2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #3a2e2b', boxSizing: 'border-box' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
-          <span style={{ color: '#f5f2eb', fontWeight: 800, fontSize: '1.2rem', letterSpacing: '2px' }}>PRIMEA</span>
-          <span style={{ color: '#c5b8af', fontSize: '0.85rem', borderLeft: '1px solid #3a2e2b', paddingLeft: '1.5rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Executive Management Portal</span>
+          <span style={{ color: '#f5f2eb', fontWeight: 800, fontSize: '1.2rem', letterSpacing: '2px' }}>STORE ADMIN</span>
+          <span style={{ color: '#c5b8af', fontSize: '0.85rem', borderLeft: '1px solid #3a2e2b', paddingLeft: '1.5rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Executive Profile Hub</span>
         </div>
         <Link href="/admin/dashboard" style={{ color: '#d4af37', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
           <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
@@ -199,16 +198,13 @@ export default function AdminProfilePage() {
         <div style={{ background: '#ffffff', border: '1px solid #e3ded6', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(44,34,30,0.04)', marginBottom: '2rem' }}>
           <div style={{ height: '160px', background: 'linear-gradient(135deg, #2c221e 0%, #4a3b35 100%)', padding: '2rem', display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-start', position: 'relative' }}>
             <div style={{ position: 'absolute', bottom: '-40px', left: '2.5rem', display: 'flex', alignItems: 'flex-end', gap: '1.5rem' }}>
-              <div 
-                onClick={() => avatarUrl && setShowLightbox(true)}
-                style={{ width: '104px', height: '104px', borderRadius: '50%', background: '#fff', padding: '4px', boxShadow: '0 6px 20px rgba(0,0,0,0.15)', cursor: avatarUrl ? 'zoom-in' : 'default', boxSizing: 'border-box' }}
-              >
+              <div style={{ width: '104px', height: '104px', borderRadius: '50%', background: '#fff', padding: '4px', boxShadow: '0 6px 20px rgba(0,0,0,0.15)', boxSizing: 'border-box' }}>
                 <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: '#f5f2eb', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {avatarUrl ? (
                     <img src={avatarUrl} alt="Admin Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (
                     <span style={{ fontSize: '2.2rem', fontWeight: 700, color: '#4a3b35' }}>
-                      {fullName ? fullName.charAt(0).toUpperCase() : 'P'}
+                      {fullName ? fullName.charAt(0).toUpperCase() : 'A'}
                     </span>
                   )}
                 </div>
@@ -220,7 +216,7 @@ export default function AdminProfilePage() {
                 onClick={() => setIsEditing(true)}
                 style={{ padding: '0.6rem 1.25rem', background: 'rgba(255,255,255,0.1)', color: '#f5f2eb', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', backdropFilter: 'blur(4px)' }}
               >
-                Edit Admin Profile
+                Edit Profile
               </button>
             )}
           </div>
@@ -228,7 +224,7 @@ export default function AdminProfilePage() {
           <div style={{ padding: '3rem 2.5rem 1.5rem 2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.3rem' }}>
-                <h1 style={{ margin: 0, fontSize: '1.8rem', fontWeight: 700, color: '#1e1614' }}>{fullName || 'Percy Mic Nono'}</h1>
+                <h1 style={{ margin: 0, fontSize: '1.8rem', fontWeight: 700, color: '#1e1614' }}>{fullName || 'Admin User'}</h1>
                 <span style={{ background: '#2c221e', color: '#d4af37', fontSize: '0.7rem', padding: '0.2rem 0.6rem', borderRadius: '4px', fontWeight: 700, letterSpacing: '1px' }}>ADMINISTRATOR</span>
               </div>
               <p style={{ margin: 0, fontSize: '0.9rem', color: '#7a6b63' }}>{user?.email || 'Loading session...'}</p>
@@ -254,9 +250,8 @@ export default function AdminProfilePage() {
           <div style={{ display: 'flex', borderTop: '1px solid #e3ded6', padding: '0 2.5rem', background: '#faf8f5' }}>
             {[
               { id: 'overview', label: 'Profile Overview' },
-              { id: 'activity', label: 'Real-Time Activity Log' },
-              { id: 'tools', label: 'Store Management Tools' },
-              { id: 'security', label: 'Credentials & Security' }
+              { id: 'activity', label: 'Activity Log' },
+              { id: 'security', label: 'Security & Session' }
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -289,37 +284,37 @@ export default function AdminProfilePage() {
               <div>
                 {!isEditing ? (
                   <div>
-                    <h3 style={{ margin: '0 0 0.75rem 0', fontSize: '1.1rem', fontWeight: 700, color: '#1e1614' }}>Executive Bio & Statement</h3>
+                    <h3 style={{ margin: '0 0 0.75rem 0', fontSize: '1.1rem', fontWeight: 700, color: '#1e1614' }}>About Administrator</h3>
                     <p style={{ margin: '0 0 2rem 0', fontSize: '0.95rem', color: '#4a3b35', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
-                      {bio || 'Lead Administrator managing store inventories, orders, and database security streams for PRIMEA Fashion.'}
+                      {bio || 'Primary store administrator managing customer orders, catalog items, and secure database pathways.'}
                     </p>
 
-                    <h4 style={{ margin: '0 0 1rem 0', fontSize: '0.95rem', fontWeight: 700, color: '#1e1614' }}>Core Operational Actions</h4>
+                    <h4 style={{ margin: '0 0 1rem 0', fontSize: '0.95rem', fontWeight: 700, color: '#1e1614' }}>Quick Actions</h4>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(1, 1fr)', gap: '1rem' }}>
                       <div style={{ background: '#f5f2eb', padding: '1.25rem', borderRadius: '12px', border: '1px solid #e3ded6' }}>
-                        <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '0.3rem', color: '#2c221e' }}>Live Inventory Management</div>
-                        <p style={{ margin: '0 0 1rem 0', fontSize: '0.8rem', color: '#7a6b63' }}>Inspect catalog counts and stock status directly in your dashboard.</p>
+                        <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '0.3rem', color: '#2c221e' }}>Manage Store Inventory</div>
+                        <p style={{ margin: '0 0 1rem 0', fontSize: '0.8rem', color: '#7a6b63' }}>Review items, update catalog pricing, and track live database stock.</p>
                         <Link href="/admin/dashboard" style={{ fontSize: '0.82rem', fontWeight: 600, color: '#2c221e', textDecoration: 'none' }}>Open Dashboard →</Link>
                       </div>
                     </div>
                   </div>
                 ) : (
                   <form onSubmit={handleSaveProfile} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                    <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem', fontWeight: 700, color: '#1e1614' }}>Edit Profile Information</h3>
+                    <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem', fontWeight: 700, color: '#1e1614' }}>Edit Profile Settings</h3>
                     <div>
-                      <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#4a3b35', marginBottom: '0.4rem' }}>Upload New Avatar Image</label>
+                      <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#4a3b35', marginBottom: '0.4rem' }}>Profile Picture Upload</label>
                       <input type="file" accept="image/*" onChange={handleAvatarChange} disabled={uploading || !user} style={{ fontSize: '0.85rem' }} />
                     </div>
                     <div>
-                      <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#4a3b35', marginBottom: '0.4rem' }}>Full Legal Name / Admin Alias</label>
+                      <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#4a3b35', marginBottom: '0.4rem' }}>Full Legal Name</label>
                       <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} required style={{ width: '100%', padding: '0.75rem', border: '1px solid #dcd4cc', borderRadius: '8px', fontSize: '0.9rem', background: '#f9f8f6', outline: 'none', boxSizing: 'border-box' }} />
                     </div>
                     <div>
-                      <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#4a3b35', marginBottom: '0.4rem' }}>Professional Bio</label>
+                      <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#4a3b35', marginBottom: '0.4rem' }}>Admin Bio</label>
                       <textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={4} maxLength={300} style={{ width: '100%', padding: '0.75rem', border: '1px solid #dcd4cc', borderRadius: '8px', fontSize: '0.9rem', background: '#f9f8f6', outline: 'none', resize: 'vertical', boxSizing: 'border-box' }} />
                     </div>
                     <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
-                      <button type="submit" disabled={loading} style={{ flex: 1, padding: '0.75rem', background: '#2c221e', color: '#f5f2eb', border: 'none', borderRadius: '8px', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer' }}>{loading ? 'Saving Changes...' : 'Save Profile'}</button>
+                      <button type="submit" disabled={loading} style={{ flex: 1, padding: '0.75rem', background: '#2c221e', color: '#f5f2eb', border: 'none', borderRadius: '8px', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer' }}>{loading ? 'Saving...' : 'Save Profile'}</button>
                       <button type="button" onClick={() => setIsEditing(false)} style={{ padding: '0.75rem 1.5rem', background: '#e3ded6', color: '#2c221e', border: 'none', borderRadius: '8px', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer' }}>Cancel</button>
                     </div>
                   </form>
@@ -329,12 +324,12 @@ export default function AdminProfilePage() {
 
             {activeTab === 'activity' && (
               <div>
-                <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem', fontWeight: 700, color: '#1e1614' }}>Live Database Activity Log</h3>
-                <p style={{ margin: '0 0 1.5rem 0', fontSize: '0.85rem', color: '#7a6b63' }}>Click any order log item below to inspect complete customer data and database attributes.</p>
+                <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem', fontWeight: 700, color: '#1e1614' }}>Activity Audit Stream</h3>
+                <p style={{ margin: '0 0 1.5rem 0', fontSize: '0.85rem', color: '#7a6b63' }}>Click any database entry to open full parameters and payload records.</p>
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   {activityLog.length === 0 ? (
-                    <p style={{ fontSize: '0.9rem', color: '#7a6b63' }}>No recent order events logged in database.</p>
+                    <p style={{ fontSize: '0.9rem', color: '#7a6b63' }}>No database activity recorded yet.</p>
                   ) : (
                     activityLog.map((act, idx) => (
                       <div 
@@ -346,7 +341,7 @@ export default function AdminProfilePage() {
                           <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#2c221e' }}>{act.title}</div>
                           <div style={{ fontSize: '0.78rem', color: '#7a6b63', marginTop: '0.2rem' }}>{act.time}</div>
                         </div>
-                        <span style={{ fontSize: '0.7rem', fontWeight: 700, padding: '0.3rem 0.7rem', background: '#e3ded6', borderRadius: '4px', color: '#2c221e' }}>VIEW DETAILS →</span>
+                        <span style={{ fontSize: '0.7rem', fontWeight: 700, padding: '0.3rem 0.7rem', background: '#e3ded6', borderRadius: '4px', color: '#2c221e' }}>VIEW DATA →</span>
                       </div>
                     ))
                   )}
@@ -354,25 +349,17 @@ export default function AdminProfilePage() {
               </div>
             )}
 
-            {activeTab === 'tools' && (
-              <div>
-                <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem', fontWeight: 700, color: '#1e1614' }}>Functional Store Management Tools</h3>
-                <p style={{ margin: '0 0 1.5rem 0', fontSize: '0.85rem', color: '#7a6b63' }}>Direct actions connected to your database store.</p>
-                <p style={{ fontSize: '0.9rem', color: '#4a3b35' }}>All order inspection and updates are handled seamlessly via interactive web modals.</p>
-              </div>
-            )}
-
             {activeTab === 'security' && (
               <div>
-                <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem', fontWeight: 700, color: '#1e1614' }}>Authentication & Credential State</h3>
-                <p style={{ margin: '0 0 1.5rem 0', fontSize: '0.85rem', color: '#7a6b63' }}>Your session token is securely encrypted via Supabase Auth architecture.</p>
+                <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem', fontWeight: 700, color: '#1e1614' }}>Authentication & Security State</h3>
+                <p style={{ margin: '0 0 1.5rem 0', fontSize: '0.85rem', color: '#7a6b63' }}>Your session keys are fully secured via Supabase encrypted architecture.</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', fontSize: '0.9rem', color: '#4a3b35' }}>
                   <div style={{ padding: '0.75rem 1rem', background: '#f9f8f6', borderRadius: '8px', border: '1px solid #e3ded6', display: 'flex', justifyContent: 'space-between' }}>
-                    <span>Active Admin Account</span>
+                    <span>Primary Admin Email</span>
                     <strong>{user?.email || 'Loading...'}</strong>
                   </div>
                   <div style={{ padding: '0.75rem 1rem', background: '#f9f8f6', borderRadius: '8px', border: '1px solid #e3ded6', display: 'flex', justifyContent: 'space-between' }}>
-                    <span>Session Status</span>
+                    <span>Session Security Status</span>
                     <strong style={{ color: '#276749' }}>Active & Secure</strong>
                   </div>
                 </div>
@@ -388,20 +375,20 @@ export default function AdminProfilePage() {
               <h4 style={{ margin: '0 0 1rem 0', fontSize: '0.95rem', fontWeight: 700, color: '#1e1614' }}>Quick Navigation</h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 <Link href="/admin/dashboard" style={{ display: 'block', width: '100%', padding: '0.65rem', background: '#f5f2eb', color: '#2c221e', border: '1px solid #e3ded6', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, textDecoration: 'none', textAlign: 'center', boxSizing: 'border-box' }}>
-                  Open Full Dashboard
+                  Open Dashboard
                 </Link>
               </div>
             </div>
 
             <div style={{ background: '#ffffff', border: '1px solid #e3ded6', borderRadius: '16px', padding: '1.5rem', boxShadow: '0 4px 20px rgba(44,34,30,0.02)' }}>
-              <h4 style={{ margin: '0 0 0.75rem 0', fontSize: '0.95rem', fontWeight: 700, color: '#1e1614' }}>System Timestamps</h4>
+              <h4 style={{ margin: '0 0 0.75rem 0', fontSize: '0.95rem', fontWeight: 700, color: '#1e1614' }}>System Sync</h4>
               <div style={{ fontSize: '0.83rem', color: '#7a6b63', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span>Last Sync:</span>
                   <strong style={{ color: '#2c221e' }}>{updatedAt || 'Just now'}</strong>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Database State:</span>
+                  <span>Database Link:</span>
                   <strong style={{ color: '#276749' }}>Connected</strong>
                 </div>
               </div>
@@ -418,7 +405,7 @@ export default function AdminProfilePage() {
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: '1rem' }}>
           <div style={{ background: '#fff', width: '100%', maxWidth: '600px', borderRadius: '16px', padding: '2rem', boxShadow: '0 20px 40px rgba(0,0,0,0.2)', boxSizing: 'border-box', maxHeight: '90vh', overflowY: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid #e3ded6', paddingBottom: '1rem' }}>
-              <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#1e1614' }}>Order Inspection Report</h3>
+              <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#1e1614' }}>Order Data Inspection</h3>
               <button onClick={() => setSelectedOrder(null)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', fontWeight: 700, cursor: 'pointer', color: '#7a6b63' }}>✕</button>
             </div>
             
@@ -441,13 +428,13 @@ export default function AdminProfilePage() {
               </div>
             </div>
 
-            <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1e1614', marginBottom: '0.5rem' }}>Raw Record Data Payload</h4>
+            <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1e1614', marginBottom: '0.5rem' }}>Raw Payload Stream</h4>
             <pre style={{ background: '#f5f2eb', padding: '1rem', borderRadius: '8px', fontSize: '0.75rem', overflowX: 'auto', color: '#2c221e', margin: 0 }}>
               {JSON.stringify(selectedOrder, null, 2)}
             </pre>
 
             <button onClick={() => setSelectedOrder(null)} style={{ width: '100%', marginTop: '1.5rem', padding: '0.75rem', background: '#2c221e', color: '#f5f2eb', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}>
-              Close Report
+              Close View
             </button>
           </div>
         </div>
