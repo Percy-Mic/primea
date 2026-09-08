@@ -227,8 +227,11 @@ export default function AdminDashboardPage() {
   return (
     <div className="admin-layout-wrapper">
       <style>{`
-        body {
+        html, body {
           margin: 0;
+          padding: 0;
+          width: 100%;
+          overflow-x: hidden;
           background-color: #fcfbfa;
           font-family: system-ui, -apple-system, sans-serif;
         }
@@ -238,6 +241,8 @@ export default function AdminDashboardPage() {
           flex-direction: column;
           min-height: 100vh;
           padding-top: 130px;
+          width: 100%;
+          box-sizing: border-box;
         }
 
         @media (max-width: 768px) {
@@ -251,9 +256,13 @@ export default function AdminDashboardPage() {
           top: 0;
           left: 0;
           right: 0;
-          z-index: 1050;
+          width: 100vw;
+          margin: 0;
+          padding: 0;
+          z-index: 9999;
           background-color: #ffffff;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+          box-sizing: border-box;
         }
 
         .fixed-top-header {
@@ -269,7 +278,9 @@ export default function AdminDashboardPage() {
           background-color: #ffffff;
           border-top: 1px solid #e8e2d9;
           border-bottom: 1px solid #e8e2d9;
-          padding: 0.5rem 1rem;
+          padding: 0.5rem 1.5rem;
+          width: 100%;
+          box-sizing: border-box;
           flex-wrap: wrap;
           gap: 0.75rem;
         }
@@ -614,7 +625,7 @@ export default function AdminDashboardPage() {
         .status-processing { background-color: #fcf8ee; color: #8a6200; }
       `}</style>
 
-      {/* Unified Fixed Header Container */}
+      {/* Full-width Edge-to-Edge Fixed Header */}
       <div className="header-fixed-container">
         <div className="fixed-top-header">
           <AdminHeader
