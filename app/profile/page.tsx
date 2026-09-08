@@ -53,6 +53,11 @@ export default function ProfilePage() {
       }
 
       const file = e.target.files[0]
+      
+      // Instant local preview for immediate feedback
+      const localPreviewUrl = URL.createObjectURL(file)
+      setAvatarUrl(localPreviewUrl)
+
       const fileExt = file.name.split('.').pop()
       const fileName = `${user.id}-${Math.random()}.${fileExt}`
       const filePath = `${fileName}`
@@ -71,7 +76,7 @@ export default function ProfilePage() {
         .getPublicUrl(filePath)
 
       setAvatarUrl(publicUrl)
-      setMessage({ text: 'Avatar uploaded successfully!', type: 'success' })
+      setMessage({ text: 'Avatar uploaded and saved successfully!', type: 'success' })
     } catch (error: any) {
       setMessage({ text: error.message || 'Error uploading avatar. Ensure your "avatars" bucket has public policies enabled.', type: 'error' })
     } finally {
@@ -97,7 +102,7 @@ export default function ProfilePage() {
     const { error } = await supabase.from('profiles').upsert(updates)
 
     if (error) {
-      setMessage({ text: `Error updating profile: ${error.message}`, type: 'error' })
+      setMessage({ text: `Error updating profile: ${error.message}. Make sure you ran the SQL command to add 'avatar_url' and 'bio' columns to your profiles table.`, type: 'error' })
     } else {
       setMessage({ text: 'Profile updated successfully!', type: 'success' })
     }
@@ -109,7 +114,7 @@ export default function ProfilePage() {
       
       {/* Navigation Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-        <Link href="/admin" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 600, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+        <Link href="/admin/dashboard" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 600, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
           ← Back to Dashboard
         </Link>
       </div>
@@ -131,9 +136,9 @@ export default function ProfilePage() {
           
           {/* Avatar Preview & Professional Upload Section */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', background: '#f8fafc', padding: '1rem', borderRadius: '10px', border: '1px solid #e2e8f0', boxSizing: 'border-box', width: '100%' }}>
-            <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: '#e2e8f0', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #cbd5e1', flexShrink: 0 }}>
+            <div style={{ width: '65px', height: '65px', borderRadius: '50%', background: '#e2e8f0', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #cbd5e1', flexShrink: 0 }}>
               {avatarUrl ? (
-                <img src={avatarUrl} alt="Avatar Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <img src={avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               ) : (
                 <span style={{ fontSize: '1.3rem', fontWeight: 700, color: '#64748b' }}>
                   {fullName ? fullName.charAt(0).toUpperCase() : '?'}
