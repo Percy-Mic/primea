@@ -17,14 +17,15 @@ export async function GET() {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check if the user is an admin
+    // Check if the user is an admin by querying the profiles table
     const { data: profile } = await supabaseAdmin
       .from('profiles')
-      .select('is_admin, role')
+      .select('role')
       .eq('id', user.id)
       .single();
 
-    const isAdmin = profile?.is_admin || profile?.role === 'admin';
+    // Check against role column safely (and include your specific admin fallback email if needed)
+    const isAdmin = profile?.role === 'admin' || user.email === 'percymicnono@gmail.com';
 
     let query = supabaseAdmin.from('orders').select('*').order('created_at', { ascending: false });
 
@@ -83,7 +84,7 @@ export async function POST(request: Request) {
       user_id: user ? user.id : null,
       items: typeof items === 'string' ? items : JSON.stringify(items || []),
       total_amount: orderTotal,
-      status: 'Pending', // Using standard 'status' column
+      status: 'Pending',
       address: shipping_address || '',
       customer_name: full_name || '',
       email: customerEmail,
@@ -127,7 +128,6 @@ export async function PATCH(request: Request) {
 
     if (fetchError) throw fetchError;
 
-    // Update using standard 'status' column
     const { error: updateError } = await supabaseAdmin
       .from('orders')
       .update({ 
