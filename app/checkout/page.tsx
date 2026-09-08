@@ -29,7 +29,7 @@ function StripeCheckoutForm({ amount, formData, cart }: { amount: number; formDa
     setErrorMessage(null)
 
     try {
-      // 1. Save order via the backend API route
+      // Send order to your backend API route
       const orderRes = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -49,7 +49,7 @@ function StripeCheckoutForm({ amount, formData, cart }: { amount: number; formDa
         throw new Error(orderData.error || 'Failed to save order in database.')
       }
 
-      // 2. Send email notification silently
+      // Send email notification silently
       fetch('/api/send-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -64,7 +64,6 @@ function StripeCheckoutForm({ amount, formData, cart }: { amount: number; formDa
       localStorage.removeItem('elara_cart')
       window.dispatchEvent(new Event('cartUpdated'))
 
-      // 3. Confirm Stripe Payment
       const { error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
@@ -136,7 +135,7 @@ export default function CheckoutPage() {
 
     if (paymentMethod === 'cod') {
       try {
-        // Save COD order via the backend API route
+        // Send COD order to your backend API route
         const orderRes = await fetch('/api/orders', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
