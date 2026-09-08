@@ -97,7 +97,7 @@ export default function UserNav({
         {/* Desktop Nav Links */}
         <div className="desktop-nav-links" style={styles.desktopNav}>
           <Link href="/attendance" style={styles.navLink}>ATTENDANCE</Link>
-          <Link href="/profie" style={styles.navLink}>PROFILE</Link>
+          <Link href="/profile" style={styles.navLink}>PROFILE</Link>
           <Link href="/admin_list" style={styles.navLink}>ADMIN LIST</Link>
           {isAuthed && (
             <Link href="/logged_action" style={styles.ordersButton}>
