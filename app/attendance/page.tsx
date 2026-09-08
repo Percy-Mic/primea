@@ -94,6 +94,17 @@ export default function AttendancePage() {
     window.print()
   }
 
+  // Group records by month (e.g., "September 2026")
+  const groupedByMonth = attendanceList.reduce((acc: any, rec: any) => {
+    const date = new Date(rec.time_in)
+    const monthYear = date.toLocaleString('default', { month: 'long', year: 'numeric' })
+    if (!acc[monthYear]) {
+      acc[monthYear] = []
+    }
+    acc[monthYear].push(rec)
+    return acc
+  }, {})
+
   return (
     <div style={{ maxWidth: '900px', margin: '0 auto', padding: '1.5rem 1rem', fontFamily: 'system-ui, -apple-system, sans-serif', color: '#1e293b', background: '#f8fafc', minHeight: '100vh' }}>
       <style dangerouslySetInnerHTML={{ __html: `
@@ -119,7 +130,7 @@ export default function AttendancePage() {
       <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '1rem' }}>
         <div>
           <h1 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 700, color: '#0f172a' }}>Attendance & Time Tracking</h1>
-          <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.82rem', color: '#64748b' }}>Monitor admin shifts and verify time logs.</p>
+          <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.82rem', color: '#64748b' }}>Monitor admin shifts and verify time logs grouped by month.</p>
         </div>
         <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
           <button onClick={handlePrint} style={{ padding: '0.5rem 0.9rem', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.82rem' }}>Print Report</button>
@@ -150,9 +161,9 @@ export default function AttendancePage() {
 
       {/* Main Container */}
       <div className="printable-area" style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '1.25rem', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
-        <div style={{ marginBottom: '1rem' }}>
-          <h2 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: '#0f172a' }}>Attendance Logs & Proof Summary</h2>
-          <p style={{ margin: '0.15rem 0 0 0', fontSize: '0.78rem', color: '#64748b' }}>Historical records of admin shifts and durations.</p>
+        <div style={{ marginBottom: '1.25rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.75rem' }}>
+          <h2 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700, color: '#0f172a' }}>Attendance Logs & Proof Summary</h2>
+          <p style={{ margin: '0.15rem 0 0 0', fontSize: '0.78rem', color: '#64748b' }}>Organized monthly records of admin shifts.</p>
         </div>
 
         {loading ? (
@@ -160,54 +171,60 @@ export default function AttendancePage() {
         ) : attendanceList.length === 0 ? (
           <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b', fontSize: '0.88rem' }}>No attendance records found.</div>
         ) : (
-          <>
-            {/* MOBILE VIEW: Professional Stacked Cards (Hidden on Desktop/Print) */}
-            <div className="mobile-cards" style={{ flexDirection: 'column', gap: '0.75rem' }}>
-              {attendanceList.map((rec) => (
-                <div key={rec.id} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
-                    <span style={{ fontWeight: 600, fontSize: '0.9rem', color: '#0f172a', wordBreak: 'break-all' }}>{rec.user_name}</span>
-                    <span style={{ padding: '0.15rem 0.5rem', borderRadius: '5px', fontSize: '0.7rem', background: '#dcfce7', color: '#166534', fontWeight: 600, whiteSpace: 'nowrap' }}>{rec.status}</span>
-                  </div>
-                  <div style={{ fontSize: '0.8rem', color: '#475569', display: 'flex', flexDirection: 'column', gap: '0.2rem', borderTop: '1px solid #e2e8f0', paddingTop: '0.5rem', marginTop: '0.2rem' }}>
-                    <div><strong>In:</strong> {new Date(rec.time_in).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</div>
-                    <div>
-                      <strong>Out:</strong> {rec.time_out ? new Date(rec.time_out).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : <span style={{ color: '#d97706', fontWeight: 600 }}>Active Shift</span>}
-                    </div>
-                    {rec.notes && <div><strong>Notes:</strong> {rec.notes}</div>}
-                  </div>
-                </div>
-              ))}
-            </div>
+          Object.keys(groupedByMonth).map((monthYear) => (
+            <div key={monthYear} style={{ marginBottom: '2rem' }}>
+              <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#334155', background: '#f1f5f9', padding: '0.5rem 0.75rem', borderRadius: '6px', marginBottom: '0.75rem', borderLeft: '3px solid #2563eb' }}>
+                {monthYear}
+              </h3>
 
-            {/* DESKTOP VIEW: Clean Table (Hidden on Mobile) */}
-            <table className="desktop-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
-              <thead>
-                <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
-                  <th style={{ padding: '0.7rem 0.85rem', fontWeight: 600, color: '#475569' }}>Admin / User</th>
-                  <th style={{ padding: '0.7rem 0.85rem', fontWeight: 600, color: '#475569' }}>Status</th>
-                  <th style={{ padding: '0.7rem 0.85rem', fontWeight: 600, color: '#475569' }}>Time In</th>
-                  <th style={{ padding: '0.7rem 0.85rem', fontWeight: 600, color: '#475569' }}>Time Out</th>
-                  <th style={{ padding: '0.7rem 0.85rem', fontWeight: 600, color: '#475569' }}>Notes</th>
-                </tr>
-              </thead>
-              <tbody>
-                {attendanceList.map((rec) => (
-                  <tr key={rec.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                    <td style={{ padding: '0.75rem 0.85rem', fontWeight: 600, color: '#0f172a' }}>{rec.user_name}</td>
-                    <td style={{ padding: '0.75rem 0.85rem' }}>
-                      <span style={{ padding: '0.2rem 0.5rem', borderRadius: '5px', fontSize: '0.72rem', background: '#dcfce7', color: '#166534', fontWeight: 600, display: 'inline-block' }}>{rec.status}</span>
-                    </td>
-                    <td style={{ padding: '0.75rem 0.85rem', color: '#334155' }}>{new Date(rec.time_in).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</td>
-                    <td style={{ padding: '0.75rem 0.85rem', color: '#334155' }}>
-                      {rec.time_out ? new Date(rec.time_out).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : <span style={{ color: '#d97706', fontWeight: 600, background: '#fef3c7', padding: '0.15rem 0.4rem', borderRadius: '4px', fontSize: '0.75rem' }}>Active Shift</span>}
-                    </td>
-                    <td style={{ padding: '0.75rem 0.85rem', color: '#64748b' }}>{rec.notes || '-'}</td>
-                  </tr>
+              {/* MOBILE VIEW: Stacked Cards per Month */}
+              <div className="mobile-cards" style={{ flexDirection: 'column', gap: '0.75rem' }}>
+                {groupedByMonth[monthYear].map((rec: any) => (
+                  <div key={rec.id} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
+                      <span style={{ fontWeight: 600, fontSize: '0.9rem', color: '#0f172a', wordBreak: 'break-all' }}>{rec.user_name}</span>
+                      <span style={{ padding: '0.15rem 0.5rem', borderRadius: '5px', fontSize: '0.7rem', background: '#dcfce7', color: '#166534', fontWeight: 600, whiteSpace: 'nowrap' }}>{rec.status}</span>
+                    </div>
+                    <div style={{ fontSize: '0.8rem', color: '#475569', display: 'flex', flexDirection: 'column', gap: '0.2rem', borderTop: '1px solid #e2e8f0', paddingTop: '0.5rem', marginTop: '0.2rem' }}>
+                      <div><strong>In:</strong> {new Date(rec.time_in).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</div>
+                      <div>
+                        <strong>Out:</strong> {rec.time_out ? new Date(rec.time_out).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : <span style={{ color: '#d97706', fontWeight: 600 }}>Active Shift</span>}
+                      </div>
+                      {rec.notes && <div><strong>Notes:</strong> {rec.notes}</div>}
+                    </div>
+                  </div>
                 ))}
-              </tbody>
-            </table>
-          </>
+              </div>
+
+              {/* DESKTOP / PRINT VIEW: Clean Table per Month */}
+              <table className="desktop-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem', marginBottom: '1rem' }}>
+                <thead>
+                  <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
+                    <th style={{ padding: '0.7rem 0.85rem', fontWeight: 600, color: '#475569' }}>Admin / User</th>
+                    <th style={{ padding: '0.7rem 0.85rem', fontWeight: 600, color: '#475569' }}>Status</th>
+                    <th style={{ padding: '0.7rem 0.85rem', fontWeight: 600, color: '#475569' }}>Time In</th>
+                    <th style={{ padding: '0.7rem 0.85rem', fontWeight: 600, color: '#475569' }}>Time Out</th>
+                    <th style={{ padding: '0.7rem 0.85rem', fontWeight: 600, color: '#475569' }}>Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {groupedByMonth[monthYear].map((rec: any) => (
+                    <tr key={rec.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                      <td style={{ padding: '0.75rem 0.85rem', fontWeight: 600, color: '#0f172a' }}>{rec.user_name}</td>
+                      <td style={{ padding: '0.75rem 0.85rem' }}>
+                        <span style={{ padding: '0.2rem 0.5rem', borderRadius: '5px', fontSize: '0.72rem', background: '#dcfce7', color: '#166534', fontWeight: 600, display: 'inline-block' }}>{rec.status}</span>
+                      </td>
+                      <td style={{ padding: '0.75rem 0.85rem', color: '#334155' }}>{new Date(rec.time_in).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</td>
+                      <td style={{ padding: '0.75rem 0.85rem', color: '#334155' }}>
+                        {rec.time_out ? new Date(rec.time_out).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : <span style={{ color: '#d97706', fontWeight: 600, background: '#fef3c7', padding: '0.15rem 0.4rem', borderRadius: '4px', fontSize: '0.75rem' }}>Active Shift</span>}
+                      </td>
+                      <td style={{ padding: '0.75rem 0.85rem', color: '#64748b' }}>{rec.notes || '-'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ))
         )}
       </div>
     </div>
