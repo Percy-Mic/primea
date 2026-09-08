@@ -83,8 +83,7 @@ export async function POST(request: Request) {
       user_id: user ? user.id : null,
       items: typeof items === 'string' ? items : JSON.stringify(items || []),
       total_amount: orderTotal,
-      status: 'Pending',
-      order_status: 'pending', // Explicitly populate both to prevent column mismatch
+      status: 'Pending', // Using standard 'status' column
       address: shipping_address || '',
       customer_name: full_name || '',
       email: customerEmail,
@@ -122,25 +121,24 @@ export async function PATCH(request: Request) {
 
     const { data: currentOrder, error: fetchError } = await supabaseAdmin
       .from('orders')
-      .select('status, order_status, items')
+      .select('status, items')
       .eq('id', orderId)
       .single();
 
     if (fetchError) throw fetchError;
 
-    // Update BOTH columns so they never get out of sync
+    // Update using standard 'status' column
     const { error: updateError } = await supabaseAdmin
       .from('orders')
       .update({ 
-        status: formattedStatus,
-        order_status: lowercaseStatus 
+        status: formattedStatus
       })
       .eq('id', orderId);
 
     if (updateError) throw updateError;
 
     const fulfillmentStatuses = ['shipped', 'completed', 'complete', 'delivered'];
-    const oldStatus = (currentOrder.status || currentOrder.order_status || '').toLowerCase();
+    const oldStatus = (currentOrder.status || '').toLowerCase();
 
     if (
       fulfillmentStatuses.includes(lowercaseStatus) && 
