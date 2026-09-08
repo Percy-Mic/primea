@@ -52,15 +52,36 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { items, total, shipping_address, full_name, email, payment_method } = body;
 
+    const customerEmail = email || (user ? user.email : '');
+    const orderTotal = total || 0;
+
+    // ==========================================
+    // DEDUPLICATION CHECK (Ignores rapid duplicates)
+    // ==========================================
+    const tenSecondsAgo = new Date(Date.now() - 10000).toISOString();
+    
+    const { data: recentOrders } = await supabaseAdmin
+      .from('orders')
+      .select('*')
+      .eq('email', customerEmail)
+      .eq('total_amount', orderTotal)
+      .gte('created_at', tenSecondsAgo);
+
+    if (recentOrders && recentOrders.length > 0) {
+      // Duplicate caught: return the existing order successfully without duplicating it
+      return NextResponse.json({ success: true, order: recentOrders[0], message: 'Order already processed' });
+    }
+    // ==========================================
+
     // Map payload explicitly to match your Supabase table schema exactly
     const newOrder = {
       user_id: user ? user.id : null,
       items: typeof items === 'string' ? items : JSON.stringify(items || []),
-      total_amount: total || 0,                 // Matches 'total_amount' column
+      total_amount: orderTotal,             // Matches 'total_amount' column
       status: 'pending',
-      address: shipping_address || '',           // Matches 'address' column
-      customer_name: full_name || '',            // Matches 'customer_name' column
-      email: email || (user ? user.email : ''),
+      address: shipping_address || '',            // Matches 'address' column
+      customer_name: full_name || '',             // Matches 'customer_name' column
+      email: customerEmail,
       payment_method: payment_method || 'Card / Digital Payment',
     };
 
