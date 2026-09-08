@@ -80,23 +80,6 @@ export default function UserNav({
           }
         }
       `}</style>
-
-      <div style={styles.navContainer}>
-        {/* Brand Logo & Optional Page Title */}
-        <div style={styles.brandWrapper}>
-          <Link href="/" style={styles.brandLink}>
-            {brandName}
-          </Link>
-          {title && (
-            <div style={styles.titleWrapper}>
-              <span style={styles.divider}>/</span>
-              <div>
-                <span style={styles.pageTitle}>{title}</span>
-                {description && <p style={styles.pageDescription}>{description}</p>}
-              </div>
-            </div>
-          )}
-        </div>
         
         {/* Desktop Nav Links */}
         <div className="desktop-nav-links" style={styles.desktopNav}>
