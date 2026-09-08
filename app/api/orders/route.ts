@@ -65,10 +65,11 @@ export async function POST(request: Request) {
       .select('*')
       .eq('email', customerEmail)
       .eq('total_amount', orderTotal)
-      .gte('created_at', tenSecondsAgo);
+      .gte('created_at', tenSecondsAgo)
+      .order('created_at', { ascending: true }); // Always pin to the original/oldest order
 
     if (recentOrders && recentOrders.length > 0) {
-      // Duplicate caught: return the existing order successfully without duplicating it
+      // Return the original order gracefully so the client succeeds without extra DB insertion
       return NextResponse.json({ success: true, order: recentOrders[0], message: 'Order already processed' });
     }
     // ==========================================
