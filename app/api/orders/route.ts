@@ -12,7 +12,6 @@ const supabaseAdmin = createServiceRoleClient(
 export async function GET() {
   try {
     const supabase = createClient();
-
     const { data: { user }, error: userError } = await supabase.auth.getUser();
 
     if (userError || !user) {
@@ -48,24 +47,21 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const supabase = createClient();
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-    }
+    const { data: { user } } = await supabase.auth.getUser();
 
     const body = await request.json();
     const { items, total, shipping_address, full_name, email, payment_method } = body;
 
+    // Map payload explicitly to match your Supabase table schema exactly
     const newOrder = {
-      user_id: user.id,
+      user_id: user ? user.id : null,
       items: typeof items === 'string' ? items : JSON.stringify(items || []),
-      total: total || 0,
-      status: 'Pending',
-      shipping_address: shipping_address || '',
-      full_name: full_name || '',
-      email: email || user.email,
-      payment_method: payment_method || 'Card/Digital Payment',
+      total_amount: total || 0,                 // Matches 'total_amount' column
+      status: 'pending',
+      address: shipping_address || '',           // Matches 'address' column
+      customer_name: full_name || '',            // Matches 'customer_name' column
+      email: email || (user ? user.email : ''),
+      payment_method: payment_method || 'Card / Digital Payment',
     };
 
     const { data, error } = await supabaseAdmin
