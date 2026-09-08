@@ -237,50 +237,41 @@ export default function AdminDashboardPage() {
           display: flex;
           flex-direction: column;
           min-height: 100vh;
-          /* Reduced padding-top further by 50px (down to 120px) */
-          padding-top: 120px;
+          padding-top: 130px;
         }
 
         @media (max-width: 768px) {
           .admin-layout-wrapper {
-            /* Reduced padding-top further by 50px on mobile (down to 170px) */
-            padding-top: 170px;
+            padding-top: 180px;
           }
         }
 
-        .fixed-top-header {
+        .header-fixed-container {
           position: fixed;
           top: 0;
           left: 0;
           right: 0;
           z-index: 1050;
-          border-bottom: 1px solid #e2dacf;
+          background-color: #ffffff;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .fixed-top-header {
           padding: 0.5rem 1rem;
           width: 100%;
           box-sizing: border-box;
         }
 
         .top-nav-bar {
-          position: fixed;
-          top: 53px; /* Positions right below the fixed top header */
-          left: 0;
-          right: 0;
-          z-index: 1045;
           display: flex;
           align-items: center;
           justify-content: space-between;
           background-color: #ffffff;
+          border-top: 1px solid #e8e2d9;
           border-bottom: 1px solid #e8e2d9;
-          padding: 0.6rem 1rem;
+          padding: 0.5rem 1rem;
           flex-wrap: wrap;
           gap: 0.75rem;
-        }
-
-        @media (max-width: 768px) {
-          .top-nav-bar {
-            top: auto; /* Allow flexible flow on mobile if header wraps */
-            position: relative;
-          }
         }
 
         .nav-links-group {
@@ -623,33 +614,34 @@ export default function AdminDashboardPage() {
         .status-processing { background-color: #fcf8ee; color: #8a6200; }
       `}</style>
 
-      {/* Unwrapped Fixed Header */}
-      <div className="fixed-top-header">
-        <AdminHeader
-          title="Storefront Monitor"
-          description="Real-time store progress and inventory analytics report"
-          userEmail={userEmail}
-          onLogout={handleLogout}
-        />
-      </div>
+      {/* Unified Fixed Header Container */}
+      <div className="header-fixed-container">
+        <div className="fixed-top-header">
+          <AdminHeader
+            title="Admin Dashboard"
+            description="Real-time store progress and inventory management dashboard"
+            userEmail={userEmail}
+            onLogout={handleLogout}
+          />
+        </div>
 
-      {/* Fixed Navigation Bar */}
-      <nav className="top-nav-bar">
-        <button 
-          type="button" 
-          className="mobile-menu-btn" 
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        >
-          ☰ Menu
-        </button>
-        <ul className="nav-links-group">
-          <li><Link href="/admin/dashboard" className={`nav-link ${pathname === '/admin/dashboard' ? 'active' : ''}`}>Dashboard</Link></li>
-          <li><Link href="/admin/orders" className={`nav-link ${pathname === '/admin/orders' ? 'active' : ''}`}>Orders</Link></li>
-          <li><Link href="/admin/products" className={`nav-link ${pathname === '/admin/products' ? 'active' : ''}`}>Inventory</Link></li>
-          <li><Link href="/admin/products/new" className={`nav-link ${pathname === '/admin/products/new' ? 'active' : ''}`}>Add Product</Link></li>
-        </ul>
-        <Link href="/" target="_blank" className="nav-link" style={{ color: '#b55933', fontWeight: 600 }}>View Storefront →</Link>
-      </nav>
+        <nav className="top-nav-bar">
+          <button 
+            type="button" 
+            className="mobile-menu-btn" 
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            ☰ Menu
+          </button>
+          <ul className="nav-links-group">
+            <li><Link href="/admin/dashboard" className={`nav-link ${pathname === '/admin/dashboard' ? 'active' : ''}`}>Dashboard</Link></li>
+            <li><Link href="/admin/orders" className={`nav-link ${pathname === '/admin/orders' ? 'active' : ''}`}>Orders</Link></li>
+            <li><Link href="/admin/products" className={`nav-link ${pathname === '/admin/products' ? 'active' : ''}`}>Inventory</Link></li>
+            <li><Link href="/admin/products/new" className={`nav-link ${pathname === '/admin/products/new' ? 'active' : ''}`}>Add Product</Link></li>
+          </ul>
+          <Link href="/" target="_blank" className="nav-link" style={{ color: '#b55933', fontWeight: 600 }}>View Storefront →</Link>
+        </nav>
+      </div>
 
       {/* Main Content Area */}
       <div className="admin-main-content">
