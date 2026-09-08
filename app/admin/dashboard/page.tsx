@@ -227,13 +227,12 @@ export default function AdminDashboardPage() {
   return (
     <div className="admin-layout-wrapper">
       <style>{`
-        html, body {
+        body {
           margin: 0;
           padding: 0;
-          width: 100%;
-          overflow-x: hidden;
           background-color: #fcfbfa;
           font-family: system-ui, -apple-system, sans-serif;
+          overflow-x: hidden;
         }
 
         .admin-layout-wrapper {
@@ -242,7 +241,6 @@ export default function AdminDashboardPage() {
           min-height: 100vh;
           padding-top: 130px;
           width: 100%;
-          box-sizing: border-box;
         }
 
         @media (max-width: 768px) {
@@ -254,8 +252,8 @@ export default function AdminDashboardPage() {
         .header-fixed-container {
           position: fixed;
           top: 0;
-          left: 0;
-          right: 0;
+          left: 50%;
+          transform: translateX(-50%);
           width: 100vw;
           margin: 0;
           padding: 0;
@@ -625,7 +623,7 @@ export default function AdminDashboardPage() {
         .status-processing { background-color: #fcf8ee; color: #8a6200; }
       `}</style>
 
-      {/* Full-width Edge-to-Edge Fixed Header */}
+      {/* Edge-to-Edge Fixed Header with Transform Center Breakout */}
       <div className="header-fixed-container">
         <div className="fixed-top-header">
           <AdminHeader
