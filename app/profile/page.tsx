@@ -78,7 +78,7 @@ export default function AdminProfilePage() {
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     try {
       setUploading(true)
-      if (!user || !e.target.files?[0]) return
+      if (!user || !e.target.files?.[0]) return
       const file = e.target.files[0]
       setAvatarUrl(URL.createObjectURL(file))
       const fileExt = file.name.split('.').pop()
