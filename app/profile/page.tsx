@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 
+const ADMIN_EMAIL = 'percymicnono@gmail.com'
+
 export default function AdminProfilePage() {
   const [user, setUser] = useState<any>(null)
   const [fullName, setFullName] = useState('')
@@ -18,6 +20,9 @@ export default function AdminProfilePage() {
   const [uploading, setUploading] = useState(false)
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState({ text: '', type: '' })
+
+  // Selected Order for Detail Modal view
+  const [selectedOrder, setSelectedOrder] = useState<any>(null)
 
   // Real Dynamic Metrics (100% from Supabase, NO hardcoded fallbacks)
   const [metrics, setMetrics] = useState({
@@ -39,6 +44,14 @@ export default function AdminProfilePage() {
         setLoading(false)
         return
       }
+
+      // Security check: restrict fully to primary admin email
+      if (user.email !== ADMIN_EMAIL) {
+        setMessage({ text: 'Access Denied: Restricted to primary administrator.', type: 'error' })
+        setLoading(false)
+        return
+      }
+
       setUser(user)
 
       // Fetch profile details
@@ -64,6 +77,7 @@ export default function AdminProfilePage() {
         const { data: ordersData, error: ordersError } = await supabase
           .from('orders')
           .select('*')
+          .order('created_at', { ascending: false })
 
         const { count: productCount } = await supabase
           .from('products')
@@ -82,11 +96,13 @@ export default function AdminProfilePage() {
             const amt = Number(order.total_amount || order.total_amo || 0)
             revenueSum += isNaN(amt) ? 0 : amt
 
-            // Populate activity log from real order timestamps
+            // Populate activity log with full order reference objects for modal viewing
             logs.push({
+              id: order.id,
               title: `Order #${order.id?.slice(0, 8) || 'Transaction'} Processed`,
               time: order.created_at ? new Date(order.created_at).toLocaleString() : 'Recent database event',
-              type: 'ORDER'
+              type: 'ORDER',
+              raw: order
             })
           })
         }
@@ -98,7 +114,7 @@ export default function AdminProfilePage() {
           loading: false
         })
 
-        setActivityLog(logs.slice(0, 5)) // Keep latest 5 real logs
+        setActivityLog(logs) 
       } catch (err) {
         console.error('Error fetching live database metrics:', err)
         setMetrics(prev => ({ ...prev, loading: false }))
@@ -200,7 +216,7 @@ export default function AdminProfilePage() {
   return (
     <div style={{ width: '100%', minHeight: '100vh', background: '#f5f2eb', color: '#2c221e', fontFamily: 'system-ui, -apple-system, sans-serif', paddingBottom: '3rem', boxSizing: 'border-box' }}>
       
-      {/* Top Header Bar with Single Return Link */}
+      {/* Top Header Bar */}
       <div style={{ width: '100%', background: '#1e1614', padding: '1rem 2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #3a2e2b', boxSizing: 'border-box' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
           <span style={{ color: '#f5f2eb', fontWeight: 800, fontSize: '1.2rem', letterSpacing: '2px' }}>PRIMEA</span>
@@ -250,7 +266,7 @@ export default function AdminProfilePage() {
                 <h1 style={{ margin: 0, fontSize: '1.8rem', fontWeight: 700, color: '#1e1614' }}>{fullName || 'Percy Mic Nono'}</h1>
                 <span style={{ background: '#2c221e', color: '#d4af37', fontSize: '0.7rem', padding: '0.2rem 0.6rem', borderRadius: '4px', fontWeight: 700, letterSpacing: '1px' }}>ADMINISTRATOR</span>
               </div>
-              <p style={{ margin: 0, fontSize: '0.9rem', color: '#7a6b63' }}>{user?.email || 'percymicnono@gmail.com'}</p>
+              <p style={{ margin: 0, fontSize: '0.9rem', color: '#7a6b63' }}>{user?.email || ADMIN_EMAIL}</p>
             </div>
 
             {/* Live Metrics Card */}
@@ -354,19 +370,23 @@ export default function AdminProfilePage() {
             {activeTab === 'activity' && (
               <div>
                 <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem', fontWeight: 700, color: '#1e1614' }}>Live Database Activity Log</h3>
-                <p style={{ margin: '0 0 1.5rem 0', fontSize: '0.85rem', color: '#7a6b63' }}>Pulled directly from your active Supabase backend orders and audit tables.</p>
+                <p style={{ margin: '0 0 1.5rem 0', fontSize: '0.85rem', color: '#7a6b63' }}>Click any order log item below to inspect complete customer data and database attributes.</p>
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   {activityLog.length === 0 ? (
                     <p style={{ fontSize: '0.9rem', color: '#7a6b63' }}>No recent order events logged in database.</p>
                   ) : (
                     activityLog.map((act, idx) => (
-                      <div key={idx} style={{ padding: '1rem', background: '#f9f8f6', borderRadius: '10px', border: '1px solid #e3ded6', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div 
+                        key={idx} 
+                        onClick={() => setSelectedOrder(act.raw)}
+                        style={{ padding: '1rem', background: '#f9f8f6', borderRadius: '10px', border: '1px solid #e3ded6', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', transition: 'background 0.2s' }}
+                      >
                         <div>
                           <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#2c221e' }}>{act.title}</div>
                           <div style={{ fontSize: '0.78rem', color: '#7a6b63', marginTop: '0.2rem' }}>{act.time}</div>
                         </div>
-                        <span style={{ fontSize: '0.7rem', fontWeight: 700, padding: '0.2rem 0.6rem', background: '#e3ded6', borderRadius: '4px', color: '#2c221e' }}>{act.type}</span>
+                        <span style={{ fontSize: '0.7rem', fontWeight: 700, padding: '0.3rem 0.7rem', background: '#e3ded6', borderRadius: '4px', color: '#2c221e' }}>VIEW DETAILS →</span>
                       </div>
                     ))
                   )}
@@ -397,8 +417,8 @@ export default function AdminProfilePage() {
                 <p style={{ margin: '0 0 1.5rem 0', fontSize: '0.85rem', color: '#7a6b63' }}>Your session token is securely encrypted via Supabase Auth architecture.</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', fontSize: '0.9rem', color: '#4a3b35' }}>
                   <div style={{ padding: '0.75rem 1rem', background: '#f9f8f6', borderRadius: '8px', border: '1px solid #e3ded6', display: 'flex', justifyContent: 'space-between' }}>
-                    <span>Authentication Protocol</span>
-                    <strong>JWT Bearer Token</strong>
+                    <span>Primary Admin Account</span>
+                    <strong>{ADMIN_EMAIL}</strong>
                   </div>
                   <div style={{ padding: '0.75rem 1rem', background: '#f9f8f6', borderRadius: '8px', border: '1px solid #e3ded6', display: 'flex', justifyContent: 'space-between' }}>
                     <span>Session Status</span>
@@ -442,6 +462,46 @@ export default function AdminProfilePage() {
         </div>
 
       </div>
+
+      {/* Order Details Modal Popup */}
+      {selectedOrder && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: '1rem' }}>
+          <div style={{ background: '#fff', width: '100%', maxWidth: '600px', borderRadius: '16px', padding: '2rem', boxShadow: '0 20px 40px rgba(0,0,0,0.2)', boxSizing: 'border-box', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid #e3ded6', paddingBottom: '1rem' }}>
+              <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#1e1614' }}>Order Inspection Report</h3>
+              <button onClick={() => setSelectedOrder(null)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', fontWeight: 700, cursor: 'pointer', color: '#7a6b63' }}>✕</button>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', fontSize: '0.9rem', color: '#4a3b35', marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px solid #f5f2eb' }}>
+                <span style={{ color: '#7a6b63' }}>Order ID:</span>
+                <strong style={{ color: '#1e1614' }}>{selectedOrder.id}</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px solid #f5f2eb' }}>
+                <span style={{ color: '#7a6b63' }}>Status:</span>
+                <strong style={{ color: '#276749' }}>{selectedOrder.status || selectedOrder.total_amo_status || 'Pending'}</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px solid #f5f2eb' }}>
+                <span style={{ color: '#7a6b63' }}>Total Amount:</span>
+                <strong style={{ color: '#1e1614' }}>${selectedOrder.total_amount || selectedOrder.total_amo || '0.00'}</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px solid #f5f2eb' }}>
+                <span style={{ color: '#7a6b63' }}>Timestamp:</span>
+                <strong style={{ color: '#1e1614' }}>{new Date(selectedOrder.created_at).toLocaleString()}</strong>
+              </div>
+            </div>
+
+            <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#1e1614', marginBottom: '0.5rem' }}>Raw Record Data Payload</h4>
+            <pre style={{ background: '#f5f2eb', padding: '1rem', borderRadius: '8px', fontSize: '0.75rem', overflowX: 'auto', color: '#2c221e', margin: 0 }}>
+              {JSON.stringify(selectedOrder, null, 2)}
+            </pre>
+
+            <button onClick={() => setSelectedOrder(null)} style={{ width: '100%', marginTop: '1.5rem', padding: '0.75rem', background: '#2c221e', color: '#f5f2eb', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}>
+              Close Report
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   )
