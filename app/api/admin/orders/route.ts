@@ -11,11 +11,11 @@ const supabaseAdmin = createServiceRoleClient(
 
 export async function GET() {
   try {
-    // Fetch orders from the correct 'orders' table, filtering out cancelled ones
+    // Fetch all orders using a case-insensitive filter to catch 'cancelled', 'Cancelled', etc.
     const { data: orders, error } = await supabaseAdmin
       .from('orders')
       .select('*')
-      .neq('status', 'Cancelled')
+      .not('status', 'ilike', 'cancelled')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -25,6 +25,9 @@ export async function GET() {
     return NextResponse.json({ success: true, orders });
   } catch (error: any) {
     console.error('Failed to fetch admin orders:', error);
-    return NextResponse.json({ success: false, error: error.message || 'Failed to fetch orders' }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: error.message || 'Failed to fetch orders' }, 
+      { status: 500 }
+    );
   }
 }
