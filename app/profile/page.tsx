@@ -48,6 +48,10 @@ export default function ProfilePage() {
       setUploading(true)
       setMessage({ text: '', type: '' })
 
+      if (!user) {
+        throw new Error('User session not loaded yet. Please wait a moment.')
+      }
+
       if (!e.target.files || e.target.files.length === 0) {
         throw new Error('You must select an image to upload.')
       }
@@ -149,7 +153,7 @@ export default function ProfilePage() {
               
               <label style={{ display: 'inline-block', padding: '0.45rem 0.9rem', background: '#fff', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: '6px', fontWeight: 600, fontSize: '0.78rem', cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,0.02)', textAlign: 'center' }}>
                 {uploading ? 'Uploading...' : 'Choose Image'}
-                <input type="file" accept="image/*" onChange={handleAvatarChange} disabled={uploading} style={{ display: 'none' }} />
+                <input type="file" accept="image/*" onChange={handleAvatarChange} disabled={uploading || !user} style={{ display: 'none' }} />
               </label>
 
               <span style={{ display: 'block', fontSize: '0.7rem', color: '#64748b', marginTop: '0.3rem' }}>Square PNG, JPG up to 2MB.</span>
@@ -172,7 +176,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Submit Button */}
-          <button type="submit" disabled={loading} style={{ width: '100%', padding: '0.7rem 1.25rem', background: '#0f172a', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 600, fontSize: '0.88rem', cursor: 'pointer', boxSizing: 'border-box' }}>
+          <button type="submit" disabled={loading || !user} style={{ width: '100%', padding: '0.7rem 1.25rem', background: '#0f172a', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 600, fontSize: '0.88rem', cursor: 'pointer', boxSizing: 'border-box' }}>
             {loading ? 'Saving Changes...' : 'Save Profile'}
           </button>
 
