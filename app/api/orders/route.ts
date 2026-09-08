@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createServiceRoleClient } from '@supabase/supabase-js';
 
-// Service role client strictly for backend administrative actions (like stock updates)
+// Service role client for backend operations and database writes
 const supabaseAdmin = createServiceRoleClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -13,14 +13,12 @@ export async function GET() {
   try {
     const supabase = createClient();
 
-    // 1. Authenticate who is making the request
     const { data: { user }, error: userError } = await supabase.auth.getUser();
 
     if (userError || !user) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
-    // 2. Fetch orders restricted strictly to the logged-in user's ID
     const { data, error } = await supabase
       .from('orders')
       .select('*')
@@ -29,7 +27,6 @@ export async function GET() {
 
     if (error) throw error;
 
-    // 3. Attach items data format expected by frontend
     const ordersWithItems = (data || []).map((order) => {
       let parsedItems = [];
       try {
@@ -47,6 +44,45 @@ export async function GET() {
   }
 }
 
+// POST: Save a new order when checkout completes successfully
+export async function POST(request: Request) {
+  try {
+    const supabase = createClient();
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const { items, total, shipping_address, full_name, email, payment_method } = body;
+
+    const newOrder = {
+      user_id: user.id,
+      items: typeof items === 'string' ? items : JSON.stringify(items || []),
+      total: total || 0,
+      status: 'Pending',
+      shipping_address: shipping_address || '',
+      full_name: full_name || '',
+      email: email || user.email,
+      payment_method: payment_method || 'Card/Digital Payment',
+    };
+
+    const { data, error } = await supabaseAdmin
+      .from('orders')
+      .insert([newOrder])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return NextResponse.json({ success: true, order: data });
+  } catch (error: any) {
+    console.error('API Orders POST Error:', error.message);
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  }
+}
+
 // PATCH: Update order status and decrement stock on fulfillment
 export async function PATCH(request: Request) {
   try {
@@ -59,10 +95,8 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ success: false, error: 'Missing orderId or status' }, { status: 400 });
     }
 
-    // Capitalize status to match your database enum ('Completed', 'Shipped', 'Pending')
     const formattedStatus = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
 
-    // 1. Fetch current order status and its items JSONB column using the admin client
     const { data: currentOrder, error: fetchError } = await supabaseAdmin
       .from('orders')
       .select('status, items')
@@ -71,7 +105,6 @@ export async function PATCH(request: Request) {
 
     if (fetchError) throw fetchError;
 
-    // 2. Update order status in the database
     const { error: updateError } = await supabaseAdmin
       .from('orders')
       .update({ status: formattedStatus })
@@ -79,7 +112,6 @@ export async function PATCH(request: Request) {
 
     if (updateError) throw updateError;
 
-    // 3. If transitioning to a completed/shipped state for the first time, decrement stock
     const fulfillmentStatuses = ['shipped', 'completed', 'complete', 'delivered'];
     const oldStatus = (currentOrder.status || '').toLowerCase();
     const newStatus = formattedStatus.toLowerCase();
@@ -103,20 +135,16 @@ export async function PATCH(request: Request) {
           const quantity = item.quantity || item.qty || 1;
 
           if (productId) {
-            const { error: stockError } = await supabaseAdmin.rpc('decrement_product_stock', {
+            await supabaseAdmin.rpc('decrement_product_stock', {
               product_id: productId,
               amount: quantity,
             });
-
-            if (stockError) {
-              console.error(`Failed to update stock for product ${productId}:`, stockError);
-            }
           }
         }
       }
     }
 
-    return NextResponse.json({ success: true, message: 'Order status updated and stock adjusted successfully.' });
+    return NextResponse.json({ success: true, message: 'Order status updated successfully.' });
   } catch (error: any) {
     console.error('API Orders PATCH Error:', error.message);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
