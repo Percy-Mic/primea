@@ -1,22 +1,35 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@/lib/supabase/server';
+import { createClient as createServiceRoleClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
+// Service role client strictly for backend administrative actions (like stock updates)
+const supabaseAdmin = createServiceRoleClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-// GET: Fetch all orders safely
+// GET: Fetch ONLY the logged-in user's orders safely
 export async function GET() {
   try {
+    const supabase = createClient();
+
+    // 1. Authenticate who is making the request
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // 2. Fetch orders restricted strictly to the logged-in user's ID
     const { data, error } = await supabase
       .from('orders')
       .select('*')
+      .eq('user_id', user.id)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
 
-    // Attach items data format expected by frontend
+    // 3. Attach items data format expected by frontend
     const ordersWithItems = (data || []).map((order) => {
       let parsedItems = [];
       try {
@@ -49,8 +62,8 @@ export async function PATCH(request: Request) {
     // Capitalize status to match your database enum ('Completed', 'Shipped', 'Pending')
     const formattedStatus = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
 
-    // 1. Fetch current order status and its items JSONB column
-    const { data: currentOrder, error: fetchError } = await supabase
+    // 1. Fetch current order status and its items JSONB column using the admin client
+    const { data: currentOrder, error: fetchError } = await supabaseAdmin
       .from('orders')
       .select('status, items')
       .eq('id', orderId)
@@ -59,7 +72,7 @@ export async function PATCH(request: Request) {
     if (fetchError) throw fetchError;
 
     // 2. Update order status in the database
-    const { error: updateError } = await supabase
+    const { error: updateError } = await supabaseAdmin
       .from('orders')
       .update({ status: formattedStatus })
       .eq('id', orderId);
@@ -86,12 +99,11 @@ export async function PATCH(request: Request) {
 
       if (orderItems && orderItems.length > 0) {
         for (const item of orderItems) {
-          // Adjust property names based on how your JSONB stores product reference & quantity (e.g. id/product_id and quantity)
           const productId = item.product_id || item.id;
           const quantity = item.quantity || item.qty || 1;
 
           if (productId) {
-            const { error: stockError } = await supabase.rpc('decrement_product_stock', {
+            const { error: stockError } = await supabaseAdmin.rpc('decrement_product_stock', {
               product_id: productId,
               amount: quantity,
             });
