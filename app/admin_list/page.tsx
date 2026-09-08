@@ -10,7 +10,6 @@ export default function AdminListPage() {
   useEffect(() => {
     const supabase = createClient()
     const fetchAdmins = async () => {
-      // Sort admins by productivity score descending
       const { data } = await supabase.from('profiles').select('*').order('score', { ascending: false })
       if (data) setAdmins(data)
     }
