@@ -2,12 +2,18 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { createClient } from '@supabase/supabase-js'
+
+// Initialize Supabase client (ensure your environment variables are set in .env.local)
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+)
 
 export default function AdminProfilePage() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [uploading, setUploading] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null)
   
   const [activeTab, setActiveTab] = useState<'overview' | 'edit' | 'activity' | 'security'>('overview')
@@ -17,29 +23,57 @@ export default function AdminProfilePage() {
   const [activitySearch, setActivitySearch] = useState('')
   const [activityStatus, setActivityStatus] = useState('all')
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
-
-  // Mock data / placeholders for demonstration to ensure everything compiles and runs smoothly
-  const [orders, setOrders] = useState<any[]>([
-    { id: 'ORD-98231', title: 'Order #98231', description: 'Purchased Primea Gold Watch', time: '2 hours ago', status: 'completed', amount: 299.00, created_at: '2026-09-08T10:00:00Z' },
-    { id: 'ORD-98232', title: 'Order #98232', description: 'Purchased Leather Strap', time: '1 day ago', status: 'pending', amount: 49.00, created_at: '2026-09-07T14:30:00Z' },
-    { id: 'ORD-98233', title: 'Order #98233', description: 'Purchased Maintenance Kit', time: '3 days ago', status: 'cancelled', amount: 19.00, created_at: '2026-09-05T09:15:00Z' },
-  ])
+  const [orders, setOrders] = useState<any[]>([])
 
   useEffect(() => {
-    // Simulate fetching admin user profile data
-    setTimeout(() => {
-      setUser({
-        id: 'usr_admin_01',
-        name: 'Percy Nono',
-        email: 'percy@primea.admin',
-        bio: 'Lead system administrator and platform developer.',
-        avatar_url: '',
-        role: 'Super Admin',
-      })
-      setName('Percy Nono')
-      setBio('Lead system administrator and platform developer.')
-      setLoading(false)
-    }, 500)
+    async function fetchProfileAndData() {
+      try {
+        setLoading(true)
+        
+        // 1. Get authenticated user
+        const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
+        if (authError || !authUser) {
+          throw new Error('Not authenticated or session expired.')
+        }
+
+        // 2. Fetch profile details from your profiles/users table
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', authUser.id)
+          .single()
+
+        const userData = {
+          id: authUser.id,
+          email: authUser.email,
+          name: profileData?.name || authUser.user_metadata?.name || 'Admin User',
+          bio: profileData?.bio || '',
+          avatar_url: profileData?.avatar_url || '',
+          role: profileData?.role || 'Super Admin',
+          created_at: authUser.created_at
+        }
+
+        setUser(userData)
+        setName(userData.name)
+        setBio(userData.bio)
+
+        // 3. Fetch real orders/transactions from your database
+        const { data: ordersData, error: ordersError } = await supabase
+          .from('orders')
+          .select('*')
+          .order('created_at', { ascending: false })
+
+        if (!ordersError && ordersData) {
+          setOrders(ordersData)
+        }
+      } catch (err: any) {
+        setMessage({ type: 'error', text: err.message || 'Failed to load profile data.' })
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchProfileAndData()
   }, [])
 
   const handleCancelEditing = () => {
@@ -48,22 +82,39 @@ export default function AdminProfilePage() {
     setActiveTab('overview')
   }
 
-  const handleSaveProfile = (e: React.FormEvent) => {
+  const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
-    setTimeout(() => {
+    setMessage(null)
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .upsert({
+          id: user.id,
+          name,
+          bio,
+          updated_at: new Date().toISOString(),
+        })
+
+      if (error) throw error
+
       setUser((prev: any) => ({ ...prev, name, bio }))
-      setSaving(false)
       setMessage({ type: 'success', text: 'Profile updated successfully!' })
       setActiveTab('overview')
-    }, 600)
+    } catch (err: any) {
+      setMessage({ type: 'error', text: err.message || 'Failed to save changes.' })
+    } finally {
+      setSaving(false)
+    }
   }
 
-  const handleSignOut = () => {
-    alert('Signing out...')
+  const handleSignOut = async () => {
+    await supabase.auth.signOut()
+    window.location.href = '/login'
   }
 
-  const availableStatuses = ['completed', 'pending', 'cancelled']
+  const availableStatuses = Array.from(new Set(orders.map(o => o.status).filter(Boolean)))
 
   const getStatusLabel = (status: string) => {
     switch (status) {
@@ -74,22 +125,18 @@ export default function AdminProfilePage() {
     }
   }
 
-  const normalizeStatus = (order: any) => order.status
-
-  const getOrderAmount = (order: any) => order.amount
-
-  const formatCurrency = (amount: number) => `$${amount.toFixed(2)}`
-
-  const formatDate = (dateStr: string) => new Date(dateStr).toLocaleDateString()
+  const normalizeStatus = (order: any) => order.status || 'pending'
+  const getOrderAmount = (order: any) => order.amount || order.total || 0
+  const formatCurrency = (amount: number) => `$${Number(amount).toFixed(2)}`
+  const formatDate = (dateStr: string) => dateStr ? new Date(dateStr).toLocaleDateString() : 'N/A'
 
   const filteredActivity = orders.filter(item => {
-    const matchesSearch = item.title.toLowerCase().includes(activitySearch.toLowerCase()) ||
-                          item.description.toLowerCase().includes(activitySearch.toLowerCase())
+    const titleMatch = (item.title || item.id || '').toLowerCase().includes(activitySearch.toLowerCase())
+    const descMatch = (item.description || item.customer_email || '').toLowerCase().includes(activitySearch.toLowerCase())
+    const matchesSearch = titleMatch || descMatch
     const matchesStatus = activityStatus === 'all' || item.status === activityStatus
     return matchesSearch && matchesStatus
   })
-
-  const accountCreatedAt = 'January 15, 2025'
 
   if (loading) {
     return (
@@ -97,9 +144,8 @@ export default function AdminProfilePage() {
         <Header />
         <div style={styles.container}>
           <div style={styles.loadingCard}>
-            <div className="spinner" />
             <h2 style={styles.loadingTitle}>Loading profile...</h2>
-            <p style={styles.muted}>Please wait while we retrieve your administrator data.</p>
+            <p style={styles.muted}>Please wait while we fetch your live data.</p>
           </div>
         </div>
       </div>
@@ -114,7 +160,7 @@ export default function AdminProfilePage() {
           <div style={styles.emptyCard}>
             <div style={styles.emptyIcon}>⚠️</div>
             <h2>Profile not found</h2>
-            <p style={styles.muted}>We couldn't load your administrator profile.</p>
+            <p style={styles.muted}>Please log in to view your administrator profile.</p>
           </div>
         </div>
       </div>
@@ -166,7 +212,7 @@ export default function AdminProfilePage() {
             </div>
 
             <div style={styles.metricStrip}>
-              <Metric label="Orders Handled" value={orders.length} />
+              <Metric label="Total Orders" value={orders.length} />
               <Metric label="Access Level" value="Level 5" />
             </div>
           </div>
@@ -192,7 +238,7 @@ export default function AdminProfilePage() {
 
                 <div style={styles.bioBox}>
                   <span style={styles.smallLabel}>BIO</span>
-                  <p style={styles.bio}>{user.bio || 'No biography provided yet.'}</p>
+                  <p style={styles.bio}>{user.bio || 'No biography provided yet. Click Edit Profile to add one.'}</p>
                 </div>
 
                 <div style={styles.sectionHeader}>
@@ -203,22 +249,26 @@ export default function AdminProfilePage() {
                   <button onClick={() => setActiveTab('activity')} style={styles.textLink}>View all</button>
                 </div>
 
-                <div style={styles.orderList}>
-                  {orders.slice(0, 3).map(order => (
-                    <div key={order.id} onClick={() => setSelectedOrder(order)} style={styles.orderRow}>
-                      <div style={styles.orderMain}>
-                        <strong style={styles.orderTitle}>{order.title}</strong>
-                        <span style={styles.orderDate}>{order.description} • {order.time}</span>
+                {orders.length === 0 ? (
+                  <p style={styles.muted}>No store transactions found in the database.</p>
+                ) : (
+                  <div style={styles.orderList}>
+                    {orders.slice(0, 3).map(order => (
+                      <div key={order.id} onClick={() => setSelectedOrder(order)} style={styles.orderRow}>
+                        <div style={styles.orderMain}>
+                          <strong style={styles.orderTitle}>Order #{order.id.slice(0, 8)}</strong>
+                          <span style={styles.orderDate}>{order.customer_email || order.email || 'Client Order'} • {formatDate(order.created_at)}</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                          <span style={{ ...styles.statusBadge, ...getStatusStyle(normalizeStatus(order)) }}>
+                            {getStatusLabel(normalizeStatus(order))}
+                          </span>
+                          <span style={styles.orderAmount}>{formatCurrency(getOrderAmount(order))}</span>
+                        </div>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                        <span style={{ ...styles.statusBadge, ...getStatusStyle(order.status) }}>
-                          {getStatusLabel(order.status)}
-                        </span>
-                        <span style={styles.orderAmount}>{formatCurrency(order.amount)}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </>
             )}
 
@@ -271,7 +321,7 @@ export default function AdminProfilePage() {
                     <button
                       type="button"
                       onClick={handleCancelEditing}
-                      disabled={saving || uploading}
+                      disabled={saving}
                       style={styles.secondaryButton}
                     >
                       Cancel
@@ -279,7 +329,7 @@ export default function AdminProfilePage() {
 
                     <button
                       type="submit"
-                      disabled={saving || uploading}
+                      disabled={saving}
                       style={styles.primaryButton}
                     >
                       {saving ? 'Saving...' : 'Save changes'}
@@ -329,12 +379,12 @@ export default function AdminProfilePage() {
                 ) : (
                   <div style={styles.activityList}>
                     {filteredActivity.map(item => (
-                      <div key={item.id} style={styles.activityItem}>
+                      <div key={item.id} style={styles.activityItem} onClick={() => setSelectedOrder(item)}>
                         <div>
-                          <strong style={styles.activityTitle}>{item.title}</strong>
-                          <p style={styles.activityDesc}>{item.description}</p>
+                          <strong style={styles.activityTitle}>Order #{item.id.slice(0, 8)} - {formatCurrency(getOrderAmount(item))}</strong>
+                          <p style={styles.activityDesc}>{item.customer_email || item.email || 'Client Transaction'}</p>
                         </div>
-                        <span style={styles.activityTime}>{item.time}</span>
+                        <span style={styles.activityTime}>{formatDate(item.created_at)}</span>
                       </div>
                     ))}
                   </div>
@@ -354,7 +404,7 @@ export default function AdminProfilePage() {
                 <div style={styles.securityBox}>
                   <div style={styles.securityMeta}>
                     <strong>Account Created</strong>
-                    <p style={styles.muted}>{accountCreatedAt}</p>
+                    <p style={styles.muted}>{formatDate(user.created_at)}</p>
                   </div>
 
                   <div style={styles.securityMeta}>
@@ -391,6 +441,7 @@ export default function AdminProfilePage() {
             <p><strong>Status:</strong> {getStatusLabel(normalizeStatus(selectedOrder))}</p>
             <p><strong>Amount:</strong> {formatCurrency(getOrderAmount(selectedOrder))}</p>
             <p><strong>Date:</strong> {formatDate(selectedOrder.created_at)}</p>
+            <p><strong>Customer:</strong> {selectedOrder.customer_email || selectedOrder.email || 'N/A'}</p>
           </div>
         </div>
       )}
@@ -460,20 +511,8 @@ function getStatusStyle(status: string) {
 }
 
 const styles: { [key: string]: React.CSSProperties } = {
-  page: {
-    minHeight: '100vh',
-    backgroundColor: '#f8f5f0',
-    color: '#1a1a1a',
-    fontFamily: 'Inter, system-ui, sans-serif',
-  },
-  header: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '20px 40px',
-    backgroundColor: '#121212',
-    color: '#ffffff',
-  },
+  page: { minHeight: '100vh', backgroundColor: '#f8f5f0', color: '#1a1a1a', fontFamily: 'Inter, system-ui, sans-serif' },
+  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 40px', backgroundColor: '#121212', color: '#ffffff' },
   logoArea: { fontWeight: 800, fontSize: '20px', letterSpacing: '1px' },
   logoText: { color: '#ffffff' },
   navLinks: { display: 'flex', gap: '20px' },
@@ -519,7 +558,6 @@ const styles: { [key: string]: React.CSSProperties } = {
   bioBox: { backgroundColor: '#f9f9f9', padding: '20px', borderRadius: '6px', marginBottom: '30px' },
   smallLabel: { fontSize: '11px', fontWeight: 700, color: '#888', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' },
   bio: { fontSize: '14px', lineHeight: 1.5, color: '#333' },
-  subTitle: { fontSize: '16px', fontWeight: 600 },
   textLink: { color: '#d4af37', textDecoration: 'none', fontSize: '14px', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' },
   orderList: { display: 'flex', flexDirection: 'column' as const, gap: '10px' },
   orderRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', padding: '12px 15px', backgroundColor: '#fff', border: '1px solid #eee', borderRadius: '6px', cursor: 'pointer', textAlign: 'left' as const },
@@ -540,7 +578,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   searchInput: { flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '14px' },
   selectInput: { padding: '10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '14px', backgroundColor: '#fff' },
   activityList: { display: 'flex', flexDirection: 'column' as const, gap: '10px' },
-  activityItem: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 15px', backgroundColor: '#fcfcfc', border: '1px solid #eee', borderRadius: '6px' },
+  activityItem: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 15px', backgroundColor: '#fcfcfc', border: '1px solid #eee', borderRadius: '6px', cursor: 'pointer' },
   activityTitle: { fontSize: '14px', display: 'block', marginBottom: '2px' },
   activityDesc: { fontSize: '12px', color: '#666' },
   activityTime: { fontSize: '12px', color: '#888' },
