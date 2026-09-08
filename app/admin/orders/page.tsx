@@ -33,14 +33,17 @@ export default function AdminOrdersPage() {
 
       setUserEmail(session.user.email || 'percymicnono@gmail.com')
 
+      // Fixed: Querying only 'role' since 'is_admin' does not exist in profiles schema
       const { data: profile } = await supabase
         .from('profiles')
-        .select('is_admin, role')
+        .select('role')
         .eq('id', session.user.id)
         .single()
 
-      if (profile && (!profile.is_admin && profile.role !== 'admin')) {
-        console.warn('Access check warning: Verify user role settings.')
+      if (!profile || profile.role !== 'admin') {
+        console.warn('Access check warning: User is not an admin.')
+        router.push('/')
+        return
       }
 
       setAuthLoading(false)
@@ -66,7 +69,6 @@ export default function AdminOrdersPage() {
 
       const data = await res.json()
       
-      // Explicitly pull from the JSON payload structure ({ success: true, orders: [...] })
       const fetchedOrders = data.success && Array.isArray(data.orders) ? data.orders : []
 
       if (previousOrderCount.current > 0 && fetchedOrders.length > previousOrderCount.current) {
@@ -121,12 +123,6 @@ export default function AdminOrdersPage() {
     } finally {
       isUpdating.current = false
     }
-  }
-
-  const handleLogout = async () => {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    window.location.href = '/login'
   }
 
   // Filter out completed and cancelled orders from the active list
@@ -359,7 +355,11 @@ export default function AdminOrdersPage() {
             title="Storefront Monitor"
             description="Real-time store progress and order management dashboard"
             userEmail={userEmail}
-            onLogout={handleLogout}
+            onLogout={async () => {
+              const supabase = createClient()
+              await supabase.auth.signOut()
+              window.location.href = '/login'
+            }}
           />
         </div>
 
@@ -383,7 +383,6 @@ export default function AdminOrdersPage() {
 
       {/* Main Content */}
       <div className="admin-main-content">
-        {/* Header */}
         <div
           style={{
             display: 'flex',
