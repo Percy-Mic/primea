@@ -96,11 +96,11 @@ export default function UserNav({
         
         {/* Desktop Nav Links */}
         <div className="desktop-nav-links" style={styles.desktopNav}>
-          <Link href="/" style={styles.navLink}>ATTENDANCE</Link>
-          <Link href="/products" style={styles.navLink}>PROFILE</Link>
-          <Link href="/cart" style={styles.navLink}>ADMIN LIST</Link>
+          <Link href="/attendance" style={styles.navLink}>ATTENDANCE</Link>
+          <Link href="/profie" style={styles.navLink}>PROFILE</Link>
+          <Link href="/admin_list" style={styles.navLink}>ADMIN LIST</Link>
           {isAuthed && (
-            <Link href="/orders" style={styles.ordersButton}>
+            <Link href="/logged_action" style={styles.ordersButton}>
               <span style={styles.activeDot} /> LOGGED ACTION
             </Link>
           )}
@@ -143,11 +143,11 @@ export default function UserNav({
       {mobileMenuOpen && (
         <div style={styles.mobileDrawer}>
           <div style={styles.mobileLinks}>
-            <Link href="/" style={styles.mobileNavLink} onClick={() => setMobileMenuOpen(false)}>ATTENDANCE</Link>
-            <Link href="/products" style={styles.mobileNavLink} onClick={() => setMobileMenuOpen(false)}>PROFILE</Link>
-            <Link href="/cart" style={styles.mobileNavLink} onClick={() => setMobileMenuOpen(false)}>ADMIN LIST</Link>
+            <Link href="/attendance" style={styles.mobileNavLink} onClick={() => setMobileMenuOpen(false)}>ATTENDANCE</Link>
+            <Link href="/profile" style={styles.mobileNavLink} onClick={() => setMobileMenuOpen(false)}>PROFILE</Link>
+            <Link href="/admin_list" style={styles.mobileNavLink} onClick={() => setMobileMenuOpen(false)}>ADMIN LIST</Link>
             {isAuthed && (
-              <Link href="/orders" style={styles.mobileOrdersButton} onClick={() => setMobileMenuOpen(false)}>
+              <Link href="/logged_action" style={styles.mobileOrdersButton} onClick={() => setMobileMenuOpen(false)}>
                 <span style={styles.activeDot} /> LOGGED ACTION
               </Link>
             )}
