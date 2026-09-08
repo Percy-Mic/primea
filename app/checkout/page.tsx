@@ -1,11 +1,9 @@
 'use client'
 
-import { supabase } from '@/lib/supabase'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
-import { createClient } from '@supabase/supabase-js'
 
 const stripePublishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : null
@@ -31,26 +29,27 @@ function StripeCheckoutForm({ amount, formData, cart }: { amount: number; formDa
     setErrorMessage(null)
 
     try {
-      const { error: dbError } = await supabase.from('orders').insert([
-        {
-          customer_name: formData.fullName,
-          email: formData.email,
-          address: formData.address,
-          payment_method: 'Card / Digital Payment',
-          total_amount: amount,
-          status: 'pending',
+      // 1. Save order via the backend API route
+      const orderRes = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           items: cart,
-        },
-      ])
+          total: amount,
+          shipping_address: formData.address,
+          full_name: formData.fullName,
+          email: formData.email,
+          payment_method: 'Card / Digital Payment',
+        }),
+      })
 
-      if (dbError) {
-        console.error('Database Error:', dbError)
-        setErrorMessage(`Database Error: ${dbError.message}`)
-        setLoading(false)
-        return
+      const orderData = await orderRes.json()
+
+      if (!orderRes.ok) {
+        throw new Error(orderData.error || 'Failed to save order in database.')
       }
 
-      // Send email notification silently
+      // 2. Send email notification silently
       fetch('/api/send-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -65,6 +64,7 @@ function StripeCheckoutForm({ amount, formData, cart }: { amount: number; formDa
       localStorage.removeItem('elara_cart')
       window.dispatchEvent(new Event('cartUpdated'))
 
+      // 3. Confirm Stripe Payment
       const { error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
@@ -136,22 +136,24 @@ export default function CheckoutPage() {
 
     if (paymentMethod === 'cod') {
       try {
-        const { error } = await supabase.from('orders').insert([
-          {
-            customer_name: formData.fullName,
-            email: formData.email,
-            address: formData.address,
-            payment_method: 'Cash on Delivery (COD)',
-            total_amount: totalAmount,
-            status: 'pending',
+        // Save COD order via the backend API route
+        const orderRes = await fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
             items: cart,
-          },
-        ])
+            total: totalAmount,
+            shipping_address: formData.address,
+            full_name: formData.fullName,
+            email: formData.email,
+            payment_method: 'Cash on Delivery (COD)',
+          }),
+        })
 
-        if (error) {
-          console.error('Supabase Error:', error)
-          alert(`Database Error: ${error.message}`)
-          return
+        const orderData = await orderRes.json()
+
+        if (!orderRes.ok) {
+          throw new Error(orderData.error || 'Failed to submit order.')
         }
 
         // Send email notification silently
@@ -169,9 +171,9 @@ export default function CheckoutPage() {
         localStorage.removeItem('elara_cart')
         window.dispatchEvent(new Event('cartUpdated'))
         router.push('/checkout/success')
-      } catch (err) {
+      } catch (err: any) {
         console.error(err)
-        alert('Failed to submit order.')
+        alert(err.message || 'Failed to submit order.')
       } finally {
         setLoadingIntent(false)
       }
