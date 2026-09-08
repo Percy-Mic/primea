@@ -830,7 +830,19 @@ export default function CustomerOrdersPage() {
           const statusRaw = (order.status || '').toLowerCase()
           const orderId = order.id || 'Order'
           const date = formatDate(order.createdAt)
-          const rawItems = order.items || []
+          
+          // --- ROBUST FIX: Safely handles arrays, nulls, and stringified JSON ---
+          let rawItems: any[] = []
+          if (Array.isArray(order.items)) {
+            rawItems = order.items
+          } else if (typeof order.items === 'string') {
+            try {
+              const parsed = JSON.parse(order.items)
+              if (Array.isArray(parsed)) rawItems = parsed
+            } catch (e) {
+              rawItems = []
+            }
+          }
 
           let computedTotal = order.total
 
