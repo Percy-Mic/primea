@@ -84,9 +84,6 @@ export default function UserNav({
       <div style={styles.navContainer}>
         {/* Brand Logo & Optional Page Title */}
         <div style={styles.brandWrapper}>
-          <Link href="/" style={styles.brandLink}>
-            {brandName}
-          </Link>
           {title && (
             <div style={styles.titleWrapper}>
               <span style={styles.divider}>/</span>
