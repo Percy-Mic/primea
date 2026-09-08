@@ -38,11 +38,11 @@ export default function AdminProfilePage() {
           throw new Error('Not authenticated or session expired. Please log in.')
         }
 
-        // 2. Fetch profile using the correct schema column 'full_name'
+        // 2. Fetch profile directly from the profiles table using Supabase client
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('*')
-          .eq('id', String(authUser.id))
+          .eq('id', authUser.id)
           .maybeSingle()
 
         if (profileError) {
@@ -101,7 +101,6 @@ export default function AdminProfilePage() {
     setMessage(null)
 
     try {
-      // Upsert using the correct schema field 'full_name'
       const { error } = await supabase
         .from('profiles')
         .upsert({
@@ -141,7 +140,7 @@ export default function AdminProfilePage() {
   }
 
   const normalizeStatus = (order: any) => order.status || 'pending'
-  const getOrderAmount = (order: any) => order.total_amount || 0 // Matches schema column total_amount
+  const getOrderAmount = (order: any) => order.total_amount || 0
   const formatCurrency = (amount: number) => `$${Number(amount).toFixed(2)}`
   const formatDate = (dateStr: string) => dateStr ? new Date(dateStr).toLocaleDateString() : 'N/A'
 
