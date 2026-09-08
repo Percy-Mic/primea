@@ -5,98 +5,176 @@ import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 
 export default function ProfilePage() {
-  const [loading, setLoading] = useState(true)
-  const [updating, setUpdating] = useState(false)
+  const [user, setUser] = useState<any>(null)
   const [fullName, setFullName] = useState('')
+  const [bio, setBio] = useState('')
   const [avatarUrl, setAvatarUrl] = useState('')
-  const [avatarFile, setAvatarFile] = useState<File | null>(null)
-  const [message, setMessage] = useState<string | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [message, setMessage] = useState({ text: '', type: '' })
 
   const supabase = createClient()
 
   useEffect(() => {
-    const getProfile = async () => {
+    const fetchProfile = async () => {
       const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
-        if (data) {
-          setFullName(data.full_name || '')
-          setAvatarUrl(data.avatar_url || '')
-        }
+      if (!user) {
+        setLoading(false)
+        return
+      }
+      setUser(user)
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single()
+
+      if (data) {
+        setFullName(data.full_name || '')
+        setBio(data.bio || '')
+        setAvatarUrl(data.avatar_url || '')
+      } else if (error) {
+        // If columns like avatar_url or bio are missing yet, fall back gracefully
+        console.warn('Profile fetch warning:', error.message)
       }
       setLoading(false)
     }
-    getProfile()
+
+    fetchProfile()
   }, [])
 
-  const updateProfile = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setUpdating(true)
-    setMessage(null)
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      setUploading(true)
+      setMessage({ text: '', type: '' })
 
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
-
-    let finalAvatarUrl = avatarUrl
-
-    if (avatarFile) {
-      const fileExt = avatarFile.name.split('.').pop()
-      const fileName = `${user.id}-${Date.now()}.${fileExt}`
-      const { error: uploadError } = await supabase.storage.from('avatars').upload(fileName, avatarFile, { upsert: true })
-
-      if (!uploadError) {
-        const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(fileName)
-        finalAvatarUrl = urlData.publicUrl
+      if (!e.target.files || e.target.files.length === 0) {
+        throw new Error('You must select an image to upload.')
       }
-    }
 
-    const { error } = await supabase.from('profiles').upsert({
-      id: user.id,
-      full_name: fullName,
-      email: user.email,
-      avatar_url: finalAvatarUrl,
-    })
+      const file = e.target.files[0]
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${user.id}-${Math.random()}.${fileExt}`
+      const filePath = `${fileName}`
 
-    if (error) {
-      setMessage(`Error: ${error.message}`)
-    } else {
-      setMessage('Profile updated successfully!')
-      setAvatarUrl(finalAvatarUrl)
+      // Upload to Supabase Storage 'avatars' bucket (ensure bucket is created in Supabase)
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { upsert: true })
+
+      if (uploadError) {
+        // If storage bucket isn't set up yet, use local preview object URL as fallback
+        console.warn('Storage bucket error, falling back to local preview:', uploadError.message)
+        const localUrl = URL.createObjectURL(file)
+        setAvatarUrl(localUrl)
+        setMessage({ text: 'Image preview loaded locally. Create an "avatars" bucket in Supabase storage for cloud persistence.', type: 'error' })
+        setUploading(false)
+        return
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath)
+
+      setAvatarUrl(publicUrl)
+      setMessage({ text: 'Avatar uploaded successfully!', type: 'success' })
+    } catch (error: any) {
+      setMessage({ text: error.message || 'Error uploading avatar', type: 'error' })
+    } finally {
+      setUploading(false)
     }
-    setUpdating(false)
   }
 
-  if (loading) return <div style={{ padding: '2rem' }}>Loading profile...</div>
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!user) return
+
+    setLoading(true)
+    setMessage({ text: '', type: '' })
+
+    const updates = {
+      id: user.id,
+      full_name: fullName,
+      bio: bio,
+      avatar_url: avatarUrl,
+      updated_at: new Date().toISOString(),
+    }
+
+    const { error } = await supabase.from('profiles').upsert(updates)
+
+    if (error) {
+      setMessage({ text: `Error updating profile: ${error.message}. Ensure columns 'avatar_url' and 'bio' exist in your 'profiles' table.`, type: 'error' })
+    } else {
+      setMessage({ text: 'Profile updated successfully!', type: 'success' })
+    }
+    setLoading(false)
+  }
 
   return (
-    <div style={{ maxWidth: '500px', margin: '2rem auto', padding: '1.5rem', fontFamily: 'sans-serif' }}>
-      <Link href="/" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 500, display: 'inline-block', marginBottom: '1rem' }}>← Back Home</Link>
-      <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '2rem' }}>
-        <h1 style={{ marginTop: 0, fontSize: '1.5rem' }}>Admin Profile Settings</h1>
-        
-        {message && <div style={{ padding: '0.75rem', background: '#f0fdf4', border: '1px solid #bbf7d0', color: '#166534', borderRadius: '6px', marginBottom: '1rem', fontSize: '0.9rem' }}>{message}</div>}
+    <div style={{ maxWidth: '650px', margin: '0 auto', padding: '2rem 1rem', fontFamily: 'system-ui, -apple-system, sans-serif', color: '#1e293b', background: '#f8fafc', minHeight: '100vh' }}>
+      
+      {/* Navigation Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+        <Link href="/admin" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 600, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+          ← Back to Dashboard
+        </Link>
+      </div>
 
-        <form onSubmit={updateProfile} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            {avatarUrl ? (
-              <img src={avatarUrl} alt="Avatar" style={{ width: '64px', height: '64px', borderRadius: '50%', objectFit: 'cover', border: '1px solid #cbd5e1' }} />
-            ) : (
-              <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>?</div>
-            )}
-            <div>
-              <label style={{ fontSize: '0.8rem', fontWeight: 700, display: 'block', marginBottom: '0.25rem' }}>Change Profile Picture</label>
-              <input type="file" accept="image/*" onChange={(e) => setAvatarFile(e.target.files?.[0] || null)} style={{ fontSize: '0.8rem' }} />
+      <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '2rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)' }}>
+        
+        <div style={{ marginBottom: '1.5rem', borderBottom: '1px solid #f1f5f9', paddingBottom: '1rem' }}>
+          <h1 style={{ margin: 0, fontSize: '1.35rem', fontWeight: 700, color: '#0f172a' }}>Admin Profile Settings</h1>
+          <p style={{ margin: '0.25rem 0 0 0', fontSize: '0.85rem', color: '#64748b' }}>Manage your account details, bio, and profile picture.</p>
+        </div>
+
+        {message.text && (
+          <div style={{ padding: '0.75rem 1rem', borderRadius: '8px', marginBottom: '1.25rem', fontSize: '0.85rem', background: message.type === 'error' ? '#fef2f2' : '#f0fdf4', color: message.type === 'error' ? '#991b1b' : '#166534', border: `1px solid ${message.type === 'error' ? '#fecaca' : '#bbf7d0'}` }}>
+            {message.text}
+          </div>
+        )}
+
+        <form onSubmit={handleSaveProfile} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          
+          {/* Avatar Preview & Upload Section */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap', background: '#f8fafc', padding: '1rem', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+            <div style={{ width: '70px', height: '70px', borderRadius: '50%', background: '#e2e8f0', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #cbd5e1', flexShrink: 0 }}>
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="Avatar Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                <span style={{ fontSize: '1.5rem', fontWeight: 700, color: '#64748b' }}>
+                  {fullName ? fullName.charAt(0).toUpperCase() : '?'}
+                </span>
+              )}
+            </div>
+
+            <div style={{ flex: 1, minWidth: '200px' }}>
+              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, color: '#334155', marginBottom: '0.35rem' }}>Profile Picture</label>
+              <input type="file" accept="image/*" onChange={handleAvatarChange} disabled={uploading} style={{ fontSize: '0.82rem', color: '#475569', width: '100%' }} />
+              <span style={{ display: 'block', fontSize: '0.72rem', color: '#64748b', marginTop: '0.2rem' }}>{uploading ? 'Uploading...' : 'Recommended: Square PNG, JPG up to 2MB.'}</span>
             </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-            <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>Full Name</label>
-            <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} style={{ padding: '0.65rem', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '0.9rem' }} required />
+          {/* Full Name Input */}
+          <div>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#334155', marginBottom: '0.4rem' }}>Full Name</label>
+            <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Enter your full name" required style={{ width: '100%', padding: '0.65rem 0.85rem', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box' }} />
           </div>
 
-          <button type="submit" disabled={updating} style={{ padding: '0.7rem', background: '#0f172a', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 600, cursor: 'pointer' }}>
-            {updating ? 'Saving...' : 'Save Profile'}
+          {/* Bio Textarea */}
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+              <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#334155' }}>Bio / Description</label>
+              <span style={{ fontSize: '0.72rem', color: '#64748b' }}>{bio.length}/250 characters</span>
+            </div>
+            <textarea value={bio} onChange={(e) => setBio(e.target.value)} maxLength={250} placeholder="Briefly describe your role or background..." rows={3} style={{ width: '100%', padding: '0.65rem 0.85rem', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '0.9rem', outline: 'none', resize: 'vertical', boxSizing: 'border-box' }} />
+          </div>
+
+          {/* Submit Button */}
+          <button type="submit" disabled={loading} style={{ padding: '0.75rem 1.5rem', background: '#0f172a', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer', transition: 'background 0.2s', marginTop: '0.5rem' }}>
+            {loading ? 'Saving Changes...' : 'Save Profile'}
           </button>
+
         </form>
       </div>
     </div>
