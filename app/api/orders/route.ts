@@ -1,297 +1,152 @@
-'use client'
+import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
+import { createClient as createServiceRoleClient } from '@supabase/supabase-js';
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { loadStripe } from '@stripe/stripe-js'
-import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
+// Service role client for backend operations and database writes
+const supabaseAdmin = createServiceRoleClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
-const stripePublishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
-const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : null
+// GET: Fetch ONLY the logged-in user's orders safely
+export async function GET() {
+  try {
+    const supabase = createClient();
 
-interface CartItem {
-  id: string
-  title: string
-  price: number
-  quantity: number
-}
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
 
-function StripeCheckoutForm({ amount, formData, cart }: { amount: number; formData: any; cart: CartItem[] }) {
-  const stripe = useStripe()
-  const elements = useElements()
-  const [loading, setLoading] = useState(false)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!stripe || !elements) return
-
-    setLoading(true)
-    setErrorMessage(null)
-
-    try {
-      // 1. Save order via the backend API route
-      const orderRes = await fetch('/api/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          items: cart,
-          total: amount,
-          shipping_address: formData.address,
-          full_name: formData.fullName,
-          email: formData.email,
-          payment_method: 'Card / Digital Payment',
-        }),
-      })
-
-      const orderData = await orderRes.json()
-
-      if (!orderRes.ok) {
-        throw new Error(orderData.error || 'Failed to save order in database.')
-      }
-
-      // 2. Send email notification silently
-      fetch('/api/send-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: formData.email,
-          customerName: formData.fullName,
-          totalAmount: amount,
-          items: cart,
-        }),
-      }).catch((err) => console.error('Email Dispatch Error:', err))
-
-      localStorage.removeItem('elara_cart')
-      window.dispatchEvent(new Event('cartUpdated'))
-
-      // 3. Confirm Stripe Payment
-      const { error } = await stripe.confirmPayment({
-        elements,
-        confirmParams: {
-          return_url: `${window.location.origin}/checkout/success`,
-        },
-      })
-
-      if (error) {
-        setErrorMessage(error.message || 'Payment failed')
-        setLoading(false)
-      }
-    } catch (err: any) {
-      console.error(err)
-      setErrorMessage(err.message || 'An unexpected error occurred.')
-      setLoading(false)
-    }
-  }
-
-  return (
-    <form onSubmit={handleSubmit} style={{ marginTop: '1.5rem' }}>
-      <PaymentElement />
-      {errorMessage && (
-        <div style={{ color: '#d9534f', fontSize: '0.85rem', marginTop: '0.5rem', fontFamily: 'sans-serif' }}>
-          {errorMessage}
-        </div>
-      )}
-      <button
-        type="submit"
-        disabled={!stripe || loading}
-        style={buttonStyle}
-      >
-        {loading ? 'Processing...' : `Pay $${amount.toFixed(2)}`}
-      </button>
-    </form>
-  )
-}
-
-export default function CheckoutPage() {
-  const router = useRouter()
-  const [cart, setCart] = useState<CartItem[]>([])
-  const [clientSecret, setClientSecret] = useState('')
-  const [loadingIntent, setLoadingIntent] = useState(false)
-  const [paymentMethod, setPaymentMethod] = useState<'stripe' | 'cod'>('cod')
-  const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    address: '',
-  })
-
-  useEffect(() => {
-    const savedCart = JSON.parse(localStorage.getItem('elara_cart') || '[]')
-    setCart(savedCart)
-  }, [])
-
-  const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
-
-  const handleProceed = async () => {
-    if (!formData.fullName || !formData.email || !formData.address) {
-      alert('Please fill in all shipping fields.')
-      return
+    if (userError || !user) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (cart.length === 0) {
-      alert('Your cart is empty.')
-      return
-    }
+    const { data, error } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
 
-    setLoadingIntent(true)
+    if (error) throw error;
 
-    if (paymentMethod === 'cod') {
+    const ordersWithItems = (data || []).map((order) => {
+      let parsedItems = [];
       try {
-        // Save COD order via the backend API route
-        const orderRes = await fetch('/api/orders', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            items: cart,
-            total: totalAmount,
-            shipping_address: formData.address,
-            full_name: formData.fullName,
-            email: formData.email,
-            payment_method: 'Cash on Delivery (COD)',
-          }),
-        })
-
-        const orderData = await orderRes.json()
-
-        if (!orderRes.ok) {
-          throw new Error(orderData.error || 'Failed to submit order.')
-        }
-
-        // Send email notification silently
-        fetch('/api/send-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: formData.email,
-            customerName: formData.fullName,
-            totalAmount: totalAmount,
-            items: cart,
-          }),
-        }).catch((err) => console.error('Email Dispatch Error:', err))
-
-        localStorage.removeItem('elara_cart')
-        window.dispatchEvent(new Event('cartUpdated'))
-        router.push('/checkout/success')
-      } catch (err: any) {
-        console.error(err)
-        alert(err.message || 'Failed to submit order.')
-      } finally {
-        setLoadingIntent(false)
+        parsedItems = typeof order.items === 'string' ? JSON.parse(order.items) : (order.items || []);
+      } catch (e) {
+        parsedItems = [];
       }
-    } else {
-      if (!stripePromise) {
-        alert('Stripe API key is missing. Please configure NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.')
-        setLoadingIntent(false)
-        return
-      }
+      return { ...order, order_items: parsedItems };
+    });
 
-      try {
-        const res = await fetch('/api/create-payment-intent', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ amount: totalAmount }),
-        })
-        const data = await res.json()
-        if (data.clientSecret) {
-          setClientSecret(data.clientSecret)
-        } else {
-          alert(data.error || 'Failed to initialize payment.')
-        }
-      } catch (err) {
-        console.error(err)
-        alert('Network error initializing payment.')
-      } finally {
-        setLoadingIntent(false)
-      }
-    }
+    return NextResponse.json({ success: true, orders: ordersWithItems });
+  } catch (error: any) {
+    console.error('API Orders GET Error:', error.message);
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
-
-  return (
-    <div style={{ minHeight: '100vh', background: '#f5f2eb', padding: '3rem 1rem', fontFamily: 'serif', color: '#1f1815' }}>
-      <div style={{ maxWidth: '600px', margin: '0 auto', background: '#ffffff', padding: '2.5rem', borderRadius: '8px', border: '1px solid #e2dad0' }}>
-        <h1 style={{ fontSize: '2rem', marginBottom: '1.5rem', fontWeight: 'normal' }}>PRIMEA Checkout</h1>
-
-        {!clientSecret ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', fontFamily: 'sans-serif' }}>
-            <strong>Shipping Information</strong>
-            <input
-              placeholder="Full Name"
-              value={formData.fullName}
-              onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-              style={inputStyle}
-            />
-            <input
-              placeholder="Email Address"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              style={inputStyle}
-            />
-            <input
-              placeholder="Street Address"
-              value={formData.address}
-              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-              style={inputStyle}
-            />
-
-            <strong style={{ marginTop: '1rem' }}>Payment Option</strong>
-            <div style={{ display: 'flex', gap: '1rem' }}>
-              <label style={optionLabelStyle}>
-                <input
-                  type="radio"
-                  name="paymentMethod"
-                  value="stripe"
-                  checked={paymentMethod === 'stripe'}
-                  onChange={() => setPaymentMethod('stripe')}
-                />
-                Card / Digital Payment
-              </label>
-              <label style={optionLabelStyle}>
-                <input
-                  type="radio"
-                  name="paymentMethod"
-                  value="cod"
-                  checked={paymentMethod === 'cod'}
-                  onChange={() => setPaymentMethod('cod')}
-                />
-                Cash on Delivery (COD)
-              </label>
-            </div>
-
-            <div style={{ marginTop: '1rem', borderTop: '1px solid #eee', paddingTop: '1rem', display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' }}>
-              <span>Total:</span>
-              <span>${totalAmount.toFixed(2)}</span>
-            </div>
-
-            <button
-              onClick={handleProceed}
-              disabled={loadingIntent || cart.length === 0}
-              style={buttonStyle}
-            >
-              {loadingIntent ? 'Processing...' : paymentMethod === 'cod' ? 'Place COD Order' : 'Proceed to Payment'}
-            </button>
-          </div>
-        ) : (
-          stripePromise && (
-            <Elements stripe={stripePromise} options={{ clientSecret }}>
-              <StripeCheckoutForm amount={totalAmount} formData={formData} cart={cart} />
-            </Elements>
-          )
-        )}
-      </div>
-    </div>
-  )
 }
 
-const inputStyle = { width: '100%', padding: '0.75rem', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box' as const }
-const optionLabelStyle = { display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', cursor: 'pointer' }
-const buttonStyle = {
-  width: '100%',
-  background: '#1f1815',
-  color: '#fff',
-  padding: '0.85rem',
-  border: 'none',
-  borderRadius: '4px',
-  cursor: 'pointer',
-  textTransform: 'uppercase' as const,
-  letterSpacing: '1px',
-  marginTop: '1rem',
+// POST: Save a new order when checkout completes successfully
+export async function POST(request: Request) {
+  try {
+    const supabase = createClient();
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const { items, total, shipping_address, full_name, email, payment_method } = body;
+
+    const newOrder = {
+      user_id: user.id,
+      items: typeof items === 'string' ? items : JSON.stringify(items || []),
+      total: total || 0,
+      status: 'Pending',
+      shipping_address: shipping_address || '',
+      full_name: full_name || '',
+      email: email || user.email,
+      payment_method: payment_method || 'Card/Digital Payment',
+    };
+
+    const { data, error } = await supabaseAdmin
+      .from('orders')
+      .insert([newOrder])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return NextResponse.json({ success: true, order: data });
+  } catch (error: any) {
+    console.error('API Orders POST Error:', error.message);
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  }
+}
+
+// PATCH: Update order status and decrement stock on fulfillment
+export async function PATCH(request: Request) {
+  try {
+    const body = await request.json();
+    
+    const orderId = body.orderId || body.id || body.order_id;
+    let status = body.status;
+
+    if (!orderId || !status) {
+      return NextResponse.json({ success: false, error: 'Missing orderId or status' }, { status: 400 });
+    }
+
+    const formattedStatus = status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+
+    const { data: currentOrder, error: fetchError } = await supabaseAdmin
+      .from('orders')
+      .select('status, items')
+      .eq('id', orderId)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    const { error: updateError } = await supabaseAdmin
+      .from('orders')
+      .update({ status: formattedStatus })
+      .eq('id', orderId);
+
+    if (updateError) throw updateError;
+
+    const fulfillmentStatuses = ['shipped', 'completed', 'complete', 'delivered'];
+    const oldStatus = (currentOrder.status || '').toLowerCase();
+    const newStatus = formattedStatus.toLowerCase();
+
+    if (
+      fulfillmentStatuses.includes(newStatus) && 
+      !fulfillmentStatuses.includes(oldStatus)
+    ) {
+      let orderItems = [];
+      try {
+        orderItems = typeof currentOrder.items === 'string' 
+          ? JSON.parse(currentOrder.items) 
+          : (currentOrder.items || []);
+      } catch (e) {
+        orderItems = [];
+      }
+
+      if (orderItems && orderItems.length > 0) {
+        for (const item of orderItems) {
+          const productId = item.product_id || item.id;
+          const quantity = item.quantity || item.qty || 1;
+
+          if (productId) {
+            await supabaseAdmin.rpc('decrement_product_stock', {
+              product_id: productId,
+              amount: quantity,
+            });
+          }
+        }
+      }
+    }
+
+    return NextResponse.json({ success: true, message: 'Order status updated successfully.' });
+  } catch (error: any) {
+    console.error('API Orders PATCH Error:', error.message);
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  }
 }
