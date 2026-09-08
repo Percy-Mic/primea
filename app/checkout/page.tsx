@@ -128,6 +128,9 @@ export default function CheckoutPage() {
   const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
 
   const handleProceed = async () => {
+    // Prevent duplicate triggers immediately before anything else
+    if (loadingIntent) return
+
     if (!formData.fullName || !formData.email || !formData.address) {
       alert('Please fill in all shipping fields.')
       return
@@ -137,9 +140,6 @@ export default function CheckoutPage() {
       alert('Your cart is empty.')
       return
     }
-
-    // Prevent duplicate triggers
-    if (loadingIntent) return
 
     setLoadingIntent(true)
 
