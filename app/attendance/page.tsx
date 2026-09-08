@@ -134,7 +134,7 @@ export default function AttendancePage() {
         </div>
         <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
           <button onClick={handlePrint} style={{ padding: '0.5rem 0.9rem', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.82rem' }}>Print Report</button>
-          <Link href="/admin" style={{ color: '#475569', textDecoration: 'none', fontWeight: 600, fontSize: '0.82rem', padding: '0.5rem 0.75rem', background: '#fff', border: '1px solid #cbd5e1', borderRadius: '8px' }}>← Dashboard</Link>
+          <Link href="admin/dashboard" style={{ color: '#475569', textDecoration: 'none', fontWeight: 600, fontSize: '0.82rem', padding: '0.5rem 0.75rem', background: '#fff', border: '1px solid #cbd5e1', borderRadius: '8px' }}>← Dashboard</Link>
         </div>
       </div>
 
