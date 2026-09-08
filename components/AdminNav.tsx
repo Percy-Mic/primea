@@ -86,7 +86,6 @@ export default function UserNav({
         <div style={styles.brandWrapper}>
           {title && (
             <div style={styles.titleWrapper}>
-              <span style={styles.divider}>/</span>
               <div>
                 <span style={styles.pageTitle}>{title}</span>
                 {description && <p style={styles.pageDescription}>{description}</p>}
