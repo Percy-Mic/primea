@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Header from '@/components/AdminNav'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
 interface Product {
   id: string
@@ -14,6 +15,8 @@ interface Product {
 }
 
 export default function InventoryManagementPage() {
+  const pathname = usePathname()
+
   const [products, setProducts] = useState<Product[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [sortOption, setSortOption] = useState('newest')
@@ -214,7 +217,9 @@ export default function InventoryManagementPage() {
           background-color: #fcfcfc;
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
           color: #1c1917;
-          padding-top: 240px;
+          padding-top: 125px;
+          display: flex;
+          flex-direction: column;
         }
 
         .fixed-header-container {
@@ -229,40 +234,42 @@ export default function InventoryManagementPage() {
 
         /* Top Sub-Navigation Bar for Desktop */
         .sub-nav-bar {
-          position: sticky;
-          top: 75px;
-          left: 0;
-          right: 0;
-          height: 52px;
           background: #ffffff;
+          border-top: 1px solid #e5e5e5;
           border-bottom: 1px solid #e5e5e5;
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 0 2rem;
-          z-index: 1050;
+          padding: 0.4rem 1.5rem;
+          width: 100%;
           box-sizing: border-box;
+          flex-wrap: wrap;
+          gap: 0.75rem;
         }
 
         .sub-nav-links {
           display: flex;
-          gap: 1.5rem;
+          gap: 0.4rem;
           align-items: center;
+          list-style: none;
+          padding: 0;
+          margin: 0;
+          flex-wrap: wrap;
         }
 
         .sub-nav-link {
           text-decoration: none;
-          color: #525252;
+          color: #3b332e;
           font-weight: 500;
-          font-size: 0.92rem;
-          padding: 0.4rem 0.75rem;
+          font-size: 0.85rem;
+          padding: 0.35rem 0.65rem;
           border-radius: 6px;
           transition: all 0.15s ease;
         }
 
         .sub-nav-link:hover {
-          color: #111111;
-          background-color: #f5f5f5;
+          background-color: #f7f4ef;
+          color: #c2410c;
         }
 
         .sub-nav-link.active {
@@ -275,7 +282,7 @@ export default function InventoryManagementPage() {
           color: #c2410c;
           text-decoration: none;
           font-weight: 600;
-          font-size: 0.9rem;
+          font-size: 0.85rem;
         }
 
         .storefront-external-link:hover {
@@ -287,21 +294,22 @@ export default function InventoryManagementPage() {
           display: none;
           align-items: center;
           justify-content: space-between;
-          padding: 0.75rem 1rem;
+          padding: 0.4rem 1.5rem;
           background: #ffffff;
+          border-top: 1px solid #e5e5e5;
           border-bottom: 1px solid #e5e5e5;
         }
 
         .hamburger-btn {
-          background: #f4f4f5;
-          border: 1px solid #d4d4d4;
-          padding: 0.5rem 0.8rem;
+          background: none;
+          border: 1px solid #ded7cc;
+          padding: 0.3rem 0.6rem;
           border-radius: 6px;
-          font-weight: 600;
           font-size: 0.9rem;
+          font-weight: 600;
           cursor: pointer;
-          color: #111111;
-          display: flex;
+          color: #1f1815;
+          display: inline-flex;
           align-items: center;
           gap: 0.4rem;
         }
@@ -312,8 +320,8 @@ export default function InventoryManagementPage() {
           flex-direction: column;
           background: #ffffff;
           border-bottom: 1px solid #e5e5e5;
-          padding: 0.75rem 1rem 1rem 1rem;
-          gap: 0.5rem;
+          padding: 0.5rem 1.5rem;
+          gap: 0.4rem;
         }
 
         .mobile-dropdown-menu.open {
@@ -322,10 +330,10 @@ export default function InventoryManagementPage() {
 
         .mobile-nav-link {
           text-decoration: none;
-          color: #525252;
+          color: #3b332e;
           font-weight: 500;
-          font-size: 0.95rem;
-          padding: 0.5rem 0.75rem;
+          font-size: 0.85rem;
+          padding: 0.35rem 0.65rem;
           border-radius: 6px;
         }
 
@@ -336,20 +344,30 @@ export default function InventoryManagementPage() {
         }
 
         .main-content {
-          padding-bottom: 3rem;
+          flex: 1;
+          display: flex;
+          flex-direction: column;
           box-sizing: border-box;
+          padding: 1rem;
+          width: 100%;
+          max-width: 1200px;
+          margin: 0 auto;
+        }
+
+        @media (min-width: 640px) {
+          .main-content {
+            padding: 1.25rem 1.5rem 3rem 1.5rem;
+          }
         }
 
         .inventory-container {
           width: 100%;
-          max-width: 1040px;
           margin: 0 auto;
-          padding: 0 1.5rem;
           box-sizing: border-box;
         }
 
         .header-section {
-          margin-bottom: 2rem;
+          margin-bottom: 1.5rem;
           display: flex;
           justify-content: space-between;
           align-items: center;
@@ -358,12 +376,10 @@ export default function InventoryManagementPage() {
         }
 
         .page-title {
-          font-family: serif;
-          font-size: 2.25rem;
+          font-size: 1.75rem;
           margin: 0;
-          font-weight: 600;
-          letter-spacing: -0.02em;
-          color: #111111;
+          font-weight: 700;
+          color: #1f1815;
         }
 
         .filter-card {
@@ -373,7 +389,7 @@ export default function InventoryManagementPage() {
           padding: 1.25rem;
           display: flex;
           gap: 1rem;
-          margin-bottom: 2rem;
+          margin-bottom: 1.5rem;
           align-items: center;
           box-shadow: 0 1px 3px rgba(0,0,0,0.02);
           flex-wrap: wrap;
@@ -443,17 +459,18 @@ export default function InventoryManagementPage() {
         }
 
         .inventory-table th {
-          background-color: #fafafa;
-          padding: 1.1rem 1.5rem;
+          background-color: #1f1815;
+          color: #fff;
+          padding: 12px 16px;
           font-size: 0.75rem;
           font-weight: 700;
-          color: #525252;
-          letter-spacing: 0.08em;
+          letter-spacing: 0.05em;
+          text-transform: uppercase;
           border-bottom: 1px solid #e5e5e5;
         }
 
         .inventory-table td {
-          padding: 1.2rem 1.5rem;
+          padding: 14px 16px;
           border-bottom: 1px solid #f0f0f0;
           font-size: 0.92rem;
           vertical-align: middle;
@@ -696,7 +713,6 @@ export default function InventoryManagementPage() {
           margin-top: 2rem;
         }
 
-        /* Responsive Mobile Layout Adaptations (Card list on small screens) */
         @media (max-width: 768px) {
           .sub-nav-bar {
             display: none;
@@ -705,10 +721,9 @@ export default function InventoryManagementPage() {
             display: flex;
           }
           .page-wrapper {
-            padding-top: 250px;
+            padding-top: 140px;
           }
 
-          /* Transform table into a clean stacked card view on mobile for ultimate responsiveness */
           .inventory-table, 
           .inventory-table tbody, 
           .inventory-table tr, 
@@ -756,27 +771,17 @@ export default function InventoryManagementPage() {
         />
 
         {/* Desktop Sub-Navigation Bar */}
-        <div className="sub-nav-bar">
-          <div className="sub-nav-links">
-            <Link href="/admin/dashboard" className="sub-nav-link">
-              Dashboard
-            </Link>
-            <Link href="/admin/orders" className="sub-nav-link">
-              Orders
-            </Link>
-            <Link href="/admin/products" className="sub-nav-link active">
-              Inventory
-            </Link>
-            <Link href="/admin/products/new" className="sub-nav-link">
-              Add Product
-            </Link>
-          </div>
-          <div>
-            <Link href="/" target="_blank" className="storefront-external-link">
-              View Storefront →
-            </Link>
-          </div>
-        </div>
+        <nav className="sub-nav-bar">
+          <ul className="sub-nav-links">
+            <li><Link href="/admin/dashboard" className={`sub-nav-link ${pathname === '/admin/dashboard' ? 'active' : ''}`}>Dashboard</Link></li>
+            <li><Link href="/admin/orders" className={`sub-nav-link ${pathname === '/admin/orders' ? 'active' : ''}`}>Orders</Link></li>
+            <li><Link href="/admin/products" className={`sub-nav-link ${pathname === '/admin/products' ? 'active' : ''}`}>Inventory</Link></li>
+            <li><Link href="/admin/products/new" className={`sub-nav-link ${pathname === '/admin/products/new' ? 'active' : ''}`}>Add Product</Link></li>
+          </ul>
+          <Link href="/" target="_blank" className="storefront-external-link">
+            View Storefront →
+          </Link>
+        </nav>
 
         {/* Mobile Hamburger Menu Toggle Bar */}
         <div className="mobile-menu-toggle-bar">
@@ -795,28 +800,28 @@ export default function InventoryManagementPage() {
         <div className={`mobile-dropdown-menu ${mobileMenuOpen ? 'open' : ''}`}>
           <Link 
             href="/admin/dashboard" 
-            className="mobile-nav-link"
+            className={`mobile-nav-link ${pathname === '/admin/dashboard' ? 'active' : ''}`}
             onClick={() => setMobileMenuOpen(false)}
           >
             Dashboard
           </Link>
           <Link 
             href="/admin/orders" 
-            className="mobile-nav-link"
+            className={`mobile-nav-link ${pathname === '/admin/orders' ? 'active' : ''}`}
             onClick={() => setMobileMenuOpen(false)}
           >
             Orders
           </Link>
           <Link 
             href="/admin/products" 
-            className="mobile-nav-link active"
+            className={`mobile-nav-link ${pathname === '/admin/products' ? 'active' : ''}`}
             onClick={() => setMobileMenuOpen(false)}
           >
             Inventory
           </Link>
           <Link 
             href="/admin/products/new" 
-            className="mobile-nav-link"
+            className={`mobile-nav-link ${pathname === '/admin/products/new' ? 'active' : ''}`}
             onClick={() => setMobileMenuOpen(false)}
           >
             Add Product
