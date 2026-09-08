@@ -65,7 +65,9 @@ export default function AdminOrdersPage() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
 
       const data = await res.json()
-      const fetchedOrders = Array.isArray(data) ? data : data.orders || []
+      
+      // Explicitly pull from the JSON payload structure ({ success: true, orders: [...] })
+      const fetchedOrders = data.success && Array.isArray(data.orders) ? data.orders : []
 
       if (previousOrderCount.current > 0 && fetchedOrders.length > previousOrderCount.current) {
         const latest = fetchedOrders[0]
