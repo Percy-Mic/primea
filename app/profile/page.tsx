@@ -482,9 +482,8 @@ function Header() {
         <Link href="/admin/dashboard" style={styles.navLink}>
           Dashboard
         </Link>
-        <Link href="/admin/users" style={styles.navLink}>
-          Users
-        </Link>
+        {/* Commented out to prevent 404 error until the page is created */}
+        {/* <Link href="/admin/users" style={styles.navLink}>Users</Link> */}
       </div>
     </header>
   )
