@@ -25,14 +25,12 @@ function StripeCheckoutForm({ amount, formData, cart }: { amount: number; formDa
     e.preventDefault()
     if (!stripe || !elements) return
 
-    // Prevent duplicate button clicks
     if (loading) return
 
     setLoading(true)
     setErrorMessage(null)
 
     try {
-      // Send order to your backend API route
       const orderRes = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -52,7 +50,6 @@ function StripeCheckoutForm({ amount, formData, cart }: { amount: number; formDa
         throw new Error(orderData.error || 'Failed to save order in database.')
       }
 
-      // Send email notification silently
       fetch('/api/send-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -64,6 +61,7 @@ function StripeCheckoutForm({ amount, formData, cart }: { amount: number; formDa
         }),
       }).catch((err) => console.error('Email Dispatch Error:', err))
 
+      localStorage.removeItem('primea_cart')
       localStorage.removeItem('elara_cart')
       window.dispatchEvent(new Event('cartUpdated'))
 
@@ -121,14 +119,13 @@ export default function CheckoutPage() {
   })
 
   useEffect(() => {
-    const savedCart = JSON.parse(localStorage.getItem('elara_cart') || '[]')
+    const savedCart = JSON.parse(localStorage.getItem('primea_cart') || localStorage.getItem('elara_cart') || '[]')
     setCart(savedCart)
   }, [])
 
   const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
 
   const handleProceed = async () => {
-    // Prevent duplicate triggers immediately before anything else
     if (loadingIntent) return
 
     if (!formData.fullName || !formData.email || !formData.address) {
@@ -145,7 +142,6 @@ export default function CheckoutPage() {
 
     if (paymentMethod === 'cod') {
       try {
-        // Send COD order to your backend API route
         const orderRes = await fetch('/api/orders', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -165,7 +161,6 @@ export default function CheckoutPage() {
           throw new Error(orderData.error || 'Failed to submit order.')
         }
 
-        // Send email notification silently
         fetch('/api/send-email', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -177,13 +172,14 @@ export default function CheckoutPage() {
           }),
         }).catch((err) => console.error('Email Dispatch Error:', err))
 
+        localStorage.removeItem('primea_cart')
         localStorage.removeItem('elara_cart')
         window.dispatchEvent(new Event('cartUpdated'))
         router.push('/checkout/success')
       } catch (err: any) {
         console.error(err)
         alert(err.message || 'Failed to submit order.')
-        setLoadingIntent(false) // Only release lock on error so they can retry
+        setLoadingIntent(false)
       }
     } else {
       if (!stripePromise) {
