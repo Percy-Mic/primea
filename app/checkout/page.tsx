@@ -25,6 +25,9 @@ function StripeCheckoutForm({ amount, formData, cart }: { amount: number; formDa
     e.preventDefault()
     if (!stripe || !elements) return
 
+    // Prevent duplicate button clicks
+    if (loading) return
+
     setLoading(true)
     setErrorMessage(null)
 
@@ -93,7 +96,11 @@ function StripeCheckoutForm({ amount, formData, cart }: { amount: number; formDa
       <button
         type="submit"
         disabled={!stripe || loading}
-        style={buttonStyle}
+        style={{
+          ...buttonStyle,
+          opacity: (!stripe || loading) ? 0.7 : 1,
+          cursor: (!stripe || loading) ? 'not-allowed' : 'pointer',
+        }}
       >
         {loading ? 'Processing...' : `Pay $${amount.toFixed(2)}`}
       </button>
@@ -130,6 +137,9 @@ export default function CheckoutPage() {
       alert('Your cart is empty.')
       return
     }
+
+    // Prevent duplicate triggers
+    if (loadingIntent) return
 
     setLoadingIntent(true)
 
@@ -173,8 +183,7 @@ export default function CheckoutPage() {
       } catch (err: any) {
         console.error(err)
         alert(err.message || 'Failed to submit order.')
-      } finally {
-        setLoadingIntent(false)
+        setLoadingIntent(false) // Only release lock on error so they can retry
       }
     } else {
       if (!stripePromise) {
@@ -194,11 +203,11 @@ export default function CheckoutPage() {
           setClientSecret(data.clientSecret)
         } else {
           alert(data.error || 'Failed to initialize payment.')
+          setLoadingIntent(false)
         }
       } catch (err) {
         console.error(err)
         alert('Network error initializing payment.')
-      } finally {
         setLoadingIntent(false)
       }
     }
@@ -263,7 +272,11 @@ export default function CheckoutPage() {
             <button
               onClick={handleProceed}
               disabled={loadingIntent || cart.length === 0}
-              style={buttonStyle}
+              style={{
+                ...buttonStyle,
+                opacity: (loadingIntent || cart.length === 0) ? 0.7 : 1,
+                cursor: (loadingIntent || cart.length === 0) ? 'not-allowed' : 'pointer',
+              }}
             >
               {loadingIntent ? 'Processing...' : paymentMethod === 'cod' ? 'Place COD Order' : 'Proceed to Payment'}
             </button>
