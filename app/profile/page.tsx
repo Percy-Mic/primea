@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 
-// Initialize Supabase client (ensure your environment variables are set in .env.local)
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || '',
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
@@ -18,7 +17,7 @@ export default function AdminProfilePage() {
   
   const [activeTab, setActiveTab] = useState<'overview' | 'edit' | 'activity' | 'security'>('overview')
   const [bio, setBio] = useState('')
-  const [name, setName] = useState('')
+  const [fullName, setFullName] = useState('')
   
   const [activitySearch, setActivitySearch] = useState('')
   const [activityStatus, setActivityStatus] = useState('all')
@@ -29,44 +28,56 @@ export default function AdminProfilePage() {
     async function fetchProfileAndData() {
       try {
         setLoading(true)
+        setMessage(null)
         
-        // 1. Get authenticated user
-        const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
+        // 1. Get authenticated user session
+        const { data: authData, error: authError } = await supabase.auth.getUser()
+        const authUser = authData?.user
+
         if (authError || !authUser) {
-          throw new Error('Not authenticated or session expired.')
+          throw new Error('Not authenticated or session expired. Please log in.')
         }
 
-        // 2. Fetch profile details from your profiles/users table
+        // 2. Fetch profile using the correct schema column 'full_name'
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('*')
-          .eq('id', authUser.id)
-          .single()
+          .eq('id', String(authUser.id))
+          .maybeSingle()
+
+        if (profileError) {
+          console.error('Profile fetch error:', profileError.message)
+        }
 
         const userData = {
           id: authUser.id,
-          email: authUser.email,
-          name: profileData?.name || authUser.user_metadata?.name || 'Admin User',
+          email: authUser.email || profileData?.email,
+          full_name: profileData?.full_name || authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'Admin User',
           bio: profileData?.bio || '',
           avatar_url: profileData?.avatar_url || '',
-          role: profileData?.role || 'Super Admin',
+          role: profileData?.role || 'Admin',
+          job_title: profileData?.job_title || 'Store Manager',
+          department: profileData?.department || 'Operations',
           created_at: authUser.created_at
         }
 
         setUser(userData)
-        setName(userData.name)
+        setFullName(userData.full_name)
         setBio(userData.bio)
 
-        // 3. Fetch real orders/transactions from your database
+        // 3. Fetch orders using the correct schema column 'total_amount'
         const { data: ordersData, error: ordersError } = await supabase
           .from('orders')
           .select('*')
           .order('created_at', { ascending: false })
 
-        if (!ordersError && ordersData) {
+        if (ordersError) {
+          console.error('Orders fetch error:', ordersError.message)
+        } else if (ordersData) {
           setOrders(ordersData)
         }
       } catch (err: any) {
+        console.error('Initialization error:', err)
         setMessage({ type: 'error', text: err.message || 'Failed to load profile data.' })
       } finally {
         setLoading(false)
@@ -77,29 +88,32 @@ export default function AdminProfilePage() {
   }, [])
 
   const handleCancelEditing = () => {
-    setName(user?.name || '')
+    setFullName(user?.full_name || '')
     setBio(user?.bio || '')
     setActiveTab('overview')
   }
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!user?.id) return
+    
     setSaving(true)
     setMessage(null)
 
     try {
+      // Upsert using the correct schema field 'full_name'
       const { error } = await supabase
         .from('profiles')
         .upsert({
           id: user.id,
-          name,
+          full_name: fullName,
           bio,
           updated_at: new Date().toISOString(),
         })
 
       if (error) throw error
 
-      setUser((prev: any) => ({ ...prev, name, bio }))
+      setUser((prev: any) => ({ ...prev, full_name: fullName, bio }))
       setMessage({ type: 'success', text: 'Profile updated successfully!' })
       setActiveTab('overview')
     } catch (err: any) {
@@ -120,19 +134,20 @@ export default function AdminProfilePage() {
     switch (status) {
       case 'completed': return 'Completed'
       case 'pending': return 'Pending'
+      case 'processing': return 'Processing'
       case 'cancelled': return 'Cancelled'
       default: return status
     }
   }
 
   const normalizeStatus = (order: any) => order.status || 'pending'
-  const getOrderAmount = (order: any) => order.amount || order.total || 0
+  const getOrderAmount = (order: any) => order.total_amount || 0 // Matches schema column total_amount
   const formatCurrency = (amount: number) => `$${Number(amount).toFixed(2)}`
   const formatDate = (dateStr: string) => dateStr ? new Date(dateStr).toLocaleDateString() : 'N/A'
 
   const filteredActivity = orders.filter(item => {
-    const titleMatch = (item.title || item.id || '').toLowerCase().includes(activitySearch.toLowerCase())
-    const descMatch = (item.description || item.customer_email || '').toLowerCase().includes(activitySearch.toLowerCase())
+    const titleMatch = (item.id || '').toLowerCase().includes(activitySearch.toLowerCase())
+    const descMatch = (item.email || item.customer_name || '').toLowerCase().includes(activitySearch.toLowerCase())
     const matchesSearch = titleMatch || descMatch
     const matchesStatus = activityStatus === 'all' || item.status === activityStatus
     return matchesSearch && matchesStatus
@@ -157,18 +172,26 @@ export default function AdminProfilePage() {
       <div style={styles.page}>
         <Header />
         <div style={styles.container}>
+          {message && (
+            <div style={{ ...styles.message, ...styles.errorMessage, marginBottom: '20px' }}>
+              <span>{message.text}</span>
+            </div>
+          )}
           <div style={styles.emptyCard}>
             <div style={styles.emptyIcon}>⚠️</div>
             <h2>Profile not found</h2>
-            <p style={styles.muted}>Please log in to view your administrator profile.</p>
+            <p style={styles.muted}>Please log in or check your database policies.</p>
+            <Link href="/login" style={{ ...styles.primaryButton, display: 'inline-block', marginTop: '15px', textDecoration: 'none' }}>
+              Go to Login
+            </Link>
           </div>
         </div>
       </div>
     )
   }
 
-  const initials = user.name
-    ? user.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()
+  const initials = user.full_name
+    ? user.full_name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()
     : 'AD'
 
   return (
@@ -176,8 +199,8 @@ export default function AdminProfilePage() {
       <Header />
 
       <main style={styles.container}>
-        {message && (
-          <div style={{ ...styles.message, ...(message.type === 'error' ? styles.errorMessage : message.type === 'success' ? styles.successMessage : styles.infoMessage) }}>
+        {message && message.type !== 'error' && (
+          <div style={{ ...styles.message, ...(message.type === 'success' ? styles.successMessage : styles.infoMessage) }}>
             <span>{message.text}</span>
             <button onClick={() => setMessage(null)} style={styles.messageClose}>×</button>
           </div>
@@ -193,7 +216,7 @@ export default function AdminProfilePage() {
             <div style={styles.avatarWrapper}>
               <div style={styles.avatar}>
                 {user.avatar_url ? (
-                  <img src={user.avatar_url} alt={user.name} style={styles.avatarImage} />
+                  <img src={user.avatar_url} alt={user.full_name} style={styles.avatarImage} />
                 ) : (
                   <span style={styles.avatarInitials}>{initials}</span>
                 )}
@@ -204,16 +227,16 @@ export default function AdminProfilePage() {
           <div style={styles.profileSummary}>
             <div style={styles.identity}>
               <div style={styles.nameRow}>
-                <h1 style={styles.name}>{user.name}</h1>
-                <span style={styles.adminBadge}>{user.role}</span>
+                <h1 style={styles.name}>{user.full_name}</h1>
+                <span style={styles.adminBadge}>{user.job_title}</span>
               </div>
-              <p style={styles.email}>{user.email}</p>
+              <p style={styles.email}>{user.email} • {user.department}</p>
               <span style={styles.lastUpdated}>Account active & secured</span>
             </div>
 
             <div style={styles.metricStrip}>
               <Metric label="Total Orders" value={orders.length} />
-              <Metric label="Access Level" value="Level 5" />
+              <Metric label="Access Level" value="Manager" />
             </div>
           </div>
 
@@ -256,8 +279,8 @@ export default function AdminProfilePage() {
                     {orders.slice(0, 3).map(order => (
                       <div key={order.id} onClick={() => setSelectedOrder(order)} style={styles.orderRow}>
                         <div style={styles.orderMain}>
-                          <strong style={styles.orderTitle}>Order #{order.id.slice(0, 8)}</strong>
-                          <span style={styles.orderDate}>{order.customer_email || order.email || 'Client Order'} • {formatDate(order.created_at)}</span>
+                          <strong style={styles.orderTitle}>Order #{String(order.id).slice(0, 8)}</strong>
+                          <span style={styles.orderDate}>{order.customer_name || order.email || 'Client Order'} • {formatDate(order.created_at)}</span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                           <span style={{ ...styles.statusBadge, ...getStatusStyle(normalizeStatus(order)) }}>
@@ -286,8 +309,8 @@ export default function AdminProfilePage() {
                     <span style={styles.label}>Full Name</span>
                     <input
                       type="text"
-                      value={name}
-                      onChange={e => setName(e.target.value)}
+                      value={fullName}
+                      onChange={e => setFullName(e.target.value)}
                       style={styles.input}
                       required
                     />
@@ -381,8 +404,8 @@ export default function AdminProfilePage() {
                     {filteredActivity.map(item => (
                       <div key={item.id} style={styles.activityItem} onClick={() => setSelectedOrder(item)}>
                         <div>
-                          <strong style={styles.activityTitle}>Order #{item.id.slice(0, 8)} - {formatCurrency(getOrderAmount(item))}</strong>
-                          <p style={styles.activityDesc}>{item.customer_email || item.email || 'Client Transaction'}</p>
+                          <strong style={styles.activityTitle}>Order #{String(item.id).slice(0, 8)} - {formatCurrency(getOrderAmount(item))}</strong>
+                          <p style={styles.activityDesc}>{item.customer_name || item.email || 'Client Transaction'}</p>
                         </div>
                         <span style={styles.activityTime}>{formatDate(item.created_at)}</span>
                       </div>
@@ -430,7 +453,7 @@ export default function AdminProfilePage() {
         <div style={styles.modalOverlay}>
           <div style={styles.modalContent}>
             <div style={styles.modalHeader}>
-              <h3>Order Details #{selectedOrder.id.slice(0, 8)}</h3>
+              <h3>Order Details #{String(selectedOrder.id).slice(0, 8)}</h3>
               <button
                 onClick={() => setSelectedOrder(null)}
                 style={styles.closeButton}
@@ -441,7 +464,8 @@ export default function AdminProfilePage() {
             <p><strong>Status:</strong> {getStatusLabel(normalizeStatus(selectedOrder))}</p>
             <p><strong>Amount:</strong> {formatCurrency(getOrderAmount(selectedOrder))}</p>
             <p><strong>Date:</strong> {formatDate(selectedOrder.created_at)}</p>
-            <p><strong>Customer:</strong> {selectedOrder.customer_email || selectedOrder.email || 'N/A'}</p>
+            <p><strong>Customer:</strong> {selectedOrder.customer_name || selectedOrder.email || 'N/A'}</p>
+            <p><strong>Payment Method:</strong> {selectedOrder.payment_method || 'N/A'}</p>
           </div>
         </div>
       )}
@@ -556,7 +580,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   mainCard: { backgroundColor: '#fff', padding: '30px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' },
   sectionHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' },
   bioBox: { backgroundColor: '#f9f9f9', padding: '20px', borderRadius: '6px', marginBottom: '30px' },
-  smallLabel: { fontSize: '11px', fontWeight: 700, color: '#888', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' },
+  smallLabel: { fontSize: '11px', fontWeight: '700', color: '#888', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' },
   bio: { fontSize: '14px', lineHeight: 1.5, color: '#333' },
   textLink: { color: '#d4af37', textDecoration: 'none', fontSize: '14px', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' },
   orderList: { display: 'flex', flexDirection: 'column' as const, gap: '10px' },
