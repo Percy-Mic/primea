@@ -19,7 +19,6 @@ export default function AttendancePage() {
       setUser(user)
 
       if (user) {
-        // Check if user has an active time-in today without a time-out
         const { data } = await supabase
           .from('attendance')
           .select('*')
@@ -72,7 +71,6 @@ export default function AttendancePage() {
     if (!error && data) {
       setActiveRecord(data)
       setNotes('')
-      // Log action for productivity
       await supabase.from('logged_actions').insert([{ admin_id: user.id, admin_name: name, action_name: 'Clocked In' }])
     }
   }
