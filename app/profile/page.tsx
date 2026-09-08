@@ -18,12 +18,10 @@ export default function AdminProfilePage() {
   const [notificationSettings, setNotificationSettings] = useState<any>({ new_orders: true, low_stock: true, failed_payments: true })
   
   const [avatarUrl, setAvatarUrl] = useState('')
-  const [updatedAt, setUpdatedAt] = useState('')
   
   // Navigation & UI States
   const [activeTab, setActiveTab] = useState<'profile' | 'permissions' | 'security' | 'activity' | 'notifications' | 'preferences'>('profile')
   const [isEditing, setIsEditing] = useState(false)
-  const [showLightbox, setShowLightbox] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState({ text: '', type: '' })
@@ -43,7 +41,6 @@ export default function AdminProfilePage() {
       }
       setUser(user)
 
-      // Fetch extended profile record
       const { data: profileData } = await supabase
         .from('profiles')
         .select('*')
@@ -58,18 +55,18 @@ export default function AdminProfilePage() {
         setDepartment(profileData.department || 'Operations')
         setRole(profileData.role || 'Manager')
         setStatus(profileData.status || 'Active')
-        setPermissions(profileData.permissions || {})
+        setPermissions(profileData.permissions || {
+          products: ['view', 'create', 'edit'],
+          orders: ['view', 'edit', 'refund'],
+          customers: ['view'],
+          reports: ['view', 'export']
+        })
         if (profileData.preferences) setPreferences(profileData.preferences)
         if (profileData.notification_settings) setNotificationSettings(profileData.notification_settings)
         if (profileData.avatar_url) setAvatarUrl(profileData.avatar_url)
-        if (profileData.updated_at) {
-          setUpdatedAt(new Date(profileData.updated_at).toLocaleString('en-US', {
-            month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'
-          }))
-        }
       }
 
-      // Fetch live store metrics & audit logs
+      // Fetch store metrics & audit logs
       try {
         const { data: ordersData } = await supabase.from('orders').select('*').order('created_at', { ascending: false })
         const { count: productCount } = await supabase.from('products').select('*', { count: 'exact', head: true })
@@ -126,11 +123,13 @@ export default function AdminProfilePage() {
 
     const updates = {
       id: user.id,
+      email: user.email, // Prevents null value email constraint violations
       full_name: fullName,
       bio,
       phone,
       job_title: jobTitle,
       department,
+      role,
       preferences,
       notification_settings: notificationSettings,
       avatar_url: avatarUrl,
@@ -141,7 +140,7 @@ export default function AdminProfilePage() {
     if (error) {
       setMessage({ text: `Failed: ${error.message}`, type: 'error' })
     } else {
-      setMessage({ text: 'Profile preferences updated successfully.', type: 'success' })
+      setMessage({ text: 'Profile updated successfully.', type: 'success' })
       setIsEditing(false)
     }
     setLoading(false)
@@ -154,9 +153,12 @@ export default function AdminProfilePage() {
       <div style={{ width: '100%', background: '#1e1614', padding: '1rem 2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #3a2e2b' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
           <span style={{ color: '#f5f2eb', fontWeight: 800, fontSize: '1.2rem', letterSpacing: '2px' }}>PRIMEA</span>
-          <span style={{ color: '#c5b8af', fontSize: '0.85rem', borderLeft: '1px solid #3a2e2b', paddingLeft: '1.5rem', textTransform: 'uppercase' }}>Admin Identity & Security Hub</span>
+          <span style={{ color: '#c5b8af', fontSize: '0.85rem', borderLeft: '1px solid #3a2e2b', paddingLeft: '1.5rem', textTransform: 'uppercase' }}>Admin Hierarchy & Security Hub</span>
         </div>
-        <Link href="/admin/dashboard" style={{ color: '#d4af37', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 600 }}>← Return to Dashboard</Link>
+        <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+          <Link href="/admin/users" style={{ color: '#d4af37', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 600 }}>Manage Admin Team</Link>
+          <Link href="/admin/dashboard" style={{ color: '#d4af37', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 600 }}>← Dashboard</Link>
+        </div>
       </div>
 
       <div style={{ maxWidth: '1400px', margin: '2rem auto', padding: '0 2rem' }}>
@@ -165,7 +167,7 @@ export default function AdminProfilePage() {
         <div style={{ background: '#ffffff', border: '1px solid #e3ded6', borderRadius: '16px', overflow: 'hidden', marginBottom: '2rem', boxShadow: '0 10px 30px rgba(44,34,30,0.04)' }}>
           <div style={{ height: '160px', background: 'linear-gradient(135deg, #2c221e 0%, #4a3b35 100%)', padding: '2rem', display: 'flex', justifyContent: 'flex-end', position: 'relative' }}>
             <div style={{ position: 'absolute', bottom: '-40px', left: '2.5rem' }}>
-              <div onClick={() => avatarUrl && setShowLightbox(true)} style={{ width: '104px', height: '104px', borderRadius: '50%', background: '#fff', padding: '4px', cursor: 'pointer', boxShadow: '0 6px 20px rgba(0,0,0,0.15)' }}>
+              <div style={{ width: '104px', height: '104px', borderRadius: '50%', background: '#fff', padding: '4px', boxShadow: '0 6px 20px rgba(0,0,0,0.15)' }}>
                 <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: '#f5f2eb', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {avatarUrl ? <img src={avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: '2.2rem', fontWeight: 700 }}>{fullName?.[0] || 'A'}</span>}
                 </div>
@@ -182,7 +184,7 @@ export default function AdminProfilePage() {
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.3rem' }}>
                 <h1 style={{ margin: 0, fontSize: '1.8rem', fontWeight: 700 }}>{fullName || 'Administrator'}</h1>
-                <span style={{ background: '#2c221e', color: '#d4af37', fontSize: '0.7rem', padding: '0.2rem 0.6rem', borderRadius: '4px', fontWeight: 700 }}>{role.toUpperCase()}</span>
+                <span style={{ background: '#2c221e', color: '#d4af37', fontSize: '0.7rem', padding: '0.2rem 0.6rem', borderRadius: '4px', fontWeight: 700 }}>RANK: {role.toUpperCase()}</span>
                 <span style={{ background: '#f0fff4', color: '#276749', fontSize: '0.7rem', padding: '0.2rem 0.6rem', borderRadius: '4px', fontWeight: 700, border: '1px solid #c6f6d5' }}>● {status}</span>
               </div>
               <p style={{ margin: 0, fontSize: '0.9rem', color: '#7a6b63' }}>{jobTitle} · {department} | {user?.email}</p>
@@ -209,7 +211,7 @@ export default function AdminProfilePage() {
           <div style={{ display: 'flex', borderTop: '1px solid #e3ded6', padding: '0 2.5rem', background: '#faf8f5', overflowX: 'auto' }}>
             {[
               { id: 'profile', label: 'Identity & Details' },
-              { id: 'permissions', label: 'Role & Permissions' },
+              { id: 'permissions', label: 'Ranking & Permissions' },
               { id: 'security', label: 'Security & Sessions' },
               { id: 'activity', label: 'Activity & Audit Log' },
               { id: 'notifications', label: 'Notifications' },
@@ -259,8 +261,8 @@ export default function AdminProfilePage() {
                       <strong style={{ fontSize: '0.95rem' }}>{phone || 'Not provided'}</strong>
                     </div>
                     <div style={{ padding: '1rem', background: '#f9f8f6', borderRadius: '8px', border: '1px solid #e3ded6' }}>
-                      <span style={{ fontSize: '0.75rem', color: '#7a6b63', display: 'block', marginBottom: '0.2rem' }}>DEPARTMENT / TEAM</span>
-                      <strong style={{ fontSize: '0.95rem' }}>{department}</strong>
+                      <span style={{ fontSize: '0.75rem', color: '#7a6b63', display: 'block', marginBottom: '0.2rem' }}>ADMIN RANK</span>
+                      <strong style={{ fontSize: '0.95rem', color: '#d4af37' }}>{role}</strong>
                     </div>
                   </div>
                   <h4 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '0.5rem' }}>Bio Statement</h4>
@@ -279,8 +281,12 @@ export default function AdminProfilePage() {
                       <input type="text" value={fullName} onChange={e => setFullName(e.target.value)} required style={{ width: '100%', padding: '0.75rem', border: '1px solid #dcd4cc', borderRadius: '8px', boxSizing: 'border-box' }} />
                     </div>
                     <div>
-                      <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem' }}>Phone Number</label>
-                      <input type="text" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+63 9..." style={{ width: '100%', padding: '0.75rem', border: '1px solid #dcd4cc', borderRadius: '8px', boxSizing: 'border-box' }} />
+                      <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.4rem' }}>Admin Rank / Role</label>
+                      <select value={role} onChange={e => setRole(e.target.value)} style={{ width: '100%', padding: '0.75rem', border: '1px solid #dcd4cc', borderRadius: '8px', background: '#fff' }}>
+                        <option value="CEO">CEO / Owner (Full Access)</option>
+                        <option value="Manager">Store Manager (Operations)</option>
+                        <option value="Staff">Support Staff (Restricted)</option>
+                      </select>
                     </div>
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
@@ -308,12 +314,12 @@ export default function AdminProfilePage() {
 
           {activeTab === 'permissions' && (
             <div>
-              <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem', fontWeight: 700 }}>Role & Permissions Matrix</h3>
-              <p style={{ margin: '0 0 1.5rem 0', fontSize: '0.85rem', color: '#7a6b63' }}>Your assigned access rights across store modules.</p>
+              <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem', fontWeight: 700 }}>Ranking & Permissions Matrix</h3>
+              <p style={{ margin: '0 0 1.5rem 0', fontSize: '0.85rem', color: '#7a6b63' }}>Your permission rights mapped to your assigned administrator rank.</p>
               
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', background: '#f9f8f6', borderRadius: '8px', border: '1px solid #e3ded6', marginBottom: '1.5rem' }}>
                 <div>
-                  <span style={{ fontSize: '0.75rem', color: '#7a6b63', display: 'block' }}>ASSIGNED ROLE</span>
+                  <span style={{ fontSize: '0.75rem', color: '#7a6b63', display: 'block' }}>CURRENT RANK TIER</span>
                   <strong style={{ fontSize: '1.1rem', color: '#2c221e' }}>{role}</strong>
                 </div>
               </div>
@@ -322,22 +328,18 @@ export default function AdminProfilePage() {
                 <thead>
                   <tr style={{ background: '#f5f2eb', textAlign: 'left', borderBottom: '1px solid #e3ded6' }}>
                     <th style={{ padding: '0.75rem' }}>Module Area</th>
-                    <th style={{ padding: '0.75rem' }}>Permitted Actions</th>
+                    <th style={{ padding: '0.75rem' }}>Permitted Actions Based on Rank</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {Object.entries(permissions).length === 0 ? (
-                    <tr><td colSpan={2} style={{ padding: '1rem', color: '#7a6b63' }}>Standard manager permissions loaded.</td></tr>
-                  ) : (
-                    Object.entries(permissions).map(([module, acts]: [string, any], idx) => (
-                      <tr key={idx} style={{ borderBottom: '1px solid #f5f2eb' }}>
-                        <td style={{ padding: '0.75rem', fontWeight: 600, textTransform: 'capitalize' }}>{module}</td>
-                        <td style={{ padding: '0.75rem' }}>
-                          {Array.isArray(acts) ? acts.join(' · ') : 'Full Access'}
-                        </td>
-                      </tr>
-                    ))
-                  )}
+                  {Object.entries(permissions).map(([module, acts]: [string, any], idx) => (
+                    <tr key={idx} style={{ borderBottom: '1px solid #f5f2eb' }}>
+                      <td style={{ padding: '0.75rem', fontWeight: 600, textTransform: 'capitalize' }}>{module}</td>
+                      <td style={{ padding: '0.75rem' }}>
+                        {role === 'CEO' ? 'Full Access (View · Create · Edit · Delete · Export)' : (Array.isArray(acts) ? acts.join(' · ') : 'Standard Access')}
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
