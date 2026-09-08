@@ -4,8 +4,6 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 
-const ADMIN_EMAIL = 'percymicnono@gmail.com'
-
 export default function AdminProfilePage() {
   const [user, setUser] = useState<any>(null)
   const [fullName, setFullName] = useState('')
@@ -24,7 +22,7 @@ export default function AdminProfilePage() {
   // Selected Order for Detail Modal view
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
 
-  // Real Dynamic Metrics (100% from Supabase, NO hardcoded fallbacks)
+  // Real Dynamic Metrics
   const [metrics, setMetrics] = useState({
     completedOrders: 0,
     activeProducts: 0,
@@ -41,13 +39,6 @@ export default function AdminProfilePage() {
     const fetchAdminData = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
-        setLoading(false)
-        return
-      }
-
-      // Security check: restrict fully to primary admin email
-      if (user.email !== ADMIN_EMAIL) {
-        setMessage({ text: 'Access Denied: Restricted to primary administrator.', type: 'error' })
         setLoading(false)
         return
       }
@@ -96,7 +87,6 @@ export default function AdminProfilePage() {
             const amt = Number(order.total_amount || order.total_amo || 0)
             revenueSum += isNaN(amt) ? 0 : amt
 
-            // Populate activity log with full order reference objects for modal viewing
             logs.push({
               id: order.id,
               title: `Order #${order.id?.slice(0, 8) || 'Transaction'} Processed`,
@@ -188,31 +178,6 @@ export default function AdminProfilePage() {
     setLoading(false)
   }
 
-  const exportOrdersCSV = async () => {
-    try {
-      const { data, error } = await supabase.from('orders').select('*')
-      if (error) throw error
-      if (!data || data.length === 0) {
-        alert('No orders found in database.')
-        return
-      }
-
-      const headers = Object.keys(data[0]).join(',')
-      const rows = data.map(row => Object.values(row).map(val => `"${val}"`).join(','))
-      const csvContent = 'data:text/csv;charset=utf-8,' + [headers, ...rows].join('\n')
-      
-      const encodedUri = encodeURI(csvContent)
-      const link = document.createElement('a')
-      link.setAttribute('href', encodedUri)
-      link.setAttribute('download', `primea_orders_${new Date().toISOString().slice(0,10)}.csv`)
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-    } catch (err: any) {
-      alert(`Export failed: ${err.message}`)
-    }
-  }
-
   return (
     <div style={{ width: '100%', minHeight: '100vh', background: '#f5f2eb', color: '#2c221e', fontFamily: 'system-ui, -apple-system, sans-serif', paddingBottom: '3rem', boxSizing: 'border-box' }}>
       
@@ -266,7 +231,7 @@ export default function AdminProfilePage() {
                 <h1 style={{ margin: 0, fontSize: '1.8rem', fontWeight: 700, color: '#1e1614' }}>{fullName || 'Percy Mic Nono'}</h1>
                 <span style={{ background: '#2c221e', color: '#d4af37', fontSize: '0.7rem', padding: '0.2rem 0.6rem', borderRadius: '4px', fontWeight: 700, letterSpacing: '1px' }}>ADMINISTRATOR</span>
               </div>
-              <p style={{ margin: 0, fontSize: '0.9rem', color: '#7a6b63' }}>{user?.email || ADMIN_EMAIL}</p>
+              <p style={{ margin: 0, fontSize: '0.9rem', color: '#7a6b63' }}>{user?.email || 'Loading session...'}</p>
             </div>
 
             {/* Live Metrics Card */}
@@ -330,16 +295,11 @@ export default function AdminProfilePage() {
                     </p>
 
                     <h4 style={{ margin: '0 0 1rem 0', fontSize: '0.95rem', fontWeight: 700, color: '#1e1614' }}>Core Operational Actions</h4>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(1, 1fr)', gap: '1rem' }}>
                       <div style={{ background: '#f5f2eb', padding: '1.25rem', borderRadius: '12px', border: '1px solid #e3ded6' }}>
                         <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '0.3rem', color: '#2c221e' }}>Live Inventory Management</div>
-                        <p style={{ margin: '0 0 1rem 0', fontSize: '0.8rem', color: '#7a6b63' }}>Inspect catalog counts and stock status.</p>
+                        <p style={{ margin: '0 0 1rem 0', fontSize: '0.8rem', color: '#7a6b63' }}>Inspect catalog counts and stock status directly in your dashboard.</p>
                         <Link href="/admin/dashboard" style={{ fontSize: '0.82rem', fontWeight: 600, color: '#2c221e', textDecoration: 'none' }}>Open Dashboard →</Link>
-                      </div>
-                      <div style={{ background: '#f5f2eb', padding: '1.25rem', borderRadius: '12px', border: '1px solid #e3ded6' }}>
-                        <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '0.3rem', color: '#2c221e' }}>Customer Orders CSV</div>
-                        <p style={{ margin: '0 0 1rem 0', fontSize: '0.8rem', color: '#7a6b63' }}>Export raw data reports instantly.</p>
-                        <button onClick={exportOrdersCSV} style={{ background: 'none', border: 'none', padding: 0, fontSize: '0.82rem', fontWeight: 600, color: '#2c221e', cursor: 'pointer' }}>Export File →</button>
                       </div>
                     </div>
                   </div>
@@ -398,16 +358,7 @@ export default function AdminProfilePage() {
               <div>
                 <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem', fontWeight: 700, color: '#1e1614' }}>Functional Store Management Tools</h3>
                 <p style={{ margin: '0 0 1.5rem 0', fontSize: '0.85rem', color: '#7a6b63' }}>Direct actions connected to your database store.</p>
-                
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  <div style={{ padding: '1.25rem', background: '#f9f8f6', borderRadius: '12px', border: '1px solid #e3ded6', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                      <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#2c221e' }}>Export Database Orders (.CSV)</div>
-                      <div style={{ fontSize: '0.8rem', color: '#7a6b63', marginTop: '0.2rem' }}>Download a complete spreadsheet of all customer orders.</div>
-                    </div>
-                    <button onClick={exportOrdersCSV} style={{ padding: '0.6rem 1.2rem', background: '#2c221e', color: '#f5f2eb', border: 'none', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>Export CSV</button>
-                  </div>
-                </div>
+                <p style={{ fontSize: '0.9rem', color: '#4a3b35' }}>All order inspection and updates are handled seamlessly via interactive web modals.</p>
               </div>
             )}
 
@@ -417,8 +368,8 @@ export default function AdminProfilePage() {
                 <p style={{ margin: '0 0 1.5rem 0', fontSize: '0.85rem', color: '#7a6b63' }}>Your session token is securely encrypted via Supabase Auth architecture.</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', fontSize: '0.9rem', color: '#4a3b35' }}>
                   <div style={{ padding: '0.75rem 1rem', background: '#f9f8f6', borderRadius: '8px', border: '1px solid #e3ded6', display: 'flex', justifyContent: 'space-between' }}>
-                    <span>Primary Admin Account</span>
-                    <strong>{ADMIN_EMAIL}</strong>
+                    <span>Active Admin Account</span>
+                    <strong>{user?.email || 'Loading...'}</strong>
                   </div>
                   <div style={{ padding: '0.75rem 1rem', background: '#f9f8f6', borderRadius: '8px', border: '1px solid #e3ded6', display: 'flex', justifyContent: 'space-between' }}>
                     <span>Session Status</span>
@@ -434,12 +385,11 @@ export default function AdminProfilePage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             
             <div style={{ background: '#ffffff', border: '1px solid #e3ded6', borderRadius: '16px', padding: '1.5rem', boxShadow: '0 4px 20px rgba(44,34,30,0.02)' }}>
-              <h4 style={{ margin: '0 0 1rem 0', fontSize: '0.95rem', fontWeight: 700, color: '#1e1614' }}>Admin Actions</h4>
-              <p style={{ margin: '0 0 1rem 0', fontSize: '0.8rem', color: '#7a6b63', lineHeight: '1.4' }}>Essential store management shortcuts.</p>
+              <h4 style={{ margin: '0 0 1rem 0', fontSize: '0.95rem', fontWeight: 700, color: '#1e1614' }}>Quick Navigation</h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                <button onClick={exportOrdersCSV} style={{ width: '100%', padding: '0.65rem', background: '#f5f2eb', color: '#2c221e', border: '1px solid #e3ded6', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}>
-                  Download Orders CSV Report
-                </button>
+                <Link href="/admin/dashboard" style={{ display: 'block', width: '100%', padding: '0.65rem', background: '#f5f2eb', color: '#2c221e', border: '1px solid #e3ded6', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, textDecoration: 'none', textAlign: 'center', boxSizing: 'border-box' }}>
+                  Open Full Dashboard
+                </Link>
               </div>
             </div>
 
