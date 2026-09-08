@@ -239,22 +239,21 @@ export default function AdminDashboardPage() {
           display: flex;
           flex-direction: column;
           min-height: 100vh;
-          padding-top: 130px;
+          padding-top: 240px;
           width: 100%;
         }
 
         @media (max-width: 768px) {
           .admin-layout-wrapper {
-            padding-top: 180px;
+            padding-top: 250px;
           }
         }
 
         .header-fixed-container {
           position: fixed;
           top: 0;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 100vw;
+          left: 0;
+          right: 0;
           margin: 0;
           padding: 0;
           z-index: 9999;
@@ -623,7 +622,7 @@ export default function AdminDashboardPage() {
         .status-processing { background-color: #fcf8ee; color: #8a6200; }
       `}</style>
 
-      {/* Edge-to-Edge Fixed Header with Transform Center Breakout */}
+      {/* Fixed Header with Dynamic Header Height and Safe Padding Matching Inventory Page */}
       <div className="header-fixed-container">
         <div className="fixed-top-header">
           <AdminHeader
