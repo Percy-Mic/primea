@@ -81,7 +81,7 @@ export default function AdminProfilePage() {
         setRealMetrics({
           completedOrders: orderCount || completedCount,
           activeProducts: productCount || 0,
-          totalRevenue: calculatedRevenue > 0 ? calculatedRevenue : 443104.00, // matches your dashboard live counter
+          totalRevenue: calculatedRevenue > 0 ? calculatedRevenue : 443104.00,
           loadingMetrics: false
         })
       } catch (err) {
@@ -449,7 +449,7 @@ export default function AdminProfilePage() {
 
           </div>
 
-          {/* Right Sidebar Utility Panel */}
+          {/* Right Sidebar Utility Panel (Cleaned up: Removed redundant dashboard button) */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             
             <div style={{ background: '#ffffff', border: '1px solid #e3ded6', borderRadius: '16px', padding: '1.5rem', boxShadow: '0 4px 20px rgba(44,34,30,0.02)' }}>
@@ -463,12 +463,6 @@ export default function AdminProfilePage() {
                 >
                   Download Orders CSV Report
                 </button>
-                <Link 
-                  href="/admin/dashboard" 
-                  style={{ display: 'block', width: '100%', padding: '0.65rem', background: '#f5f2eb', color: '#2c221e', border: '1px solid #e3ded6', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, textDecoration: 'none', boxSizing: 'border-box', textAlign: 'left' }}
-                >
-                  Return to Main Dashboard →
-                </Link>
               </div>
             </div>
 
