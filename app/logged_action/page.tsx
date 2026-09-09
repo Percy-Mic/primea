@@ -320,7 +320,7 @@ export default function LoggedActionPage() {
         .wave-bar:nth-child(5) { animation-delay: 0.4s; }
       `}</style>
 
-      {/* Header & Tabs - Fixed position outside the fluid chat container */}
+      {/* Header & Tabs */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
         <h1 style={{ margin: 0, fontSize: '1.3rem', color: '#0f172a' }}>Admin Hub & Group Chat</h1>
         <Link href="/admin/dashboard" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 500, fontSize: '0.85rem' }}>← Back to Dashboard</Link>
@@ -332,7 +332,6 @@ export default function LoggedActionPage() {
       </div>
 
       {activeTab === 'chat' ? (
-        /* LOCKED HEIGHT CONTAINER WITH FIXED HEADER & FOOTER, SCROLLABLE MIDDLE */
         <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', display: 'flex', flexDirection: 'column', height: '72vh', minHeight: '500px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)', overflow: 'hidden' }}>
           
           {/* 1. SCROLLABLE CHAT AREA */}
@@ -506,7 +505,7 @@ export default function LoggedActionPage() {
                   ))}
                 </div>
                 <span style={{ fontSize: '0.7rem', color: '#64748b', minWidth: '32px', textAlign: 'right', flexShrink: 0 }}>
-                  {recordingTime ? `${Math.floor(recordingTime / 60)}:{('0' + (recordingTime % 60)).slice(-2)}` : '0:00'}
+                  {recordingTime ? `${Math.floor(recordingTime / 60)}:${('0' + (recordingTime % 60)).slice(-2)}` : '0:00'}
                 </span>
                 <button type="button" onClick={cancelRecording} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600, flexShrink: 0, marginLeft: '0.25rem' }}>Discard</button>
               </div>
