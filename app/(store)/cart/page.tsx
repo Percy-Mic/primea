@@ -38,7 +38,7 @@ export default function CartPage() {
 
         const updatedWithStock = savedCart.map((item) => ({
           ...item,
-          stock: stockMap.get(item.id) ?? 0,
+          stock: Number(stockMap.get(item.id)) || 0,
         }))
 
         setCart(updatedWithStock)
