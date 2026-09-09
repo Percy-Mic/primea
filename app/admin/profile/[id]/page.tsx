@@ -20,7 +20,7 @@ export default function AdminProfileViewPage() {
     const fetchAdminData = async () => {
       setLoading(true)
 
-      // Fetch target profile info
+      // Fetch target profile info (including bio)
       const { data: profileData } = await supabase
         .from('profiles')
         .select('*')
@@ -70,7 +70,7 @@ export default function AdminProfileViewPage() {
       </div>
 
       {/* Profile Card Summary */}
-      <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '1.5rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', flexWrap: 'wrap' }}>
+      <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '1.5rem', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '1.25rem', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', flexWrap: 'wrap' }}>
         {profile.avatar_url ? (
           <img src={profile.avatar_url} alt="" style={{ width: '64px', height: '64px', borderRadius: '50%', objectFit: 'cover' }} />
         ) : (
@@ -86,6 +86,14 @@ export default function AdminProfileViewPage() {
             <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#10b981' }}>Score: {profile.score || 0} pts</span>
           </div>
         </div>
+      </div>
+
+      {/* Profile Bio Section */}
+      <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '1.25rem', marginBottom: '1.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
+        <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '0.95rem', fontWeight: 700, color: '#0f172a' }}>Profile Bio</h3>
+        <p style={{ margin: 0, fontSize: '0.88rem', color: profile.bio ? '#334155' : '#94a3b8', fontStyle: profile.bio ? 'normal' : 'italic', lineHeight: 1.5 }}>
+          {profile.bio || 'This admin has not added a bio yet.'}
+        </p>
       </div>
 
       {/* Attendance & Shift History */}
