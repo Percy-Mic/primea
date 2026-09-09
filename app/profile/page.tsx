@@ -25,7 +25,6 @@ export default function AdminProfilePage() {
         setLoading(true)
         setMessage(null)
         
-        // 1. Get authenticated user session
         const { data: authData, error: authError } = await supabase.auth.getUser()
         const authUser = authData?.user
 
@@ -33,7 +32,6 @@ export default function AdminProfilePage() {
           throw new Error('Not authenticated or session expired. Please log in.')
         }
 
-        // 2. Fetch profile directly from the profiles table using Supabase client
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('*')
@@ -60,7 +58,6 @@ export default function AdminProfilePage() {
         setFullName(userData.full_name)
         setBio(userData.bio)
 
-        // 3. Fetch orders using the correct schema column 'total_amount'
         const { data: ordersData, error: ordersError } = await supabase
           .from('orders')
           .select('*')
@@ -236,7 +233,7 @@ export default function AdminProfilePage() {
 
           <div style={styles.tabs}>
             <TabButton active={activeTab === 'overview'} onClick={() => setActiveTab('overview')}>Overview</TabButton>
-            <TabButton active={activeTab === 'edit'} onClick={() => setActiveTab('edit')}>Settings</TabButton>
+            <TabButton active={activeTab === 'edit'} onClick={() => setActiveTab('edit')}>Edit Profile</TabButton>
             <TabButton active={activeTab === 'activity'} onClick={() => setActiveTab('activity')}>Activity Stream</TabButton>
             <TabButton active={activeTab === 'security'} onClick={() => setActiveTab('security')}>Security</TabButton>
           </div>
@@ -293,7 +290,7 @@ export default function AdminProfilePage() {
               <>
                 <div style={styles.sectionHeader}>
                   <div>
-                    <h2 style={styles.sectionTitle}>Edit Profile Settings</h2>
+                    <h2 style={styles.sectionTitle}>Edit Profile</h2>
                     <p style={styles.muted}>Update your personal details and account info.</p>
                   </div>
                 </div>
@@ -426,7 +423,7 @@ export default function AdminProfilePage() {
 
                   <div style={styles.securityMeta}>
                     <strong>Active Session ID</strong>
-                    <p style={styles.muted}>{user.id}</p>
+                    <p style={{ ...styles.muted, wordBreak: 'break-all' }}>{user.id}</p>
                   </div>
 
                   <button
@@ -527,40 +524,40 @@ function getStatusStyle(status: string) {
 
 const styles: { [key: string]: React.CSSProperties } = {
   page: { minHeight: '100vh', backgroundColor: '#f8f5f0', color: '#1a1a1a', fontFamily: 'Inter, system-ui, sans-serif' },
-  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 40px', backgroundColor: '#121212', color: '#ffffff' },
-  logoArea: { fontWeight: 800, fontSize: '20px', letterSpacing: '1px' },
+  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', backgroundColor: '#121212', color: '#ffffff' },
+  logoArea: { fontWeight: 800, fontSize: '18px', letterSpacing: '1px' },
   logoText: { color: '#ffffff' },
-  navLinks: { display: 'flex', gap: '20px' },
+  navLinks: { display: 'flex', gap: '15px' },
   navLink: { color: '#d4af37', textDecoration: 'none', fontSize: '14px', fontWeight: 500 },
-  container: { maxWidth: '1000px', margin: '0 auto', padding: '40px 20px' },
-  loadingCard: { textAlign: 'center' as const, padding: '60px', backgroundColor: '#fff', borderRadius: '8px' },
-  loadingTitle: { fontSize: '20px', fontWeight: 600, marginTop: '15px' },
+  container: { maxWidth: '1000px', margin: '0 auto', padding: '20px 15px' },
+  loadingCard: { textAlign: 'center' as const, padding: '40px 20px', backgroundColor: '#fff', borderRadius: '8px' },
+  loadingTitle: { fontSize: '18px', fontWeight: 600, marginTop: '15px' },
   muted: { color: '#666', fontSize: '14px' },
-  emptyCard: { textAlign: 'center' as const, padding: '60px', backgroundColor: '#fff', borderRadius: '8px' },
+  emptyCard: { textAlign: 'center' as const, padding: '40px 20px', backgroundColor: '#fff', borderRadius: '8px' },
   emptyIcon: { fontSize: '32px', marginBottom: '10px' },
-  sectionTitle: { fontSize: '20px', fontWeight: 700, marginBottom: '6px' },
-  primaryButton: { backgroundColor: '#1a1a1a', color: '#fff', padding: '10px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 600 },
+  sectionTitle: { fontSize: '18px', fontWeight: 700, marginBottom: '4px' },
+  primaryButton: { backgroundColor: '#1a1a1a', color: '#fff', padding: '10px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '14px' },
   profileCard: { backgroundColor: '#fff', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', marginBottom: '20px' },
-  cover: { backgroundColor: '#121212', height: '140px', position: 'relative', padding: '20px' },
+  cover: { backgroundColor: '#121212', height: '120px', position: 'relative', padding: '15px' },
   coverActions: { display: 'flex', gap: '10px', justifyContent: 'flex-end' },
   secondaryDarkButton: { backgroundColor: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' },
-  avatarWrapper: { position: 'absolute', bottom: '-30px', left: '30px' },
-  avatar: { width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#fff', border: '3px solid #fff', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  avatarWrapper: { position: 'absolute', bottom: '-30px', left: '20px' },
+  avatar: { width: '70px', height: '70px', borderRadius: '50%', backgroundColor: '#fff', border: '3px solid #fff', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' },
   avatarImage: { width: '100%', height: '100%', objectFit: 'cover' },
-  avatarInitials: { fontSize: '24px', fontWeight: 700, color: '#1a1a1a' },
-  profileSummary: { padding: '40px 30px 20px 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap' as const, gap: '20px' },
-  identity: { flex: 1 },
-  nameRow: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' },
-  name: { fontSize: '24px', fontWeight: 700 },
+  avatarInitials: { fontSize: '20px', fontWeight: 700, color: '#1a1a1a' },
+  profileSummary: { padding: '35px 20px 20px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap' as const, gap: '20px' },
+  identity: { flex: 1, minWidth: '220px' },
+  nameRow: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px', flexWrap: 'wrap' as const },
+  name: { fontSize: '22px', fontWeight: 700 },
   adminBadge: { backgroundColor: '#eef2ff', color: '#3730a3', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 700 },
-  email: { color: '#666', fontSize: '14px', marginBottom: '4px' },
+  email: { color: '#666', fontSize: '13px', marginBottom: '4px', wordBreak: 'break-all' },
   lastUpdated: { color: '#888', fontSize: '12px' },
-  metricStrip: { display: 'flex', gap: '20px' },
-  metricItem: { textAlign: 'center' as const },
-  metricValue: { display: 'block', fontSize: '18px', fontWeight: 700 },
+  metricStrip: { display: 'flex', gap: '20px', width: '100%', justifyContent: 'flex-start', borderTop: '1px solid #f0f0f0', paddingTop: '15px', marginTop: '10px' },
+  metricItem: { textAlign: 'left' as const },
+  metricValue: { display: 'block', fontSize: '16px', fontWeight: 700 },
   metricLabel: { fontSize: '12px', color: '#666' },
-  tabs: { display: 'flex', borderTop: '1px solid #eaeaea', padding: '0 30px' },
-  tabButton: { background: 'none', border: 'none', padding: '15px 20px', cursor: 'pointer', fontSize: '14px', fontWeight: 600, color: '#666', borderBottom: '2px solid transparent' },
+  tabs: { display: 'flex', borderTop: '1px solid #eaeaea', padding: '0 10px', overflowX: 'auto' as const },
+  tabButton: { background: 'none', border: 'none', padding: '12px 15px', cursor: 'pointer', fontSize: '13px', fontWeight: 600, color: '#666', borderBottom: '2px solid transparent', whiteSpace: 'nowrap' as const },
   tabButtonActive: { color: '#1a1a1a', borderBottomColor: '#d4af37' },
   message: { padding: '12px 16px', borderRadius: '6px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '14px' },
   errorMessage: { backgroundColor: '#f8d7da', color: '#721c24' },
@@ -568,42 +565,42 @@ const styles: { [key: string]: React.CSSProperties } = {
   infoMessage: { backgroundColor: '#d1ecf1', color: '#0c5460' },
   messageClose: { background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: 'inherit' },
   contentGrid: { display: 'flex', flexDirection: 'column' as const, gap: '20px' },
-  mainCard: { backgroundColor: '#fff', padding: '30px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' },
-  sectionHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' },
-  bioBox: { backgroundColor: '#f9f9f9', padding: '20px', borderRadius: '6px', marginBottom: '30px' },
+  mainCard: { backgroundColor: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' },
+  sectionHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px', flexWrap: 'wrap' as const, gap: '10px' },
+  bioBox: { backgroundColor: '#f9f9f9', padding: '15px', borderRadius: '6px', marginBottom: '25px', wordBreak: 'break-word' as const, overflowWrap: 'break-word' as const },
   smallLabel: { fontSize: '11px', fontWeight: '700', color: '#888', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' },
-  bio: { fontSize: '14px', lineHeight: 1.5, color: '#333' },
+  bio: { fontSize: '14px', lineHeight: 1.5, color: '#333', wordBreak: 'break-word' as const, overflowWrap: 'break-word' as const },
   textLink: { color: '#d4af37', textDecoration: 'none', fontSize: '14px', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' },
   orderList: { display: 'flex', flexDirection: 'column' as const, gap: '10px' },
-  orderRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', padding: '12px 15px', backgroundColor: '#fff', border: '1px solid #eee', borderRadius: '6px', cursor: 'pointer', textAlign: 'left' as const },
-  orderMain: { display: 'flex', flexDirection: 'column' as const, gap: '2px' },
-  orderTitle: { fontSize: '14px', color: '#1a1a1a' },
-  orderDate: { fontSize: '12px', color: '#888' },
-  statusBadge: { padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 600 },
-  orderAmount: { fontSize: '14px', fontWeight: 700 },
-  form: { display: 'flex', flexDirection: 'column' as const, gap: '20px' },
-  helperText: { fontSize: '12px', color: '#888', marginTop: '4px', display: 'block' },
+  orderRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', padding: '12px', backgroundColor: '#fff', border: '1px solid #eee', borderRadius: '6px', cursor: 'pointer', textAlign: 'left' as const, gap: '10px' },
+  orderMain: { display: 'flex', flexDirection: 'column' as const, gap: '2px', minWidth: 0, flex: 1 },
+  orderTitle: { fontSize: '13px', color: '#1a1a1a', whiteSpace: 'nowrap' as const, overflow: 'hidden', textOverflow: 'ellipsis' },
+  orderDate: { fontSize: '11px', color: '#888', whiteSpace: 'nowrap' as const, overflow: 'hidden', textOverflow: 'ellipsis' },
+  statusBadge: { padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 600, whiteSpace: 'nowrap' as const },
+  orderAmount: { fontSize: '13px', fontWeight: 700, whiteSpace: 'nowrap' as const },
+  form: { display: 'flex', flexDirection: 'column' as const, gap: '15px' },
+  helperText: { fontSize: '11px', color: '#888', marginTop: '4px', display: 'block' },
   field: { display: 'flex', flexDirection: 'column' as const, gap: '6px' },
-  label: { fontSize: '14px', fontWeight: 600 },
-  input: { padding: '10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '14px' },
-  textarea: { padding: '10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '14px', resize: 'vertical' as const },
-  actionRow: { display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' },
-  secondaryButton: { backgroundColor: '#f0f0f0', color: '#333', padding: '10px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 600 },
-  filterRow: { display: 'flex', gap: '10px', marginBottom: '20px' },
-  searchInput: { flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '14px' },
+  label: { fontSize: '13px', fontWeight: 600 },
+  input: { padding: '10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '14px', width: '100%' },
+  textarea: { padding: '10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '14px', resize: 'vertical' as const, width: '100%' },
+  actionRow: { display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px', flexWrap: 'wrap' as const },
+  secondaryButton: { backgroundColor: '#f0f0f0', color: '#333', padding: '10px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '14px' },
+  filterRow: { display: 'flex', gap: '10px', marginBottom: '15px', flexWrap: 'wrap' as const },
+  searchInput: { flex: 1, minWidth: '180px', padding: '10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '14px' },
   selectInput: { padding: '10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '14px', backgroundColor: '#fff' },
   activityList: { display: 'flex', flexDirection: 'column' as const, gap: '10px' },
-  activityItem: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 15px', backgroundColor: '#fcfcfc', border: '1px solid #eee', borderRadius: '6px', cursor: 'pointer' },
-  activityTitle: { fontSize: '14px', display: 'block', marginBottom: '2px' },
-  activityDesc: { fontSize: '12px', color: '#666' },
-  activityTime: { fontSize: '12px', color: '#888' },
-  securityBox: { display: 'flex', flexDirection: 'column' as const, gap: '20px' },
-  securityMeta: { paddingBottom: '15px', borderBottom: '1px solid #eee' },
-  dangerButton: { backgroundColor: '#dc3545', color: '#fff', padding: '10px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 600, alignSelf: 'flex-start' },
-  modalOverlay: { position: 'fixed' as const, top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
-  modalContent: { backgroundColor: '#fff', padding: '30px', borderRadius: '8px', width: '400px', maxWidth: '90%', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' },
+  activityItem: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', backgroundColor: '#fcfcfc', border: '1px solid #eee', borderRadius: '6px', cursor: 'pointer', gap: '10px' },
+  activityTitle: { fontSize: '13px', display: 'block', marginBottom: '2px' },
+  activityDesc: { fontSize: '11px', color: '#666' },
+  activityTime: { fontSize: '11px', color: '#888', whiteSpace: 'nowrap' as const },
+  securityBox: { display: 'flex', flexDirection: 'column' as const, gap: '15px' },
+  securityMeta: { paddingBottom: '12px', borderBottom: '1px solid #eee' },
+  dangerButton: { backgroundColor: '#dc3545', color: '#fff', padding: '10px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 600, alignSelf: 'flex-start', fontSize: '14px' },
+  modalOverlay: { position: 'fixed' as const, top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '15px' },
+  modalContent: { backgroundColor: '#fff', padding: '20px', borderRadius: '8px', width: '400px', maxWidth: '100%', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' },
   modalHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' },
   closeButton: { background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer' },
-  emptyStateContainer: { textAlign: 'center' as const, padding: '40px' },
-  emptyStateTitle: { fontSize: '16px', fontWeight: 600, marginBottom: '4px' },
+  emptyStateContainer: { textAlign: 'center' as const, padding: '30px' },
+  emptyStateTitle: { fontSize: '15px', fontWeight: 600, marginBottom: '4px' },
 }
