@@ -137,8 +137,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   return (
     <div className="product-details-page">
-      {/* Sticky wrapper keeping UserNav locked at the top */}
-      <div className="sticky-nav-wrapper">
+      {/* Fixed wrapper locking UserNav at the top */}
+      <div className="fixed-nav-wrapper">
         <UserNav />
       </div>
 
@@ -162,9 +162,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
           position: relative;
           animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
-        .sticky-nav-wrapper {
-          position: sticky;
+        .fixed-nav-wrapper {
+          position: fixed;
           top: 0;
+          left: 0;
           z-index: 50;
           width: 100%;
           background: rgba(250, 248, 245, 0.95);
@@ -173,7 +174,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         .container {
           max-width: 1100px;
           margin: 0 auto;
-          padding: 2.5rem 1.5rem 0 1.5rem;
+          padding: 6rem 1.5rem 0 1.5rem; /* Added top padding to prevent content from hiding under the fixed header */
         }
         .product-grid {
           display: grid;
