@@ -24,7 +24,7 @@ export default function LoggedActionPage() {
   const [mediaPreviewUrl, setMediaPreviewUrl] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Active playing audio state for custom Messenger player in messages
+  // Active playing audio state
   const [playingAudioId, setPlayingAudioId] = useState<string | null>(null)
   const [playbackProgress, setPlaybackProgress] = useState<{ [key: string]: number }>({})
   const activeAudioRef = useRef<HTMLAudioElement | null>(null)
@@ -70,12 +70,10 @@ export default function LoggedActionPage() {
     return () => { supabase.removeChannel(channel) }
   }, [])
 
-  // Auto-scroll to bottom of chat
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, activeTab])
 
-  // Auto-expand textarea
   const handleInputResize = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setNewMessage(e.target.value)
     if (textareaRef.current) {
@@ -84,7 +82,6 @@ export default function LoggedActionPage() {
     }
   }
 
-  // Handle Media File Selection
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -105,7 +102,6 @@ export default function LoggedActionPage() {
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
-  // Voice Recorder Handlers
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
@@ -306,7 +302,7 @@ export default function LoggedActionPage() {
   }
 
   return (
-    <div style={{ maxWidth: '900px', margin: '2rem auto', padding: '1rem', fontFamily: 'system-ui, -apple-system, sans-serif', boxSizing: 'border-box' }}>
+    <div style={{ maxWidth: '900px', margin: '1.5rem auto', padding: '0 1rem', fontFamily: 'system-ui, -apple-system, sans-serif', boxSizing: 'border-box' }}>
       <style>{`
         @keyframes wavePulse {
           0%, 100% { height: 6px; }
@@ -324,20 +320,22 @@ export default function LoggedActionPage() {
         .wave-bar:nth-child(5) { animation-delay: 0.4s; }
       `}</style>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-        <h1 style={{ margin: 0, fontSize: '1.4rem', color: '#0f172a' }}>Admin Hub & Group Chat</h1>
-        <Link href="/admin/dashboard" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 500, fontSize: '0.9rem' }}>← Back to Dashboard</Link>
+      {/* Header & Tabs - Fixed position outside the fluid chat container */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+        <h1 style={{ margin: 0, fontSize: '1.3rem', color: '#0f172a' }}>Admin Hub & Group Chat</h1>
+        <Link href="/admin/dashboard" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 500, fontSize: '0.85rem' }}>← Back to Dashboard</Link>
       </div>
 
-      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-        <button onClick={() => setActiveTab('chat')} style={{ padding: '0.5rem 1rem', background: activeTab === 'chat' ? '#0f172a' : '#e2e8f0', color: activeTab === 'chat' ? '#fff' : '#0f172a', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }}>Admin Group Chat</button>
-        <button onClick={() => setActiveTab('logs')} style={{ padding: '0.5rem 1rem', background: activeTab === 'logs' ? '#0f172a' : '#e2e8f0', color: activeTab === 'logs' ? '#fff' : '#0f172a', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }}>System Activity Log</button>
+      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
+        <button onClick={() => setActiveTab('chat')} style={{ padding: '0.4rem 0.9rem', background: activeTab === 'chat' ? '#0f172a' : '#e2e8f0', color: activeTab === 'chat' ? '#fff' : '#0f172a', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }}>Admin Group Chat</button>
+        <button onClick={() => setActiveTab('logs')} style={{ padding: '0.4rem 0.9rem', background: activeTab === 'logs' ? '#0f172a' : '#e2e8f0', color: activeTab === 'logs' ? '#fff' : '#0f172a', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }}>System Activity Log</button>
       </div>
 
       {activeTab === 'chat' ? (
-        <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', display: 'flex', flexDirection: 'column', height: '580px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)', overflow: 'hidden' }}>
+        /* LOCKED HEIGHT CONTAINER WITH FIXED HEADER & FOOTER, SCROLLABLE MIDDLE */
+        <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', display: 'flex', flexDirection: 'column', height: '72vh', minHeight: '500px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)', overflow: 'hidden' }}>
           
-          {/* Chat Stream Area */}
+          {/* 1. SCROLLABLE CHAT AREA */}
           <div style={{ flex: 1, padding: '1rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.75rem', background: '#f8fafc', minWidth: 0 }}>
             {messages.length === 0 ? (
               <p style={{ color: '#64748b', textAlign: 'center', margin: 'auto', fontSize: '0.9rem' }}>No messages yet. Start the conversation!</p>
@@ -372,10 +370,10 @@ export default function LoggedActionPage() {
                           {msg.media_url && (
                             <div style={{ marginBottom: msg.message ? '0.5rem' : 0, borderRadius: '8px', overflow: 'hidden', maxWidth: '100%' }}>
                               {msg.media_type === 'video' ? (
-                                <video controls src={msg.media_url} style={{ width: '100%', maxHeight: '240px', objectFit: 'cover', borderRadius: '8px', display: 'block' }} />
+                                <video controls src={msg.media_url} style={{ width: '100%', maxHeight: '220px', objectFit: 'cover', borderRadius: '8px', display: 'block' }} />
                               ) : (
                                 <a href={msg.media_url} target="_blank" rel="noopener noreferrer">
-                                  <img src={msg.media_url} alt="Attached media" style={{ width: '100%', maxHeight: '240px', objectFit: 'cover', borderRadius: '8px', display: 'block' }} />
+                                  <img src={msg.media_url} alt="Attached media" style={{ width: '100%', maxHeight: '220px', objectFit: 'cover', borderRadius: '8px', display: 'block' }} />
                                 </a>
                               )}
                             </div>
@@ -458,13 +456,14 @@ export default function LoggedActionPage() {
             <div ref={messagesEndRef} />
           </div>
 
+          {/* 2. FIXED ATTACHMENT PREVIEW */}
           {mediaPreviewUrl && (
-            <div style={{ padding: '0.5rem 1rem', background: '#f1f5f9', borderTop: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ padding: '0.5rem 1rem', background: '#f1f5f9', borderTop: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0 }}>
                 {mediaFile?.type.startsWith('video/') ? (
-                  <video src={mediaPreviewUrl} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
+                  <video src={mediaPreviewUrl} style={{ width: '36px', height: '36px', objectFit: 'cover', borderRadius: '4px' }} />
                 ) : (
-                  <img src={mediaPreviewUrl} alt="Upload preview" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
+                  <img src={mediaPreviewUrl} alt="Upload preview" style={{ width: '36px', height: '36px', objectFit: 'cover', borderRadius: '4px' }} />
                 )}
                 <span style={{ fontSize: '0.8rem', color: '#334155', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px' }}>{mediaFile?.name}</span>
               </div>
@@ -472,7 +471,8 @@ export default function LoggedActionPage() {
             </div>
           )}
 
-          <form onSubmit={handleSendMessage} style={{ padding: '0.75rem 1rem', background: '#fff', borderTop: '1px solid #e2e8f0', display: 'flex', alignItems: 'flex-end', gap: '0.5rem', width: '100%', boxSizing: 'border-box' }}>
+          {/* 3. FIXED BOTTOM INPUT BAR */}
+          <form onSubmit={handleSendMessage} style={{ padding: '0.75rem 1rem', background: '#fff', borderTop: '1px solid #e2e8f0', display: 'flex', alignItems: 'flex-end', gap: '0.5rem', width: '100%', boxSizing: 'border-box', flexShrink: 0 }}>
             
             {isRecording ? (
               <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '24px', padding: '0.4rem 1rem', boxSizing: 'border-box' }}>
@@ -569,7 +569,7 @@ export default function LoggedActionPage() {
           </form>
         </div>
       ) : (
-        <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '1.5rem' }}>
+        <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '1.5rem', height: '72vh', overflowY: 'auto' }}>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {logs.length === 0 ? (
               <p style={{ color: '#64748b' }}>No system actions logged.</p>
