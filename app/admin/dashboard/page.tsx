@@ -233,7 +233,8 @@ export default function AdminDashboardPage() {
           padding: 0;
         }
         body {
-          background: linear-gradient(135deg, #fdfbf7 0%, #f3ede2 100%);
+          /* Soft Ambient Sunset Gradient Background */
+          background: linear-gradient(120deg, #faf8f5 0%, #f5efe6 50%, #ede3d5 100%);
           font-family: system-ui, -apple-system, sans-serif;
           overflow-x: hidden;
           width: 100%;
@@ -248,7 +249,7 @@ export default function AdminDashboardPage() {
           transform: translateX(-50%);
           width: 900px;
           height: 450px;
-          background: radial-gradient(circle, rgba(176, 109, 80, 0.07) 0%, rgba(245, 242, 235, 0) 70%);
+          background: radial-gradient(circle, rgba(176, 109, 80, 0.09) 0%, rgba(245, 242, 235, 0) 70%);
           z-index: 0;
           pointer-events: none;
           animation: ambientGlow 9s ease-in-out infinite alternate;
