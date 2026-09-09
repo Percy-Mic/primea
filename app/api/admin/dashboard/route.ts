@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
+const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+]
+
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient()
@@ -40,7 +45,7 @@ export async function GET(request: NextRequest) {
       (o) => o.status?.toLowerCase() !== 'cancelled'
     )
 
-    // Lifetime Revenue (from all non-cancelled orders)
+    // Lifetime Revenue
     const revenue = validOrders.reduce((sum, o) => {
       const val = o.total ?? o.total_amount ?? 0
       return sum + Number(val)
@@ -90,6 +95,29 @@ export async function GET(request: NextRequest) {
       return sum + Number(val)
     }, 0)
 
+    // Build Dynamic Daily Trend for Charts matching your frontend's requirements
+    const lastDayObject = new Date(selectedYear, selectedMonth + 1, 0)
+    const daysInMonth = lastDayObject.getDate()
+    const isCurrentMonth = now.getMonth() === selectedMonth && now.getFullYear() === selectedYear
+    const maxDayToProcess = isCurrentMonth ? now.getDate() : daysInMonth
+
+    const currentMonthStr = MONTH_NAMES[selectedMonth]
+
+    const dailyTrend = Array.from({ length: maxDayToProcess }, (_, i) => {
+      const dayNum = i + 1
+      const dayString = `${selectedYear}-${String(selectedMonth + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`
+      
+      const dayTotal = monthlyOrders
+        .filter(o => o.created_at?.startsWith(dayString))
+        .reduce((sum, o) => sum + Number(o.total ?? o.total_amount ?? 0), 0)
+
+      return {
+        day: dayNum,
+        label: `${currentMonthStr.slice(0, 3)} ${dayNum}`,
+        revenue: dayTotal
+      }
+    })
+
     // Analytics
     const averageOrderValue = validOrders.length > 0 ? revenue / validOrders.length : 0
 
@@ -136,19 +164,17 @@ export async function GET(request: NextRequest) {
           ordersCount: monthlyOrders.length,
           revenueGrowth,
           ordersGrowth,
-          monthIndex: selectedMonth,
-          year: selectedYear,
         },
-        yearly: {
-          revenue: yearlyRevenue,
-          ordersCount: yearlyOrders.length,
-          year: selectedYear,
+        yearly: { 
+          revenue: yearlyRevenue, 
+          ordersCount: yearlyOrders.length 
         },
       },
       analytics: {
         averageOrderValue,
         pendingOrdersCount: allOrders.filter((o) => o.status?.toLowerCase() === 'pending').length,
       },
+      dailyTrend,
       recentOrders,
     })
   } catch (err: any) {
