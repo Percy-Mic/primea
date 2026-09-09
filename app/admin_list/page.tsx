@@ -92,7 +92,7 @@ export default function AdminListPage() {
           <h1 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 700, color: '#0f172a' }}>Admin Directory & Productivity Rankings</h1>
           <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.82rem', color: '#64748b' }}>Live view of administrative performance scores and team stats.</p>
         </div>
-        <Link href="/" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 600, fontSize: '0.85rem', padding: '0.5rem 0.75rem', background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '8px' }}>← Back Home</Link>
+        <Link href="/admin/dashboard" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 600, fontSize: '0.85rem', padding: '0.5rem 0.75rem', background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '8px' }}>← Back Home</Link>
       </div>
 
       {/* Stats Overview Grid */}
