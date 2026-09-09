@@ -10,9 +10,10 @@ export default function AdminProfilePage() {
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null)
   
-  const [activeTab, setActiveTab] = useState<'overview' | 'edit' | 'activity' | 'security'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'settings' | 'activity' | 'security'>('overview')
   const [bio, setBio] = useState('')
   const [fullName, setFullName] = useState('')
+  const [avatarUrl, setAvatarUrl] = useState('')
   
   const [activitySearch, setActivitySearch] = useState('')
   const [activityStatus, setActivityStatus] = useState('all')
@@ -57,6 +58,7 @@ export default function AdminProfilePage() {
         setUser(userData)
         setFullName(userData.full_name)
         setBio(userData.bio)
+        setAvatarUrl(userData.avatar_url)
 
         const { data: ordersData, error: ordersError } = await supabase
           .from('orders')
@@ -82,6 +84,7 @@ export default function AdminProfilePage() {
   const handleCancelEditing = () => {
     setFullName(user?.full_name || '')
     setBio(user?.bio || '')
+    setAvatarUrl(user?.avatar_url || '')
     setActiveTab('overview')
   }
 
@@ -99,12 +102,13 @@ export default function AdminProfilePage() {
           id: user.id,
           full_name: fullName,
           bio,
+          avatar_url: avatarUrl,
           updated_at: new Date().toISOString(),
         })
 
       if (error) throw error
 
-      setUser((prev: any) => ({ ...prev, full_name: fullName, bio }))
+      setUser((prev: any) => ({ ...prev, full_name: fullName, bio, avatar_url: avatarUrl }))
       setMessage({ type: 'success', text: 'Profile updated successfully!' })
       setActiveTab('overview')
     } catch (err: any) {
@@ -200,17 +204,22 @@ export default function AdminProfilePage() {
         <div style={styles.profileCard}>
           <div style={styles.cover}>
             <div style={styles.coverActions}>
-              <button onClick={() => setActiveTab('edit')} style={styles.secondaryDarkButton}>
+              <button onClick={() => setActiveTab('settings')} style={styles.secondaryDarkButton}>
                 Edit Profile
               </button>
             </div>
             <div style={styles.avatarWrapper}>
-              <div style={styles.avatar}>
+              <div 
+                style={styles.avatar} 
+                onClick={() => setActiveTab('settings')} 
+                title="Click to update avatar image"
+              >
                 {user.avatar_url ? (
                   <img src={user.avatar_url} alt={user.full_name} style={styles.avatarImage} />
                 ) : (
                   <span style={styles.avatarInitials}>{initials}</span>
                 )}
+                <div style={styles.avatarOverlay}>Edit</div>
               </div>
             </div>
           </div>
@@ -233,7 +242,7 @@ export default function AdminProfilePage() {
 
           <div style={styles.tabs}>
             <TabButton active={activeTab === 'overview'} onClick={() => setActiveTab('overview')}>Overview</TabButton>
-            <TabButton active={activeTab === 'edit'} onClick={() => setActiveTab('edit')}>Edit Profile</TabButton>
+            <TabButton active={activeTab === 'settings'} onClick={() => setActiveTab('settings')}>Settings</TabButton>
             <TabButton active={activeTab === 'activity'} onClick={() => setActiveTab('activity')}>Activity Stream</TabButton>
             <TabButton active={activeTab === 'security'} onClick={() => setActiveTab('security')}>Security</TabButton>
           </div>
@@ -286,16 +295,30 @@ export default function AdminProfilePage() {
               </>
             )}
 
-            {activeTab === 'edit' && (
+            {activeTab === 'settings' && (
               <>
                 <div style={styles.sectionHeader}>
                   <div>
-                    <h2 style={styles.sectionTitle}>Edit Profile</h2>
-                    <p style={styles.muted}>Update your personal details and account info.</p>
+                    <h2 style={styles.sectionTitle}>Edit Profile Settings</h2>
+                    <p style={styles.muted}>Update your personal details, avatar, and account info.</p>
                   </div>
                 </div>
 
                 <form onSubmit={handleSaveProfile} style={styles.form}>
+                  <label style={styles.field}>
+                    <span style={styles.label}>Profile Picture URL</span>
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                      <input
+                        type="url"
+                        value={avatarUrl}
+                        onChange={e => setAvatarUrl(e.target.value)}
+                        placeholder="https://example.com/avatar.jpg"
+                        style={styles.input}
+                      />
+                    </div>
+                    <span style={styles.helperText}>Paste a direct public image link for your profile picture.</span>
+                  </label>
+
                   <label style={styles.field}>
                     <span style={styles.label}>Full Name</span>
                     <input
@@ -542,9 +565,10 @@ const styles: { [key: string]: React.CSSProperties } = {
   coverActions: { display: 'flex', gap: '10px', justifyContent: 'flex-end' },
   secondaryDarkButton: { backgroundColor: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' },
   avatarWrapper: { position: 'absolute', bottom: '-30px', left: '20px' },
-  avatar: { width: '70px', height: '70px', borderRadius: '50%', backgroundColor: '#fff', border: '3px solid #fff', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  avatar: { width: '70px', height: '70px', borderRadius: '50%', backgroundColor: '#fff', border: '3px solid #fff', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', cursor: 'pointer' },
   avatarImage: { width: '100%', height: '100%', objectFit: 'cover' },
   avatarInitials: { fontSize: '20px', fontWeight: 700, color: '#1a1a1a' },
+  avatarOverlay: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(0,0,0,0.6)', color: '#fff', fontSize: '10px', textAlign: 'center', padding: '2px 0', opacity: 0, transition: 'opacity 0.2s' },
   profileSummary: { padding: '35px 20px 20px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap' as const, gap: '20px' },
   identity: { flex: 1, minWidth: '220px' },
   nameRow: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px', flexWrap: 'wrap' as const },
