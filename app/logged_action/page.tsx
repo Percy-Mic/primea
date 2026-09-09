@@ -89,7 +89,6 @@ export default function LoggedActionPage() {
     const file = e.target.files?.[0]
     if (!file) return
 
-    // Limit size if needed (e.g., 50MB max)
     if (file.size > 50 * 1024 * 1024) {
       alert('File size exceeds 50MB limit.')
       return
@@ -97,7 +96,6 @@ export default function LoggedActionPage() {
 
     setMediaFile(file)
     setMediaPreviewUrl(URL.createObjectURL(file))
-    // Clear any active audio recording if attaching media
     cancelRecording()
   }
 
@@ -129,7 +127,7 @@ export default function LoggedActionPage() {
       mediaRecorder.start()
       setIsRecording(true)
       setRecordingTime(0)
-      clearMediaAttachment() // clear media if recording voice
+      clearMediaAttachment()
       timerRef.current = setInterval(() => {
         setRecordingTime((prev) => prev + 1)
       }, 1000)
@@ -209,7 +207,6 @@ export default function LoggedActionPage() {
     }
   }
 
-  // Unsend / Delete Message for Everyone
   const handleUnsend = async (messageId: string) => {
     const { error } = await supabase
       .from('messages')
@@ -238,7 +235,6 @@ export default function LoggedActionPage() {
     let mediaType = null
     let duration = recordingTime
 
-    // Upload Audio if recorded
     if (audioBlob) {
       const fileName = `voice_${user.id}_${Date.now()}.webm`
       const { data: uploadData, error: uploadError } = await supabase.storage
@@ -256,7 +252,6 @@ export default function LoggedActionPage() {
       }
     }
 
-    // Upload Image/Video if attached
     if (mediaFile) {
       const fileExt = mediaFile.name.split('.').pop()
       const fileName = `media_${user.id}_${Date.now()}.${fileExt}`
@@ -354,7 +349,6 @@ export default function LoggedActionPage() {
                 return (
                   <div key={msg.id} style={{ display: 'flex', justifyContent: isMe ? 'flex-end' : 'flex-start', alignItems: 'flex-end', gap: '0.5rem', width: '100%', minWidth: 0, position: 'relative' }}>
                     
-                    {/* Other user avatar */}
                     {!isMe && (
                       msg.sender_avatar ? (
                         <img src={msg.sender_avatar} alt="" style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover', marginBottom: '2px', flexShrink: 0 }} />
@@ -365,7 +359,7 @@ export default function LoggedActionPage() {
                       )
                     )}
 
-                    <div style={{ maxWidth: '85%', smMaxW: 'md', width: '100%', minWidth: 0, background: msg.is_unsent ? 'transparent' : (isMe ? '#2563eb' : '#fff'), color: isMe ? '#fff' : '#1e293b', padding: msg.is_unsent ? '0.2rem' : '0.65rem 0.9rem', borderRadius: isMe ? '18px 18px 4px 18px' : '18px 18px 18px 4px', boxShadow: msg.is_unsent ? 'none' : '0 1px 2px rgba(0,0,0,0.05)', border: msg.is_unsent || isMe ? 'none' : '1px solid #e2e8f0', overflow: 'hidden', boxSizing: 'border-box', position: 'relative' }}>
+                    <div style={{ maxWidth: '85%', width: '100%', minWidth: 0, background: msg.is_unsent ? 'transparent' : (isMe ? '#2563eb' : '#fff'), color: isMe ? '#fff' : '#1e293b', padding: msg.is_unsent ? '0.2rem' : '0.65rem 0.9rem', borderRadius: isMe ? '18px 18px 4px 18px' : '18px 18px 18px 4px', boxShadow: msg.is_unsent ? 'none' : '0 1px 2px rgba(0,0,0,0.05)', border: msg.is_unsent || isMe ? 'none' : '1px solid #e2e8f0', overflow: 'hidden', boxSizing: 'border-box', position: 'relative' }}>
                       
                       {msg.is_unsent ? (
                         <div style={{ fontSize: '0.8rem', fontStyle: 'italic', color: '#94a3b8', padding: '0.2rem 0' }}>
@@ -375,7 +369,6 @@ export default function LoggedActionPage() {
                         <>
                           {!isMe && <div style={{ fontWeight: 600, fontSize: '0.75rem', color: '#2563eb', marginBottom: '0.2rem' }}>{msg.sender_name}</div>}
 
-                          {/* Media Display (Image / Video) */}
                           {msg.media_url && (
                             <div style={{ marginBottom: msg.message ? '0.5rem' : 0, borderRadius: '8px', overflow: 'hidden', maxWidth: '100%' }}>
                               {msg.media_type === 'video' ? (
@@ -388,10 +381,8 @@ export default function LoggedActionPage() {
                             </div>
                           )}
 
-                          {/* Text Message */}
                           {msg.message && <div style={{ fontSize: '0.9rem', wordBreak: 'break-word', overflowWrap: 'break-word', lineHeight: 1.4 }}>{msg.message}</div>}
 
-                          {/* Audio Player */}
                           {msg.audio_url && (
                             <div style={{ marginTop: (msg.message || msg.media_url) ? '0.5rem' : 0, display: 'flex', alignItems: 'center', gap: '0.75rem', background: isMe ? 'rgba(0,0,0,0.1)' : '#f1f5f9', padding: '0.4rem 0.75rem', borderRadius: '20px', width: '100%', boxSizing: 'border-box' }}>
                               <button
@@ -437,7 +428,6 @@ export default function LoggedActionPage() {
                       )}
                     </div>
 
-                    {/* Unsend Button Option for My Messages */}
                     {isMe && !msg.is_unsent && (
                       <div style={{ position: 'relative', flexShrink: 0 }}>
                         <button
@@ -468,7 +458,6 @@ export default function LoggedActionPage() {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Media Preview Thumbnail before sending */}
           {mediaPreviewUrl && (
             <div style={{ padding: '0.5rem 1rem', background: '#f1f5f9', borderTop: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0 }}>
@@ -483,7 +472,6 @@ export default function LoggedActionPage() {
             </div>
           )}
 
-          {/* Interactive Chat Input & Toolbar */}
           <form onSubmit={handleSendMessage} style={{ padding: '0.75rem 1rem', background: '#fff', borderTop: '1px solid #e2e8f0', display: 'flex', alignItems: 'flex-end', gap: '0.5rem', width: '100%', boxSizing: 'border-box' }}>
             
             {isRecording ? (
@@ -518,7 +506,7 @@ export default function LoggedActionPage() {
                   ))}
                 </div>
                 <span style={{ fontSize: '0.7rem', color: '#64748b', minWidth: '32px', textAlign: 'right', flexShrink: 0 }}>
-                  {recordingTime ? `${Math.floor(recordingTime / 60)}:${('0' + (recordingTime % 60)).slice(-2)}` : '0:00'}
+                  {recordingTime ? `${Math.floor(recordingTime / 60)}:{('0' + (recordingTime % 60)).slice(-2)}` : '0:00'}
                 </span>
                 <button type="button" onClick={cancelRecording} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600, flexShrink: 0, marginLeft: '0.25rem' }}>Discard</button>
               </div>
@@ -541,7 +529,6 @@ export default function LoggedActionPage() {
               </div>
             )}
 
-            {/* Hidden File Input for Image/Video Attachments */}
             <input 
               type="file" 
               ref={fileInputRef} 
