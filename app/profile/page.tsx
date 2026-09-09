@@ -108,7 +108,7 @@ export default function AdminProfilePage() {
 
       const { data } = supabase.storage.from('avatars').getPublicUrl(filePath)
       setTempAvatarUrl(data.publicUrl)
-      setMessage({ type: 'success', text: 'Avatar uploaded successfully. Click "Save changes" below to confirm!' })
+      setMessage({ type: 'success', text: 'Avatar uploaded successfully. Click Save Changes below to confirm.' })
     } catch (error: any) {
       setMessage({ type: 'error', text: error.message || 'Error uploading avatar image.' })
     } finally {
@@ -147,7 +147,7 @@ export default function AdminProfilePage() {
 
       setUser((prev: any) => ({ ...prev, full_name: fullName, bio, avatar_url: finalAvatar }))
       setAvatarUrl(finalAvatar)
-      setMessage({ type: 'success', text: 'Profile updated and saved successfully!' })
+      setMessage({ type: 'success', text: 'Profile updated and saved successfully.' })
       setIsEditing(false)
     } catch (err: any) {
       setMessage({ type: 'error', text: err.message || 'Failed to save changes.' })
@@ -212,7 +212,6 @@ export default function AdminProfilePage() {
             </div>
           )}
           <div style={styles.emptyCard}>
-            <div style={styles.emptyIcon}>⚠️</div>
             <h2>Profile not found</h2>
             <p style={styles.muted}>Please log in or check your database policies.</p>
             <Link href="/login" style={{ ...styles.primaryButton, display: 'inline-block', marginTop: '15px', textDecoration: 'none' }}>
@@ -253,12 +252,23 @@ export default function AdminProfilePage() {
                 </button>
               )}
             </div>
+            
+            {/* Focusable Profile Image */}
             <div style={styles.avatarWrapper}>
               <div 
+                role="button"
+                tabIndex={0}
+                aria-label="Profile image. Click or press Enter to change avatar."
                 style={styles.avatar} 
                 onClick={() => { setIsEditing(true); setActiveTab('more_info'); }} 
-                title="Click to edit profile picture"
-                className="avatar-container"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setIsEditing(true);
+                    setActiveTab('more_info');
+                  }
+                }}
+                className="focusable-avatar"
               >
                 {(isEditing ? tempAvatarUrl : user.avatar_url) ? (
                   <img src={isEditing ? tempAvatarUrl : user.avatar_url} alt={user.full_name} style={styles.avatarImage} />
@@ -288,6 +298,7 @@ export default function AdminProfilePage() {
             </div>
           </div>
 
+          {/* Non-scrolling flexible navigation tabs container */}
           <div style={styles.tabs}>
             <TabButton active={activeTab === 'overview'} onClick={() => { setActiveTab('overview'); setIsEditing(false); }}>Overview</TabButton>
             <TabButton active={activeTab === 'more_info'} onClick={() => { setActiveTab('more_info'); }}>More Profile Info</TabButton>
@@ -424,7 +435,7 @@ export default function AdminProfilePage() {
                           style={styles.customUploadButton}
                           className="interactive-btn"
                         >
-                          {uploading ? 'Uploading...' : '📁 Choose Image File'}
+                          {uploading ? 'Uploading...' : 'Choose Image File'}
                         </button>
                         {tempAvatarUrl !== user.avatar_url && (
                           <button
@@ -493,7 +504,7 @@ export default function AdminProfilePage() {
                       style={styles.primaryButton}
                       className="interactive-btn"
                     >
-                      {saving ? 'Saving...' : '💾 Save Changes'}
+                      {saving ? 'Saving...' : 'Save Changes'}
                     </button>
                   </div>
                 </form>
@@ -504,7 +515,7 @@ export default function AdminProfilePage() {
               <>
                 <div style={styles.sectionHeader}>
                   <div>
-                    <h2 style={styles.sectionTitle}>Activity stream</h2>
+                    <h2 style={styles.sectionTitle}>Activity Stream</h2>
                     <p style={styles.muted}>Filter store transactions and order events.</p>
                   </div>
                 </div>
@@ -557,7 +568,7 @@ export default function AdminProfilePage() {
               <>
                 <div style={styles.sectionHeader}>
                   <div>
-                    <h2 style={styles.sectionTitle}>Account security</h2>
+                    <h2 style={styles.sectionTitle}>Account Security</h2>
                     <p style={styles.muted}>Manage session credentials and access protocols.</p>
                   </div>
                 </div>
@@ -612,7 +623,7 @@ export default function AdminProfilePage() {
       <style jsx global>{`
         * {
           box-sizing: border-box;
-          scrollbar-width: none; /* Hide scrollbars for ultra clean mobile layout */
+          scrollbar-width: none;
         }
         *::-webkit-scrollbar {
           display: none;
@@ -621,6 +632,7 @@ export default function AdminProfilePage() {
           margin: 0;
           padding: 0;
           overflow-x: hidden;
+          width: 100vw;
         }
         .interactive-btn {
           transition: all 0.2s ease-in-out;
@@ -637,11 +649,17 @@ export default function AdminProfilePage() {
           background-color: #f4f4f2 !important;
           transform: scale(1.005);
         }
-        .avatar-container {
-          transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        .focusable-avatar {
+          transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease;
+          outline: none;
         }
-        .avatar-container:hover {
+        .focusable-avatar:hover {
           transform: scale(1.08);
+          box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.4), 0 6px 16px rgba(0,0,0,0.2) !important;
+        }
+        .focusable-avatar:focus-visible {
+          transform: scale(1.08);
+          box-shadow: 0 0 0 4px #d4af37, 0 6px 16px rgba(0,0,0,0.25) !important;
         }
       `}</style>
     </div>
@@ -720,7 +738,6 @@ const styles: { [key: string]: React.CSSProperties } = {
   loadingTitle: { fontSize: '18px', fontWeight: 600, margin: 0 },
   muted: { color: '#666', fontSize: '13px', margin: 0 },
   emptyCard: { textAlign: 'center' as const, padding: '40px 20px', backgroundColor: '#fff', borderRadius: '12px' },
-  emptyIcon: { fontSize: '32px', marginBottom: '10px' },
   sectionTitle: { fontSize: '17px', fontWeight: 700, margin: 0 },
   primaryButton: { backgroundColor: '#1a1a1a', color: '#fff', padding: '10px 18px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '13px' },
   profileCard: { backgroundColor: '#fff', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.06)', marginBottom: '16px', width: '100%' },
@@ -735,16 +752,16 @@ const styles: { [key: string]: React.CSSProperties } = {
   profileSummary: { padding: '32px 16px 16px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '15px' },
   identity: { flex: 1, minWidth: '200px' },
   nameRow: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' },
-  name: { fontSize: '20px', fontWeight: 700, margin: 0, wordBreak: 'break-word' },
+  name: { fontSize: '20px', fontWeight: 700, margin: 0, wordBreak: 'break-word', overflowWrap: 'break-word' },
   adminBadge: { backgroundColor: '#eef2ff', color: '#3730a3', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 700 },
-  email: { color: '#666', fontSize: '12px', marginBottom: '4px', wordBreak: 'break-all' },
+  email: { color: '#666', fontSize: '12px', marginBottom: '4px', wordBreak: 'break-all', overflowWrap: 'anywhere' },
   lastUpdated: { color: '#888', fontSize: '11px' },
   metricStrip: { display: 'flex', gap: '20px', width: '100%', justifyContent: 'flex-start', borderTop: '1px solid #f0f0f0', paddingTop: '12px', marginTop: '8px', flexWrap: 'wrap' },
   metricItem: { textAlign: 'left' as const },
   metricValue: { display: 'block', fontSize: '15px', fontWeight: 700 },
   metricLabel: { fontSize: '11px', color: '#666' },
-  tabs: { display: 'flex', borderTop: '1px solid #eaeaea', padding: '0 6px', overflowX: 'auto', width: '100%', backgroundColor: '#faf9f6' },
-  tabButton: { background: 'none', border: 'none', padding: '10px 14px', cursor: 'pointer', fontSize: '12px', fontWeight: 600, color: '#666', borderBottom: '2px solid transparent', whiteSpace: 'nowrap', flexShrink: 0 },
+  tabs: { display: 'flex', borderTop: '1px solid #eaeaea', width: '100%', backgroundColor: '#faf9f6' },
+  tabButton: { background: 'none', border: 'none', padding: '10px 8px', cursor: 'pointer', fontSize: '11px', fontWeight: 600, color: '#666', borderBottom: '2px solid transparent', textAlign: 'center', flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
   tabButtonActive: { color: '#1a1a1a', borderBottomColor: '#d4af37', backgroundColor: '#fff' },
   message: { padding: '12px 16px', borderRadius: '8px', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', wordBreak: 'break-word', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' },
   errorMessage: { backgroundColor: '#f8d7da', color: '#721c24' },
