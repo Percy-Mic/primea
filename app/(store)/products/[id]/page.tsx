@@ -1,590 +1,453 @@
-import { createClient } from '@/lib/supabase/server'
-import { notFound, redirect } from 'next/navigation'
+'use client'
+import { supabase } from '@/lib/supabase'
+import { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import AddToCartButton from '@/components/AddToCartButton'
+import { useRouter } from 'next/navigation'
 import UserNav from '@/components/UserNav'
 
-interface ProductPageProps {
-  params: Promise<{ id: string }>
+interface CartItem {
+  id: string
+  title: string
+  price: number
+  quantity: number
+  stock?: number
+  image?: string
 }
 
-async function checkUserEligibility(supabase: any, userId: string, productId: string) {
-  const validStatuses = ['completed', 'delivered', 'Completed', 'Delivered']
+export default function CartPage() {
+  const [cart, setCart] = useState<CartItem[]>([])
+  const [isLoaded, setIsLoaded] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const router = useRouter()
 
-  const { data: orderItem } = await supabase
-    .from('order_items')
-    .select('id, orders!inner(user_id, status)')
-    .eq('product_id', productId)
-    .eq('orders.user_id', userId)
-    .in('orders.status', validStatuses)
-    .limit(1)
-    .maybeSingle()
+  const loadCart = useCallback(async () => {
+    try {
+      const savedCart: CartItem[] = JSON.parse(localStorage.getItem('elara_cart') || '[]')
 
-  if (orderItem) return true
+      if (savedCart.length > 0) {
+        const productIds = savedCart.map((item) => item.id)
 
-  const { data: order } = await supabase
-    .from('orders')
-    .select('id')
-    .eq('user_id', userId)
-    .eq('product_id', productId)
-    .in('status', validStatuses)
-    .limit(1)
-    .maybeSingle()
+        // Fetch live stock counts directly from Supabase
+        const { data: dbProducts } = await supabase
+          .from('products')
+          .select('id, stock')
+          .in('id', productIds)
 
-  return !!order
-}
+        const stockMap = new Map((dbProducts || []).map((p: any) => [p.id, p.stock]))
 
-export default async function ProductPage({ params }: ProductPageProps) {
-  const { id } = await params
-  const supabase = await createClient()
+        const updatedWithStock = savedCart.map((item) => ({
+          ...item,
+          stock: Number(stockMap.get(item.id)) || 0,
+        }))
 
-  const { data: product } = await supabase
-    .from('products')
-    .select('*')
-    .eq('id', id)
-    .single()
-
-  if (!product) notFound()
-
-  const primaryImage = product.image_url || product.images?.[0] || null
-
-  const { data: { user } } = await supabase.auth.getUser()
-  const hasPurchased = user ? await checkUserEligibility(supabase, user.id, id) : false
-
-  const { data: reviews } = await supabase
-    .from('reviews')
-    .select('*')
-    .eq('product_id', id)
-    .order('created_at', { ascending: false })
-
-  const reviewList = reviews || []
-  const reviewCount = reviewList.length
-
-  const positiveReviews = reviewList.filter((r) => r.rating >= 4).length
-  const satisfactionRate = reviewCount > 0 ? Math.round((positiveReviews / reviewCount) * 100) : 100
-
-  const avgRating = reviewCount > 0
-    ? (reviewList.reduce((acc, r) => acc + (r.rating || 5), 0) / reviewCount).toFixed(1)
-    : '5.0'
-
-  const starCounts = [5, 4, 3, 2, 1].map((stars) => {
-    const count = reviewList.filter((r) => r.rating === stars).length
-    return {
-      stars,
-      count,
-      percentage: reviewCount > 0 ? Math.round((count / reviewCount) * 100) : 0,
-    }
-  })
-
-  const { data: relatedProducts } = await supabase
-    .from('products')
-    .select('*')
-    .neq('id', id)
-    .limit(4)
-
-  async function submitReview(formData: FormData) {
-    'use server'
-    const client = await createClient()
-    const { data: { user: currentUser } } = await client.auth.getUser()
-
-    if (!currentUser) redirect('/login')
-
-    const isEligible = await checkUserEligibility(client, currentUser.id, id)
-    if (!isEligible) {
-      throw new Error('You can only review products from completed orders.')
-    }
-
-    const name = formData.get('name') as string
-    const rating = Number(formData.get('rating')) || 5
-    const comment = formData.get('comment') as string
-    const mediaFile = formData.get('media') as File
-
-    let uploadedMediaUrl = null
-
-    if (mediaFile && mediaFile.size > 0) {
-      const cleanFileName = mediaFile.name.replace(/[^a-zA-Z0-9.-]/g, '_')
-      const filePath = `${Date.now()}-${cleanFileName}`
-
-      const { data: storageData } = await client.storage
-        .from('review-images')
-        .upload(filePath, mediaFile, { 
-          cacheControl: '3600', 
-          upsert: false,
-          contentType: mediaFile.type 
-        })
-
-      if (storageData) {
-        const { data: publicUrlData } = client.storage
-          .from('review-images')
-          .getPublicUrl(storageData.path)
-
-        uploadedMediaUrl = publicUrlData.publicUrl
+        setCart(updatedWithStock)
+      } else {
+        setCart([])
       }
+    } catch (error) {
+      console.error('Failed to load cart:', error)
+      setCart([])
+    } finally {
+      setIsLoaded(true)
     }
+  }, [])
 
-    await client.from('reviews').insert({
-      product_id: id,
-      user_id: currentUser.id,
-      user_name: name || currentUser.email || 'Verified Buyer',
-      rating,
-      comment,
-      image_url: uploadedMediaUrl,
-    })
+  useEffect(() => {
+    loadCart()
+    window.addEventListener('cartUpdated', loadCart)
+    window.addEventListener('storage', loadCart)
 
-    redirect(`/products/${id}`)
+    return () => {
+      window.removeEventListener('cartUpdated', loadCart)
+      window.removeEventListener('storage', loadCart)
+    }
+  }, [loadCart])
+
+  const updateQuantity = (id: string, delta: number) => {
+    const updated = cart
+      .map((item) => {
+        if (item.id === id) {
+          const maxStock = item.stock ?? Infinity
+          const newQty = item.quantity + delta
+
+          if (delta > 0 && newQty > maxStock) {
+            return item
+          }
+
+          return newQty > 0 ? { ...item, quantity: newQty } : null
+        }
+        return item
+      })
+      .filter((item): item is CartItem => item !== null)
+
+    setCart(updated)
+    localStorage.setItem('elara_cart', JSON.stringify(updated))
+    window.dispatchEvent(new Event('cartUpdated'))
   }
 
-  return (
-    <div className="product-details-page">
-      {/* Fixed Custom UserNav Header Container */}
-      <div
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 1000,
-          width: '100%',
-          backgroundColor: '#faf8f5',
-        }}
-      >
-        <UserNav />
-      </div>
+  const hasStockIssues = cart.some((item) => item.quantity > (item.stock ?? Infinity))
 
+  const handleCheckout = () => {
+    if (hasStockIssues) {
+      alert('Some items in your cart exceed available stock. Please adjust quantities.')
+      return
+    }
+    router.push('/checkout')
+  }
+
+  const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
+
+  if (!isLoaded) return null
+
+  return (
+    <div style={styles.pageWrapper}>
       <style>{`
-        .product-details-page {
-          background-color: #faf8f5;
-          min-height: 100vh;
-          font-family: serif;
-          color: #1f1815;
-          padding-top: 100px;
-          padding-bottom: 5rem;
-          position: relative;
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(12px); }
+          to { opacity: 1; transform: translateY(0); }
         }
-        .container {
-          max-width: 1100px;
-          margin: 0 auto;
-          padding: 0 1.5rem;
+        .animated-card {
+          animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
-        .product-grid {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 3rem;
-          margin-bottom: 4rem;
+        .action-btn:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 6px 20px rgba(192, 99, 59, 0.25);
         }
-        @media (min-width: 768px) {
-          .product-grid { grid-template-columns: 1fr 1fr; }
+        .action-btn:active {
+          transform: translateY(0px);
         }
-        .image-container {
-          position: relative;
-          aspect-ratio: 1 / 1;
-          width: 100%;
-          background-color: #f5f2ed;
-          border-radius: 12px;
-          overflow: hidden;
-          border: 1px solid #e8e2d9;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .product-title {
-          font-family: serif;
-          font-size: 2.25rem;
-          margin: 0 0 0.5rem 0;
-          font-weight: 400;
-        }
-        .product-price {
-          font-family: system-ui, -apple-system, sans-serif;
-          font-size: 1.75rem;
-          font-weight: 700;
-          color: #a03b1e;
-          margin-bottom: 1.5rem;
-        }
-        .section-heading {
-          font-family: serif;
-          font-size: 1.75rem;
-          margin-bottom: 1.5rem;
-          border-bottom: 1px solid #e2dad0;
-          padding-bottom: 0.75rem;
-          font-weight: 400;
-        }
-        .summary-card {
-          background: #ffffff;
-          border: 1px solid #e8e2d9;
-          border-radius: 12px;
-          padding: 1.5rem;
-          margin-bottom: 2rem;
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 1.5rem;
-        }
-        @media (min-width: 768px) {
-          .summary-card { grid-template-columns: 1fr 2fr; }
-        }
-        .overall-score {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          background: #faf7f2;
-          border-radius: 8px;
-          padding: 1rem;
-          text-align: center;
-        }
-        .satisfaction-tag {
-          background: #e6f4ea;
-          color: #137333;
-          padding: 0.25rem 0.75rem;
-          border-radius: 12px;
-          font-weight: 600;
-          font-size: 0.85rem;
-          margin-top: 0.5rem;
-          font-family: system-ui, -apple-system, sans-serif;
-        }
-        .progress-bar-container {
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-          font-size: 0.85rem;
-          margin-bottom: 0.35rem;
-          font-family: system-ui, -apple-system, sans-serif;
-        }
-        .progress-track {
-          flex-grow: 1;
-          height: 8px;
-          background-color: #f0eae1;
-          border-radius: 4px;
-          overflow: hidden;
-        }
-        .progress-fill {
-          height: 100%;
-          background-color: #a03b1e;
-        }
-        .reviews-layout {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 2.5rem;
-          margin-bottom: 4rem;
-        }
-        @media (min-width: 768px) {
-          .reviews-layout { grid-template-columns: 1fr 2fr; }
-        }
-        .review-form {
-          background: #ffffff;
-          padding: 1.5rem;
-          border-radius: 12px;
-          border: 1px solid #e8e2d9;
-          display: flex;
-          flex-direction: column;
-          gap: 1rem;
-          font-family: system-ui, -apple-system, sans-serif;
-        }
-        .form-input, .form-textarea, .form-select {
-          width: 100%;
-          padding: 0.65rem;
-          border: 1px solid #e2dad0;
-          border-radius: 6px;
-          font-size: 0.9rem;
-          outline: none;
-        }
-        .btn-submit {
-          background: #1f1815;
-          color: #ffffff;
-          border: none;
-          padding: 0.75rem;
-          border-radius: 6px;
-          font-weight: 600;
-          cursor: pointer;
-          letter-spacing: 0.05em;
-          text-transform: uppercase;
-          font-size: 0.8rem;
-          transition: background-color 0.2s ease;
-        }
-        .btn-submit:hover {
-          background-color: #3b302a;
-        }
-        .reviews-feed-container {
-          max-height: 480px;
-          overflow-y: auto;
-          padding-right: 0.5rem;
-        }
-        .reviews-feed-container::-webkit-scrollbar {
-          width: 6px;
-        }
-        .reviews-feed-container::-webkit-scrollbar-thumb {
-          background-color: #d1c7bc;
-          border-radius: 4px;
-        }
-        .review-card {
-          background: #ffffff;
-          padding: 1.25rem;
-          border-radius: 10px;
-          border: 1px solid #e8e2d9;
-          margin-bottom: 1rem;
-          font-family: system-ui, -apple-system, sans-serif;
-        }
-        .review-proof-media {
-          position: relative;
-          width: 140px;
-          height: 100px;
-          border-radius: 8px;
-          overflow: hidden;
-          margin-top: 0.75rem;
-          border: 1px solid #e2dad0;
-          background: #000;
-        }
-        .verified-badge {
-          background: #f0f7f4;
-          color: #2e7d32;
-          font-size: 0.75rem;
-          padding: 0.2rem 0.5rem;
-          border-radius: 4px;
-          font-weight: 600;
-          display: inline-block;
-          margin-left: 0.5rem;
-        }
-        .purchase-warning {
-          background: #ffffff;
-          border: 1px solid #e8e2d9;
-          padding: 1.5rem;
-          border-radius: 12px;
-          text-align: center;
-          color: #786e65;
-          font-size: 0.9rem;
-          font-family: system-ui, -apple-system, sans-serif;
-        }
-        .related-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-          gap: 1.5rem;
-        }
-        .related-card {
-          background: #ffffff;
-          border: 1px solid #e8e2d9;
-          border-radius: 12px;
-          overflow: hidden;
-          text-decoration: none;
-          color: inherit;
-          transition: transform 0.25s ease, box-shadow 0.25s ease;
-        }
-        .related-card:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 12px 24px -8px rgba(31, 24, 21, 0.1);
-        }
-        .related-img {
-          position: relative;
-          height: 200px;
-          background: #f5f2ed;
+        .qty-btn:hover {
+          background-color: #f2ede4 !important;
+          color: #c0633b;
         }
       `}</style>
 
-      <div className="container">
-        {/* Product Display */}
-        <div className="product-grid">
-          <div className="image-container">
-            {primaryImage ? (
-              <Image
-                src={primaryImage}
-                alt={product.title}
-                fill
-                unoptimized
-                style={{ objectFit: 'cover' }}
-                priority
-              />
-            ) : (
-              <span style={{ color: '#786e65', fontFamily: 'system-ui' }}>No Image Available</span>
-            )}
+      {/* Decorative background gradient blobs */}
+      <div style={styles.bgBlobTop} />
+      <div style={styles.bgBlobBottom} />
+
+      {/* Fixed Custom UserNav Header Container */}
+      <div style={styles.navContainer}>
+        <UserNav />
+      </div>
+
+      {/* Cart Container with top padding */}
+      <main style={styles.mainContainer} className="animated-card">
+        <div style={styles.headerRow}>
+          <div style={styles.iconWrapper}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <path d="M16 10a4 4 0 0 1-8 0"></path>
+            </svg>
           </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <h1 className="product-title">{product.title}</h1>
-            <div style={{ color: '#a03b1e', marginBottom: '1rem', fontFamily: 'system-ui', fontSize: '0.95rem' }}>
-              ★ {avgRating} ({reviewCount} reviews)
-            </div>
-            <div className="product-price">${Number(product.price).toFixed(2)}</div>
-            <p style={{ color: '#524842', lineHeight: 1.6, marginBottom: '1.5rem', fontFamily: 'system-ui', fontSize: '0.95rem' }}>
-              {product.description || 'Elevate your style with this high-quality artisanal product.'}
-            </p>
-
-            <AddToCartButton
-              product={{
-                id: product.id,
-                title: product.title,
-                price: Number(product.price),
-                images: primaryImage ? [primaryImage] : [],
-              }}
-            />
+          <div>
+            <h1 style={styles.title}>Your Shopping Bag</h1>
+            <p style={styles.subtitle}>Review your selected items before proceeding to checkout</p>
           </div>
         </div>
 
-        {/* Customer Reviews */}
-        <section>
-          <h2 className="section-heading">Customer Feedback & Rating Summary</h2>
-
-          <div className="summary-card">
-            <div className="overall-score">
-              <div style={{ fontSize: '3rem', fontWeight: 800, lineHeight: 1, fontFamily: 'system-ui' }}>{avgRating}</div>
-              <div style={{ color: '#a03b1e', fontSize: '1.25rem', marginTop: '0.25rem' }}>★★★★★</div>
-              <div style={{ fontSize: '0.85rem', color: '#786e65', marginTop: '0.25rem', fontFamily: 'system-ui' }}>
-                Based on {reviewCount} reviews
-              </div>
-              <span className="satisfaction-tag">
-                {satisfactionRate}% Highly Satisfied
-              </span>
-            </div>
-
-            <div>
-              <h4 style={{ margin: '0 0 0.75rem 0', fontSize: '0.95rem', fontFamily: 'system-ui' }}>Rating Breakdown</h4>
-              {starCounts.map((s) => (
-                <div key={s.stars} className="progress-bar-container">
-                  <span style={{ width: '50px', color: '#786e65' }}>{s.stars} stars</span>
-                  <div className="progress-track">
-                    <div className="progress-fill" style={{ width: `${s.percentage}%` }} />
-                  </div>
-                  <span style={{ width: '35px', textAlign: 'right', color: '#786e65' }}>{s.percentage}%</span>
-                </div>
-              ))}
-            </div>
+        {cart.length === 0 ? (
+          <div style={styles.emptyCard}>
+            <p style={styles.emptyText}>Your cart is empty.</p>
+            <Link href="/products" style={styles.exploreButton} className="action-btn">
+              Explore Products
+            </Link>
           </div>
+        ) : (
+          <div style={{ display: 'grid', gap: '1.5rem', width: '100%' }}>
+            <div style={styles.itemsCard}>
+              {cart.map((item) => {
+                const stock = item.stock ?? Infinity
+                const isMaxStock = item.quantity >= stock
 
-          <div className="reviews-layout">
-            <div>
-              {hasPurchased ? (
-                <form action={submitReview} encType="multipart/form-data" className="review-form">
-                  <h3 style={{ margin: 0, fontSize: '1.1rem', fontFamily: 'serif', fontWeight: 400 }}>Write a Review</h3>
-                  <input type="text" name="name" placeholder="Your Name" required className="form-input" />
-
-                  <select name="rating" className="form-select" defaultValue="5">
-                    <option value="5">★★★★★ (5/5) - Very Satisfied</option>
-                    <option value="4">★★★★☆ (4/5) - Satisfied</option>
-                    <option value="3">★★★☆☆ (3/5) - Average</option>
-                    <option value="2">★★☆☆☆ (2/5) - Unsatisfied</option>
-                    <option value="1">★☆☆☆☆ (1/5) - Very Unsatisfied</option>
-                  </select>
-
-                  <textarea
-                    name="comment"
-                    placeholder="Share your experience with this item..."
-                    rows={4}
-                    required
-                    className="form-textarea"
-                  />
-
-                  <div>
-                    <label style={{ fontSize: '0.8rem', fontWeight: 600, display: 'block', marginBottom: '0.35rem' }}>
-                      Attach Photo or Video Proof (Optional)
-                    </label>
-                    <input 
-                      type="file" 
-                      name="media" 
-                      accept="image/*,video/*" 
-                      className="form-input" 
-                    />
-                  </div>
-
-                  <button type="submit" className="btn-submit">
-                    Submit Review
-                  </button>
-                </form>
-              ) : (
-                <div className="purchase-warning">
-                  <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>🔒</div>
-                  <strong style={{ display: 'block', color: '#1f1815', marginBottom: '0.25rem' }}>
-                    Verified Buyers Only
-                  </strong>
-                  You must complete a purchase of this product before writing a review.
-                </div>
-              )}
-            </div>
-
-            <div className="reviews-feed-container">
-              {reviewList.length > 0 ? (
-                reviewList.map((rev) => {
-                  const isVideo = rev.image_url && /\.(mp4|webm|ogg|mov)$/i.test(rev.image_url)
-
-                  return (
-                    <div key={rev.id} className="review-card">
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                        <div>
-                          <strong>{rev.user_name}</strong>
-                          <span className="verified-badge">✓ Verified Owner</span>
-                        </div>
-                        <span style={{ color: '#a03b1e' }}>{'★'.repeat(rev.rating || 5)}</span>
-                      </div>
-                      <p style={{ margin: 0, color: '#524842', fontSize: '0.9rem' }}>{rev.comment}</p>
-
-                      {rev.image_url && (
-                        <div className="review-proof-media">
-                          {isVideo ? (
-                            <video
-                              src={rev.image_url}
-                              controls
-                              preload="metadata"
-                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                            />
-                          ) : (
-                            <Image
-                              src={rev.image_url}
-                              alt="Customer proof photo"
-                              fill
-                              unoptimized
-                              style={{ objectFit: 'cover' }}
-                            />
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )
-                })
-              ) : (
-                <div style={{ background: '#ffffff', padding: '2rem', borderRadius: '10px', textAlign: 'center', color: '#786e65', border: '1px solid #e8e2d9', fontFamily: 'system-ui' }}>
-                  No customer reviews yet.
-                </div>
-              )}
-            </div>
-          </div>
-        </section>
-
-        {/* Product Suggestions */}
-        {relatedProducts && relatedProducts.length > 0 && (
-          <section>
-            <h2 className="section-heading">You May Also Like</h2>
-            <div className="related-grid">
-              {relatedProducts.map((rel) => {
-                const relImg = rel.image_url || rel.images?.[0]
                 return (
-                  <Link key={rel.id} href={`/products/${rel.id}`} className="related-card">
-                    <div className="related-img">
-                      {relImg ? (
+                  <div key={item.id} style={styles.cartItemRow}>
+                    {item.image && (
+                      <div style={styles.imageWrapper}>
                         <Image
-                          src={relImg}
-                          alt={rel.title}
+                          src={item.image}
+                          alt={item.title}
                           fill
                           unoptimized
                           style={{ objectFit: 'cover' }}
                         />
-                      ) : (
-                        <div style={{ display: 'grid', placeItems: 'center', height: '100%', color: '#786e65', fontFamily: 'system-ui' }}>
-                          No Image
-                        </div>
+                      </div>
+                    )}
+                    <div style={{ flexGrow: 1, minWidth: 0 }}>
+                      <strong style={styles.itemTitle}>{item.title}</strong>
+                      <span style={styles.itemPrice}>${item.price.toFixed(2)}</span>
+                      {item.stock !== undefined && (
+                        <span style={{ display: 'block', fontSize: '0.75rem', color: isMaxStock ? '#b91c1c' : '#786f66', marginTop: '2px' }}>
+                          {item.stock > 0 ? `${item.stock} in stock` : 'Out of stock'}
+                        </span>
                       )}
                     </div>
-                    <div style={{ padding: '1rem', fontFamily: 'system-ui' }}>
-                      <strong style={{ fontSize: '0.95rem', display: 'block', marginBottom: '0.25rem' }}>
-                        {rel.title}
-                      </strong>
-                      <span style={{ color: '#a03b1e', fontWeight: 700, fontSize: '0.9rem' }}>
-                        ${Number(rel.price).toFixed(2)}
+                    <div style={styles.quantityControls}>
+                      <button
+                        onClick={() => updateQuantity(item.id, -1)}
+                        style={styles.qtyButton}
+                        className="qty-btn"
+                      >
+                        -
+                      </button>
+                      <span style={{ fontSize: '0.9rem', fontWeight: 600, minWidth: '1.2rem', textAlign: 'center' }}>
+                        {item.quantity}
                       </span>
+                      <button
+                        onClick={() => updateQuantity(item.id, 1)}
+                        disabled={isMaxStock}
+                        style={{
+                          ...styles.qtyButton,
+                          cursor: isMaxStock ? 'not-allowed' : 'pointer',
+                          opacity: isMaxStock ? 0.3 : 1,
+                        }}
+                        className="qty-btn"
+                      >
+                        +
+                      </button>
                     </div>
-                  </Link>
+                  </div>
                 )
               })}
             </div>
-          </section>
+
+            <div style={styles.summaryCard}>
+              <div>
+                <span style={styles.subtotalLabel}>Subtotal</span>
+                <strong style={styles.subtotalAmount}>${subtotal.toFixed(2)}</strong>
+              </div>
+              <button
+                onClick={handleCheckout}
+                disabled={hasStockIssues}
+                className="action-btn"
+                style={{
+                  ...styles.checkoutButton,
+                  backgroundColor: hasStockIssues ? '#8c827a' : '#1f1815',
+                  cursor: hasStockIssues ? 'not-allowed' : 'pointer',
+                }}
+              >
+                Proceed to Checkout
+              </button>
+            </div>
+          </div>
         )}
-      </div>
+      </main>
     </div>
   )
+}
+
+const styles: { [key: string]: React.CSSProperties } = {
+  pageWrapper: {
+    minHeight: '100vh',
+    display: 'flex',
+    flexDirection: 'column',
+    position: 'relative',
+    overflowX: 'hidden',
+    background: 'linear-gradient(135deg, #fcf9f5 0%, #f4ede2 100%)',
+    color: '#1f1815',
+    fontFamily: 'system-ui, -apple-system, sans-serif',
+    boxSizing: 'border-box',
+  },
+  bgBlobTop: {
+    position: 'absolute',
+    top: '-10%',
+    right: '-10%',
+    width: '400px',
+    height: '400px',
+    background: 'linear-gradient(135deg, rgba(192, 99, 59, 0.12) 0%, rgba(212, 163, 115, 0.05) 100%)',
+    borderRadius: '50%',
+    filter: 'blur(60px)',
+    zIndex: 0,
+    pointerEvents: 'none',
+  },
+  bgBlobBottom: {
+    position: 'absolute',
+    bottom: '-10%',
+    left: '-10%',
+    width: '400px',
+    height: '400px',
+    background: 'linear-gradient(135deg, rgba(140, 130, 122, 0.1) 0%, rgba(192, 99, 59, 0.08) 100%)',
+    borderRadius: '50%',
+    filter: 'blur(60px)',
+    zIndex: 0,
+    pointerEvents: 'none',
+  },
+  navContainer: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1000,
+    width: '100%',
+    backgroundColor: 'rgba(252, 249, 245, 0.85)',
+    backdropFilter: 'blur(12px)',
+    borderBottom: '1px solid rgba(232, 226, 217, 0.8)',
+  },
+  mainContainer: {
+    position: 'relative',
+    zIndex: 1,
+    maxWidth: '800px',
+    margin: '0 auto',
+    width: '100%',
+    padding: '120px 1rem 3rem 1rem',
+    boxSizing: 'border-box',
+  },
+  headerRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '1rem',
+    marginBottom: '1.75rem',
+  },
+  iconWrapper: {
+    width: '44px',
+    height: '44px',
+    background: 'linear-gradient(135deg, #c0633b 0%, #e08b65 100%)',
+    borderRadius: '12px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: '#ffffff',
+    boxShadow: '0 4px 12px rgba(192, 99, 59, 0.25)',
+    flexShrink: 0,
+  },
+  title: {
+    fontFamily: 'serif',
+    fontSize: '1.85rem',
+    fontWeight: 700,
+    color: '#1f1815',
+    margin: '0 0 0.2rem 0',
+  },
+  subtitle: {
+    fontSize: '0.85rem',
+    color: '#786f66',
+    margin: 0,
+  },
+  emptyCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    backdropFilter: 'blur(12px)',
+    padding: '3rem 1rem',
+    borderRadius: '16px',
+    border: '1px solid rgba(232, 226, 217, 0.8)',
+    textAlign: 'center',
+    width: '100%',
+    boxSizing: 'border-box',
+    boxShadow: '0 10px 30px rgba(31, 24, 21, 0.04)',
+  },
+  emptyText: {
+    color: '#786f66',
+    marginBottom: '1.25rem',
+    fontSize: '0.95rem',
+  },
+  exploreButton: {
+    display: 'inline-block',
+    background: 'linear-gradient(135deg, #1f1815 0%, #3d322c 100%)',
+    color: '#ffffff',
+    padding: '0.75rem 1.5rem',
+    borderRadius: '10px',
+    textDecoration: 'none',
+    fontWeight: 600,
+    fontSize: '0.875rem',
+    whiteSpace: 'nowrap',
+    transition: 'all 0.25s ease',
+    boxShadow: '0 4px 12px rgba(31, 24, 21, 0.15)',
+  },
+  itemsCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    backdropFilter: 'blur(12px)',
+    borderRadius: '16px',
+    border: '1px solid rgba(232, 226, 217, 0.8)',
+    overflow: 'hidden',
+    boxShadow: '0 10px 30px rgba(31, 24, 21, 0.04)',
+  },
+  cartItemRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '1rem',
+    padding: '1.25rem',
+    borderBottom: '1px solid rgba(242, 237, 228, 0.8)',
+    boxSizing: 'border-box',
+  },
+  imageWrapper: {
+    position: 'relative',
+    width: '65px',
+    height: '65px',
+    borderRadius: '10px',
+    overflow: 'hidden',
+    backgroundColor: '#faf8f5',
+    border: '1px solid #dcd5ca',
+    flexShrink: 0,
+  },
+  itemTitle: {
+    display: 'block',
+    fontSize: '0.95rem',
+    color: '#1f1815',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    marginBottom: '0.2rem',
+  },
+  itemPrice: {
+    color: '#c0633b',
+    fontWeight: 700,
+    fontSize: '0.9rem',
+  },
+  quantityControls: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.35rem',
+    backgroundColor: '#faf8f5',
+    border: '1px solid #dcd5ca',
+    borderRadius: '8px',
+    padding: '0.25rem 0.5rem',
+    flexShrink: 0,
+  },
+  qtyButton: {
+    border: 'none',
+    background: 'none',
+    cursor: 'pointer',
+    fontWeight: 'bold',
+    fontSize: '1rem',
+    padding: '0.1rem 0.4rem',
+    color: '#1f1815',
+    borderRadius: '4px',
+    transition: 'background-color 0.2s',
+  },
+  summaryCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    backdropFilter: 'blur(12px)',
+    padding: '1.5rem',
+    borderRadius: '16px',
+    border: '1px solid rgba(232, 226, 217, 0.8)',
+    display: 'flex',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: '1rem',
+    boxShadow: '0 10px 30px rgba(31, 24, 21, 0.04)',
+  },
+  subtotalLabel: {
+    color: '#786f66',
+    display: 'block',
+    fontSize: '0.825rem',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    marginBottom: '0.2rem',
+  },
+  subtotalAmount: {
+    fontSize: '1.4rem',
+    color: '#1f1815',
+  },
+  checkoutButton: {
+    background: 'linear-gradient(135deg, #1f1815 0%, #3d322c 100%)',
+    color: '#ffffff',
+    border: 'none',
+    padding: '0.85rem 1.75rem',
+    borderRadius: '10px',
+    fontWeight: 600,
+    fontSize: '0.9rem',
+    transition: 'all 0.25s ease',
+    boxShadow: '0 4px 12px rgba(31, 24, 21, 0.15)',
+  },
 }
