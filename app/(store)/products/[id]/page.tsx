@@ -137,12 +137,20 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   return (
     <div className="product-details-page">
-      {/* Refactored Header Container for proper fixed positioning and stacking */}
-      <header className="page-header">
-        <div className="nav-inner">
-          <UserNav />
-        </div>
-      </header>
+      {/* Fixed Custom UserNav Header Container */}
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 1000,
+          width: '100%',
+          backgroundColor: '#faf8f5',
+        }}
+      >
+        <UserNav />
+      </div>
 
       <style>{`
         .product-details-page {
@@ -150,24 +158,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
           min-height: 100vh;
           font-family: serif;
           color: #1f1815;
-          padding-top: 110px;
+          padding-top: 100px;
           padding-bottom: 5rem;
           position: relative;
-        }
-        .page-header {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          z-index: 9999;
-          width: 100%;
-          background-color: #faf8f5;
-          border-bottom: 1px solid #e8e2d9;
-        }
-        .nav-inner {
-          max-width: 1100px;
-          margin: 0 auto;
-          padding: 0.75rem 1.5rem;
         }
         .container {
           max-width: 1100px;
