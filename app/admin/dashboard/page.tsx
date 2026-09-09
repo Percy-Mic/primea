@@ -269,10 +269,14 @@ export default function AdminDashboardPage() {
           background-color: #ffffff;
           border-top: 1px solid #e8e2d9;
           border-bottom: 1px solid #e8e2d9;
-          padding: 0.4rem 1.5rem;
+          padding: 0.4rem 1rem;
           width: 100%;
           flex-wrap: wrap;
           gap: 0.75rem;
+        }
+
+        @media (min-width: 640px) {
+          .top-nav-bar { padding: 0.4rem 1.5rem; }
         }
 
         .nav-links-group {
@@ -280,6 +284,7 @@ export default function AdminDashboardPage() {
           list-style: none;
           gap: 0.4rem;
           align-items: center;
+          flex-wrap: wrap;
         }
 
         .nav-link {
@@ -334,7 +339,7 @@ export default function AdminDashboardPage() {
           flex: 1;
           display: flex;
           flex-direction: column;
-          padding: 1rem;
+          padding: 0.75rem;
           width: 100%;
           max-width: 1400px;
           margin: 0 auto;
@@ -363,6 +368,12 @@ export default function AdminDashboardPage() {
           padding: 0.45rem 0.85rem;
           border-radius: 10px;
           box-shadow: 0 4px 15px rgba(44, 34, 30, 0.02);
+          flex-wrap: wrap;
+          width: 100%;
+        }
+
+        @media (min-width: 640px) {
+          .filter-bar { width: auto; }
         }
 
         .filter-label {
@@ -388,9 +399,15 @@ export default function AdminDashboardPage() {
           display: flex;
           gap: 0.5rem;
           align-items: center;
+          width: 100%;
+        }
+
+        @media (min-width: 640px) {
+          .action-buttons-group { width: auto; }
         }
 
         .btn-action {
+          flex: 1;
           display: inline-flex;
           align-items: center;
           justify-content: center;
@@ -405,6 +422,10 @@ export default function AdminDashboardPage() {
           cursor: pointer;
           transition: all 0.3s ease;
           box-shadow: 0 2px 8px rgba(44, 34, 30, 0.02);
+        }
+
+        @media (min-width: 640px) {
+          .btn-action { flex: unset; }
         }
 
         .btn-action:hover {
@@ -425,7 +446,8 @@ export default function AdminDashboardPage() {
         @media (min-width: 1024px) { .metrics-grid { grid-template-columns: repeat(4, 1fr); } }
 
         .metric-card {
-          background: linear-gradient(145deg, #ffffff 0%, #faf8f5 100%);
+          background: linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(250, 248, 245, 0.9) 100%);
+          backdrop-filter: blur(4px);
           border: 1px solid rgba(232, 226, 217, 0.8);
           border-radius: 12px;
           padding: 1.25rem;
@@ -445,6 +467,7 @@ export default function AdminDashboardPage() {
           font-weight: 700;
           color: #1f1815;
           margin-top: 0.3rem;
+          word-break: break-word;
         }
 
         .analytics-grid {
@@ -457,11 +480,13 @@ export default function AdminDashboardPage() {
         @media (min-width: 1024px) { .analytics-grid { grid-template-columns: 2fr 1fr; } }
 
         .dashboard-section {
-          background: linear-gradient(145deg, #ffffff 0%, #faf8f5 100%);
+          background: linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(250, 248, 245, 0.9) 100%);
+          backdrop-filter: blur(4px);
           border: 1px solid rgba(232, 226, 217, 0.8);
           border-radius: 12px;
           padding: 1.25rem;
           box-shadow: 0 4px 20px rgba(44, 34, 30, 0.03);
+          overflow: hidden;
         }
 
         .section-title-wrap {
@@ -471,6 +496,8 @@ export default function AdminDashboardPage() {
           margin-bottom: 0.85rem;
           padding-bottom: 0.5rem;
           border-bottom: 1px solid #f2ede4;
+          gap: 0.5rem;
+          flex-wrap: wrap;
         }
 
         .section-title {
