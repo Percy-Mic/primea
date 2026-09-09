@@ -227,12 +227,37 @@ export default function AdminDashboardPage() {
   return (
     <div className="admin-layout-wrapper">
       <style>{`
+        * {
+          box-sizing: border-box;
+        }
+
         body {
           margin: 0;
           padding: 0;
-          background-color: #fcfbfa;
+          background: linear-gradient(135deg, #fdfbf7 0%, #f3ede2 100%);
           font-family: system-ui, -apple-system, sans-serif;
           overflow-x: hidden;
+          color: #2c221e;
+        }
+
+        /* Self-sustaining Ambient Background Glow Animation */
+        .admin-layout-wrapper::before {
+          content: '';
+          position: fixed;
+          top: 0;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 900px;
+          height: 450px;
+          background: radial-gradient(circle, rgba(176, 109, 80, 0.07) 0%, rgba(245, 242, 235, 0) 70%);
+          z-index: 0;
+          pointer-events: none;
+          animation: ambientGlow 8s ease-in-out infinite alternate;
+        }
+
+        @keyframes ambientGlow {
+          0% { transform: translate(-50%, -20px) scale(0.95); opacity: 0.5; }
+          100% { transform: translate(-50%, 20px) scale(1.05); opacity: 1; }
         }
 
         .admin-layout-wrapper {
@@ -241,6 +266,8 @@ export default function AdminDashboardPage() {
           min-height: 100vh;
           padding-top: 115px;
           width: 100%;
+          position: relative;
+          z-index: 1;
         }
 
         @media (max-width: 768px) {
@@ -257,8 +284,9 @@ export default function AdminDashboardPage() {
           margin: 0;
           padding: 0;
           z-index: 9999;
-          background-color: #ffffff;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+          background-color: rgba(255, 255, 255, 0.9);
+          backdrop-filter: blur(10px);
+          box-shadow: 0 4px 20px rgba(44, 34, 30, 0.04);
           box-sizing: border-box;
         }
 
@@ -272,10 +300,10 @@ export default function AdminDashboardPage() {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          background-color: #ffffff;
+          background-color: rgba(255, 255, 255, 0.75);
           border-top: 1px solid #e8e2d9;
           border-bottom: 1px solid #e8e2d9;
-          padding: 0.4rem 1.5rem;
+          padding: 0.5rem 1.5rem;
           width: 100%;
           box-sizing: border-box;
           flex-wrap: wrap;
@@ -295,36 +323,43 @@ export default function AdminDashboardPage() {
         .nav-link {
           display: inline-flex;
           align-items: center;
-          padding: 0.35rem 0.65rem;
-          border-radius: 6px;
+          padding: 0.4rem 0.8rem;
+          border-radius: 8px;
           font-size: 0.85rem;
           font-weight: 500;
           color: #3b332e;
           text-decoration: none;
-          transition: all 0.15s ease;
+          transition: all 0.25s cubic-bezier(0.165, 0.84, 0.44, 1);
         }
 
         .nav-link:hover {
-          background-color: #f7f4ef;
-          color: #b55933;
+          background-color: #f3ede2;
+          color: #b06d50;
+          transform: translateY(-1px);
         }
 
         .nav-link.active {
-          background-color: #1f1815;
+          background: linear-gradient(135deg, #2c221e 0%, #1f1815 100%);
           color: #ffffff;
           font-weight: 600;
+          box-shadow: 0 4px 12px rgba(44, 34, 30, 0.15);
         }
 
         .mobile-menu-btn {
           display: none;
           background: none;
           border: 1px solid #ded7cc;
-          padding: 0.3rem 0.6rem;
-          border-radius: 6px;
+          padding: 0.4rem 0.8rem;
+          border-radius: 8px;
           font-size: 0.9rem;
           font-weight: 600;
           cursor: pointer;
           color: #1f1815;
+          transition: background 0.2s;
+        }
+
+        .mobile-menu-btn:hover {
+          background-color: #f3ede2;
         }
 
         @media (max-width: 768px) {
@@ -358,7 +393,7 @@ export default function AdminDashboardPage() {
 
         @media (min-width: 640px) {
           .admin-main-content {
-            padding: 1.25rem 1.5rem 3rem 1.5rem;
+            padding: 1.5rem 2rem 3.5rem 2rem;
           }
         }
 
@@ -366,7 +401,7 @@ export default function AdminDashboardPage() {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 1.25rem;
+          margin-bottom: 1.5rem;
           flex-wrap: wrap;
           gap: 1rem;
         }
@@ -374,13 +409,15 @@ export default function AdminDashboardPage() {
         .filter-bar {
           display: flex;
           align-items: center;
-          gap: 0.5rem;
-          background-color: #ffffff;
-          border: 1px solid #e8e2d9;
-          padding: 0.45rem 0.85rem;
-          border-radius: 8px;
+          gap: 0.6rem;
+          background: rgba(255, 255, 255, 0.85);
+          backdrop-filter: blur(8px);
+          border: 1px solid rgba(232, 226, 217, 0.8);
+          padding: 0.5rem 1rem;
+          border-radius: 12px;
           flex-wrap: wrap;
           width: 100%;
+          box-shadow: 0 4px 15px rgba(44, 34, 30, 0.02);
         }
 
         @media (min-width: 640px) {
@@ -398,19 +435,26 @@ export default function AdminDashboardPage() {
         }
 
         .filter-select {
-          padding: 0.35rem 0.65rem;
-          background-color: #f7f4ef;
+          padding: 0.4rem 0.75rem;
+          background-color: #fcfbfa;
           border: 1px solid #ded7cc;
-          border-radius: 6px;
+          border-radius: 8px;
           font-size: 0.85rem;
           font-weight: 500;
           color: #1f1815;
           cursor: pointer;
+          outline: none;
+          transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .filter-select:focus {
+          border-color: #b06d50;
+          box-shadow: 0 0 0 3px rgba(176, 109, 80, 0.15);
         }
 
         .action-buttons-group {
           display: flex;
-          gap: 0.5rem;
+          gap: 0.6rem;
           align-items: center;
           width: 100%;
         }
@@ -427,15 +471,16 @@ export default function AdminDashboardPage() {
           align-items: center;
           justify-content: center;
           gap: 0.4rem;
-          padding: 0.5rem 0.85rem;
-          background-color: #ffffff;
+          padding: 0.55rem 1rem;
+          background: rgba(255, 255, 255, 0.9);
           color: #1f1815;
           border: 1px solid #ded7cc;
-          border-radius: 6px;
-          font-size: 0.82rem;
-          font-weight: 500;
+          border-radius: 10px;
+          font-size: 0.85rem;
+          font-weight: 600;
           cursor: pointer;
-          transition: all 0.15s ease;
+          transition: all 0.25s cubic-bezier(0.165, 0.84, 0.44, 1);
+          box-shadow: 0 2px 10px rgba(44, 34, 30, 0.02);
         }
 
         @media (min-width: 640px) {
@@ -445,15 +490,18 @@ export default function AdminDashboardPage() {
         }
 
         .btn-action:hover {
-          background-color: #f7f4ef;
-          border-color: #1f1815;
+          background: #2c221e;
+          color: #ffffff;
+          border-color: #2c221e;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(44, 34, 30, 0.1);
         }
 
         .metrics-grid {
           display: grid;
           grid-template-columns: 1fr;
-          gap: 1rem;
-          margin-bottom: 1.25rem;
+          gap: 1.25rem;
+          margin-bottom: 1.5rem;
         }
 
         @media (min-width: 480px) {
@@ -468,22 +516,48 @@ export default function AdminDashboardPage() {
           }
         }
 
+        /* Enhanced Interactive Card Styling */
         .metric-card {
-          background-color: #ffffff;
-          border: 1px solid #e8e2d9;
-          border-radius: 8px;
-          padding: 1.1rem 1.25rem;
-          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.01);
+          background: linear-gradient(145deg, #ffffff 0%, #faf8f5 100%);
+          border: 1px solid rgba(232, 226, 217, 0.8);
+          border-radius: 16px;
+          padding: 1.25rem 1.5rem;
+          box-shadow: 0 4px 20px rgba(44, 34, 30, 0.03);
           display: flex;
           flex-direction: column;
           justify-content: space-between;
+          transition: all 0.35s cubic-bezier(0.165, 0.84, 0.44, 1);
+          position: relative;
+          overflow: hidden;
+        }
+
+        .metric-card::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 4px;
+          height: 100%;
+          background: #b06d50;
+          opacity: 0;
+          transition: opacity 0.3s ease;
+        }
+
+        .metric-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 14px 30px rgba(176, 109, 80, 0.1);
+          border-color: rgba(176, 109, 80, 0.3);
+        }
+
+        .metric-card:hover::before {
+          opacity: 1;
         }
 
         .metric-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 0.4rem;
+          margin-bottom: 0.5rem;
         }
 
         .metric-label {
@@ -495,7 +569,7 @@ export default function AdminDashboardPage() {
         }
 
         .metric-value {
-          font-size: 1.35rem;
+          font-size: 1.5rem;
           font-weight: 700;
           color: #1f1815;
           line-height: 1.2;
@@ -505,8 +579,8 @@ export default function AdminDashboardPage() {
         .analytics-grid {
           display: grid;
           grid-template-columns: 1fr;
-          gap: 1.25rem;
-          margin-bottom: 1.25rem;
+          gap: 1.5rem;
+          margin-bottom: 1.5rem;
         }
 
         @media (min-width: 1024px) {
@@ -516,46 +590,52 @@ export default function AdminDashboardPage() {
         }
 
         .dashboard-section {
-          background-color: #ffffff;
-          border: 1px solid #e8e2d9;
-          border-radius: 8px;
-          padding: 1.1rem 1.25rem;
-          overflow: hidden;
+          background: linear-gradient(145deg, #ffffff 0%, #faf8f5 100%);
+          border: 1px solid rgba(232, 226, 217, 0.8);
+          border-radius: 16px;
+          padding: 1.35rem 1.5rem;
+          box-shadow: 0 4px 20px rgba(44, 34, 30, 0.03);
+          transition: all 0.3s ease;
+        }
+
+        .dashboard-section:hover {
+          box-shadow: 0 8px 25px rgba(44, 34, 30, 0.06);
         }
 
         .section-title-wrap {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          margin-bottom: 0.85rem;
-          padding-bottom: 0.4rem;
+          margin-bottom: 1rem;
+          padding-bottom: 0.6rem;
           border-bottom: 1px solid #f2ede4;
           flex-wrap: wrap;
           gap: 0.5rem;
         }
 
         .section-title {
-          font-size: 1rem;
+          font-size: 1.05rem;
           font-weight: 700;
           color: #1f1815;
           margin: 0;
         }
 
         .analysis-text {
-          font-size: 0.85rem;
+          font-size: 0.875rem;
           color: #3b332e;
-          line-height: 1.5;
-          margin: 0 0 0.75rem 0;
+          line-height: 1.6;
+          margin: 0 0 1rem 0;
         }
 
         .analysis-badge {
           display: inline-block;
-          background: #f4efe6;
-          color: #b55933;
-          padding: 0.2rem 0.5rem;
-          border-radius: 4px;
+          background: linear-gradient(135deg, #f4efe6 0%, #eae3d5 100%);
+          color: #b06d50;
+          padding: 0.25rem 0.65rem;
+          border-radius: 6px;
           font-weight: 600;
           font-size: 0.78rem;
+          box-shadow: inset 0 1px 2px rgba(255,255,255,0.6);
         }
 
         .scrollable-graph-container {
@@ -572,7 +652,7 @@ export default function AdminDashboardPage() {
         .content-grid {
           display: grid;
           grid-template-columns: 1fr;
-          gap: 1.25rem;
+          gap: 1.5rem;
         }
 
         @media (min-width: 1024px) {
@@ -590,30 +670,35 @@ export default function AdminDashboardPage() {
         .orders-table {
           width: 100%;
           border-collapse: collapse;
-          font-size: 0.85rem;
-          min-width: 450px;
+          font-size: 0.875rem;
+          min-width: 480px;
         }
 
         .orders-table th {
           text-align: left;
-          padding: 0.4rem 0.5rem;
+          padding: 0.6rem 0.75rem;
           color: #8c827a;
           font-weight: 600;
-          border-bottom: 1px solid #eee8e0;
+          border-bottom: 1px solid #e8e2d9;
           white-space: nowrap;
         }
 
         .orders-table td {
-          padding: 0.6rem 0.5rem;
+          padding: 0.75rem;
           border-bottom: 1px solid #f7f4ef;
           color: #3b332e;
+          transition: background 0.2s;
+        }
+
+        .orders-table tbody tr:hover td {
+          background-color: rgba(243, 237, 226, 0.4);
         }
 
         .status-badge {
           display: inline-block;
-          padding: 0.15rem 0.5rem;
+          padding: 0.2rem 0.6rem;
           border-radius: 999px;
-          font-size: 0.7rem;
+          font-size: 0.72rem;
           font-weight: 600;
           white-space: nowrap;
         }
@@ -639,7 +724,7 @@ export default function AdminDashboardPage() {
             className="mobile-menu-btn" 
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
-            ☰ Menu
+            Menu
           </button>
           <ul className="nav-links-group">
             <li><Link href="/admin/dashboard" className={`nav-link ${pathname === '/admin/dashboard' ? 'active' : ''}`}>Dashboard</Link></li>
@@ -647,7 +732,7 @@ export default function AdminDashboardPage() {
             <li><Link href="/admin/products" className={`nav-link ${pathname === '/admin/products' ? 'active' : ''}`}>Inventory</Link></li>
             <li><Link href="/admin/products/new" className={`nav-link ${pathname === '/admin/products/new' ? 'active' : ''}`}>Add Product</Link></li>
           </ul>
-          <Link href="/" target="_blank" className="nav-link" style={{ color: '#b55933', fontWeight: 600 }}>View Storefront →</Link>
+          <Link href="/" target="_blank" className="nav-link" style={{ color: '#b06d50', fontWeight: 600 }}>View Storefront →</Link>
         </nav>
       </div>
 
@@ -717,7 +802,7 @@ export default function AdminDashboardPage() {
                   <svg viewBox="0 0 520 120" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
                     <polyline
                       fill="none"
-                      stroke="#b55933"
+                      stroke="#b06d50"
                       strokeWidth="3"
                       points={trendPoints.map((p, idx) => `${idx * 130 + 65},${110 - (p.val / maxVal) * 90}`).join(' ')}
                     />
@@ -728,7 +813,7 @@ export default function AdminDashboardPage() {
                           cy={110 - (p.val / maxVal) * 90}
                           r="5"
                           fill="#ffffff"
-                          stroke="#b55933"
+                          stroke="#b06d50"
                           strokeWidth="3"
                         />
                         <text x={idx * 130 + 65} y="125" textAnchor="middle" fontSize="11" fill="#786f66" fontWeight="600">
@@ -749,10 +834,10 @@ export default function AdminDashboardPage() {
             <p className="analysis-text">
               Real-time tracking is connected for <strong>{MONTH_NAMES[selectedMonth]} {selectedYear}</strong>. Any newly completed orders or inventory edits sync instantly via Supabase channels.
             </p>
-            <div style={{ background: '#fcfbfa', padding: '0.6rem 0.75rem', borderRadius: '6px', border: '1px solid #f2ede4' }}>
+            <div style={{ background: '#fcfbfa', padding: '0.75rem 1rem', borderRadius: '10px', border: '1px solid #f2ede4' }}>
               <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#8c827a', textTransform: 'uppercase' }}>Stream Status</span>
-              <div style={{ fontSize: '0.82rem', color: '#2e6930', fontWeight: 600, marginTop: '0.2rem' }}>
-                ● Connected to database stream
+              <div style={{ fontSize: '0.85rem', color: '#2e6930', fontWeight: 600, marginTop: '0.2rem' }}>
+                Connected to database stream
               </div>
             </div>
           </div>
@@ -763,7 +848,7 @@ export default function AdminDashboardPage() {
           <div className="dashboard-section">
             <div className="section-title-wrap">
               <h2 className="section-title">Recent Orders (Live)</h2>
-              <Link href="/admin/orders" style={{ fontSize: '0.8rem', color: '#b55933', textDecoration: 'none', fontWeight: 600 }}>View All →</Link>
+              <Link href="/admin/orders" style={{ fontSize: '0.8rem', color: '#b06d50', textDecoration: 'none', fontWeight: 600 }}>View All →</Link>
             </div>
             {loading ? (
               <p style={{ fontSize: '0.85rem', color: '#8c827a' }}>Loading...</p>
@@ -802,14 +887,14 @@ export default function AdminDashboardPage() {
           <div className="dashboard-section">
             <div className="section-title-wrap">
               <h2 className="section-title">Inventory Health</h2>
-              <Link href="/admin/products" style={{ fontSize: '0.8rem', color: '#b55933', textDecoration: 'none', fontWeight: 600 }}>Manage →</Link>
+              <Link href="/admin/products" style={{ fontSize: '0.8rem', color: '#b06d50', textDecoration: 'none', fontWeight: 600 }}>Manage →</Link>
             </div>
             {lowStockCount === 0 ? (
-              <div style={{ color: '#2e6930', fontSize: '0.85rem', background: '#f2f8f2', padding: '0.85rem', borderRadius: '6px' }}>
+              <div style={{ color: '#2e6930', fontSize: '0.85rem', background: '#f2f8f2', padding: '1rem', borderRadius: '10px', border: '1px solid #d4ebd4' }}>
                 Inventory levels are optimal. All items are in stock.
               </div>
             ) : (
-              <div style={{ color: '#992222', fontSize: '0.85rem', background: '#fdf5f5', padding: '0.85rem', borderRadius: '6px' }}>
+              <div style={{ color: '#992222', fontSize: '0.85rem', background: '#fdf5f5', padding: '1rem', borderRadius: '10px', border: '1px solid #f7d7d7' }}>
                 <strong>Low Stock Alerts ({lowStockCount})</strong>
                 <ul style={{ margin: '0.5rem 0 0 0', paddingLeft: '1rem' }}>
                   {stats.lowStockItems.map((item) => (
