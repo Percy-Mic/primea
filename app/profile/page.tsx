@@ -654,12 +654,14 @@ export default function AdminProfilePage() {
           outline: none;
         }
         .focusable-avatar:hover {
-          transform: scale(1.08);
-          box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.4), 0 6px 16px rgba(0,0,0,0.2) !important;
+          transform: scale(1.15);
+          box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.5), 0 8px 20px rgba(0,0,0,0.3) !important;
+          z-index: 10;
         }
         .focusable-avatar:focus-visible {
-          transform: scale(1.08);
-          box-shadow: 0 0 0 4px #d4af37, 0 6px 16px rgba(0,0,0,0.25) !important;
+          transform: scale(1.15);
+          box-shadow: 0 0 0 4px #d4af37, 0 8px 20px rgba(0,0,0,0.35) !important;
+          z-index: 10;
         }
       `}</style>
     </div>
@@ -740,12 +742,12 @@ const styles: { [key: string]: React.CSSProperties } = {
   emptyCard: { textAlign: 'center' as const, padding: '40px 20px', backgroundColor: '#fff', borderRadius: '12px' },
   sectionTitle: { fontSize: '17px', fontWeight: 700, margin: 0 },
   primaryButton: { backgroundColor: '#1a1a1a', color: '#fff', padding: '10px 18px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '13px' },
-  profileCard: { backgroundColor: '#fff', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.06)', marginBottom: '16px', width: '100%' },
-  cover: { backgroundColor: '#121212', height: '110px', position: 'relative', padding: '12px' },
+  profileCard: { backgroundColor: '#fff', borderRadius: '12px', overflow: 'visible', boxShadow: '0 4px 16px rgba(0,0,0,0.06)', marginBottom: '16px', width: '100%', position: 'relative' },
+  cover: { backgroundColor: '#121212', height: '110px', position: 'relative', padding: '12px', borderTopLeftRadius: '12px', borderTopRightRadius: '12px' },
   coverActions: { display: 'flex', gap: '10px', justifyContent: 'flex-end' },
   secondaryDarkButton: { backgroundColor: 'rgba(255,255,255,0.12)', color: '#fff', border: '1px solid rgba(255,255,255,0.25)', padding: '6px 14px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 },
-  avatarWrapper: { position: 'absolute', bottom: '-26px', left: '16px' },
-  avatar: { width: '68px', height: '68px', borderRadius: '50%', backgroundColor: '#fff', border: '3px solid #fff', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', cursor: 'pointer', boxShadow: '0 4px 10px rgba(0,0,0,0.15)' },
+  avatarWrapper: { position: 'absolute', bottom: '-26px', left: '16px', zIndex: 5 },
+  avatar: { width: '68px', height: '68px', borderRadius: '50%', backgroundColor: '#fff', border: '3px solid #fff', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', cursor: 'pointer', boxShadow: '0 4px 10px rgba(0,0,0,0.15)', transformOrigin: 'bottom left' },
   avatarImage: { width: '100%', height: '100%', objectFit: 'cover' },
   avatarInitials: { fontSize: '20px', fontWeight: 700, color: '#1a1a1a' },
   avatarOverlay: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(0,0,0,0.65)', color: '#fff', fontSize: '10px', textAlign: 'center', padding: '3px 0', fontWeight: 600, letterSpacing: '0.5px' },
@@ -760,7 +762,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   metricItem: { textAlign: 'left' as const },
   metricValue: { display: 'block', fontSize: '15px', fontWeight: 700 },
   metricLabel: { fontSize: '11px', color: '#666' },
-  tabs: { display: 'flex', borderTop: '1px solid #eaeaea', width: '100%', backgroundColor: '#faf9f6' },
+  tabs: { display: 'flex', borderTop: '1px solid #eaeaea', width: '100%', backgroundColor: '#faf9f6', borderBottomLeftRadius: '12px', borderBottomRightRadius: '12px', overflow: 'hidden' },
   tabButton: { background: 'none', border: 'none', padding: '10px 8px', cursor: 'pointer', fontSize: '11px', fontWeight: 600, color: '#666', borderBottom: '2px solid transparent', textAlign: 'center', flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
   tabButtonActive: { color: '#1a1a1a', borderBottomColor: '#d4af37', backgroundColor: '#fff' },
   message: { padding: '12px 16px', borderRadius: '8px', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', wordBreak: 'break-word', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' },
