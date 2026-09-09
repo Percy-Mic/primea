@@ -137,7 +137,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   return (
     <div className="product-details-page">
-      {/* Sticky wrapper keeping UserNav fixed at the top */}
+      {/* Sticky wrapper keeping UserNav locked at the top */}
       <div className="sticky-nav-wrapper">
         <UserNav />
       </div>
@@ -167,6 +167,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
           top: 0;
           z-index: 50;
           width: 100%;
+          background: rgba(250, 248, 245, 0.95);
+          backdrop-filter: blur(8px);
         }
         .container {
           max-width: 1100px;
