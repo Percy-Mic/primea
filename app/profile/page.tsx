@@ -2,12 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { createClient } from '@supabase/supabase-js'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-)
+import { supabase } from '@/lib/supabase'
 
 export default function AdminProfilePage() {
   const [user, setUser] = useState<any>(null)
@@ -482,8 +477,6 @@ function Header() {
         <Link href="/admin/dashboard" style={styles.navLink}>
           Dashboard
         </Link>
-        {/* Commented out to prevent 404 error until the page is created */}
-        {/* <Link href="/admin/users" style={styles.navLink}>Users</Link> */}
       </div>
     </header>
   )
