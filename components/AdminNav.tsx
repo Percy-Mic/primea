@@ -76,23 +76,6 @@ export default function UserNav({
           from { opacity: 0; transform: translateY(-10px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        .luxury-nav-link {
-          position: relative;
-          transition: color 0.3s ease;
-        }
-        .luxury-nav-link::after {
-          content: '';
-          position: absolute;
-          width: 0;
-          height: 1px;
-          bottom: -4px;
-          left: 0;
-          background-color: #d4af37;
-          transition: width 0.3s ease;
-        }
-        .luxury-nav-link:hover::after {
-          width: 100%;
-        }
         .luxury-btn-hover {
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -122,41 +105,37 @@ export default function UserNav({
       <div style={styles.navContainer}>
         {/* Brand Logo & Optional Page Title */}
         <div style={styles.brandWrapper}>
-          <div style={styles.brandBadge}>
-            <span style={styles.brandLetter}>{brandName.charAt(0)}</span>
-          </div>
           {title && (
             <div style={styles.titleWrapper}>
-              <span style={styles.pageTitle}>{title}</span>
-              {description && <p style={styles.pageDescription}>{description}</p>}
+              <div>
+                <span style={styles.pageTitle}>{title}</span>
+                {description && <p style={styles.pageDescription}>{description}</p>}
+              </div>
             </div>
           )}
         </div>
         
         {/* Desktop Nav Links */}
         <div className="desktop-nav-links" style={styles.desktopNav}>
-          <Link href="/attendance" style={styles.navLink} className="luxury-nav-link">
-            ATTENDANCE
+          <Link href="/attendance" style={styles.pillButton} className="luxury-btn-hover">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            <span>ATTENDANCE</span>
           </Link>
-          <Link href="/profile" style={styles.navLink} className="luxury-nav-link">
-            PROFILE
+          <Link href="/profile" style={styles.pillButton} className="luxury-btn-hover">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <span>PROFILE</span>
           </Link>
-          <Link href="/admin_list" style={styles.navLink} className="luxury-nav-link">
-            ADMIN LIST
+          <Link href="/admin_list" style={styles.pillButton} className="luxury-btn-hover">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            <span>ADMIN LIST</span>
           </Link>
-          
+
           {isAuthed && (
-            <div style={styles.actionPillsGroup}>
-              <Link href="/chats" style={styles.pillButton} className="luxury-btn-hover">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                <span>CHATS</span>
-              </Link>
-              <Link href="/system_log" style={styles.pillButton} className="luxury-btn-hover">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
-                <span style={styles.activeDot} /> 
-                <span>SYSTEM LOG</span>
-              </Link>
-            </div>
+            <Link href="/logged_action" style={styles.pillButton} className="luxury-btn-hover">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+              <span style={styles.activeDot} /> 
+              <span>CHATS</span>
+            </Link>
           )}
         </div>
 
@@ -177,7 +156,7 @@ export default function UserNav({
             </div>
           ) : (
             <div style={styles.guestContainer}>
-              <Link href="/login" style={styles.loginLink} className="luxury-nav-link">Sign In</Link>
+              <Link href="/login" style={styles.loginLink}>Sign In</Link>
               <Link href="/register" style={styles.registerLink}>Register</Link>
             </div>
           )}
@@ -198,20 +177,23 @@ export default function UserNav({
       {mobileMenuOpen && (
         <div style={styles.mobileDrawer} className="mobile-drawer-animate">
           <div style={styles.mobileLinks}>
-            <Link href="/attendance" style={styles.mobileNavLink} onClick={() => setMobileMenuOpen(false)}>ATTENDANCE</Link>
-            <Link href="/profile" style={styles.mobileNavLink} onClick={() => setMobileMenuOpen(false)}>PROFILE</Link>
-            <Link href="/admin_list" style={styles.mobileNavLink} onClick={() => setMobileMenuOpen(false)}>ADMIN LIST</Link>
+            <Link href="/attendance" style={styles.mobilePillButton} onClick={() => setMobileMenuOpen(false)}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              ATTENDANCE
+            </Link>
+            <Link href="/profile" style={styles.mobilePillButton} onClick={() => setMobileMenuOpen(false)}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+              PROFILE
+            </Link>
+            <Link href="/admin_list" style={styles.mobilePillButton} onClick={() => setMobileMenuOpen(false)}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              ADMIN LIST
+            </Link>
             {isAuthed && (
-              <div style={styles.mobilePillsGroup}>
-                <Link href="/chats" style={styles.mobilePillButton} onClick={() => setMobileMenuOpen(false)}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                  CHATS
-                </Link>
-                <Link href="/system_log" style={styles.mobilePillButton} onClick={() => setMobileMenuOpen(false)}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
-                  <span style={styles.activeDot} /> SYSTEM LOG
-                </Link>
-              </div>
+              <Link href="/logged_action" style={styles.mobilePillButton} onClick={() => setMobileMenuOpen(false)}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                <span style={styles.activeDot} /> CHATS
+              </Link>
             )}
           </div>
 
@@ -263,32 +245,17 @@ const styles: { [key: string]: React.CSSProperties } = {
     alignItems: 'center',
     gap: '1rem',
   },
-  brandBadge: {
-    width: '36px',
-    height: '36px',
-    borderRadius: '8px',
-    background: 'linear-gradient(135deg, #d4af37 0%, #aa7c11 100%)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    boxShadow: '0 2px 8px rgba(212, 175, 55, 0.3)',
-  },
-  brandLetter: {
-    color: '#110e0c',
-    fontWeight: '800',
-    fontSize: '1.1rem',
-    fontFamily: 'serif',
-  },
   titleWrapper: {
     display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
+    alignItems: 'center',
+    gap: '1rem',
   },
   pageTitle: {
     color: '#f5efe6',
     fontSize: '0.9rem',
     fontWeight: 700,
     letterSpacing: '0.08em',
+    display: 'block',
   },
   pageDescription: {
     color: '#a89f91',
@@ -299,21 +266,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   desktopNav: {
     display: 'flex',
     alignItems: 'center',
-    gap: '1.75rem',
-  },
-  navLink: {
-    color: '#d4cec5',
-    textDecoration: 'none',
-    fontSize: '0.8rem',
-    letterSpacing: '0.12em',
-    fontWeight: 600,
-    fontFamily: 'sans-serif',
-  },
-  actionPillsGroup: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.6rem',
-    marginLeft: '0.5rem',
+    gap: '0.75rem',
   },
   pillButton: {
     display: 'inline-flex',
@@ -322,7 +275,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     border: '1px solid rgba(255, 255, 255, 0.12)',
     borderRadius: '20px',
     padding: '0.35rem 0.85rem',
-    color: '#f5efe6',
+    color: '#d4cec5',
     textDecoration: 'none',
     fontSize: '0.75rem',
     letterSpacing: '0.08em',
@@ -398,7 +351,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: '0.8rem',
     letterSpacing: '0.08em',
     boxShadow: '0 2px 10px rgba(212, 175, 55, 0.25)',
-    transition: 'transform 0.2s ease',
   },
   signOutButton: {
     display: 'inline-flex',
@@ -434,20 +386,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   mobileLinks: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '0.85rem',
-  },
-  mobileNavLink: {
-    color: '#d4cec5',
-    textDecoration: 'none',
-    fontSize: '0.85rem',
-    letterSpacing: '0.12em',
-    fontWeight: 600,
-  },
-  mobilePillsGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.5rem',
-    marginTop: '0.5rem',
+    gap: '0.65rem',
   },
   mobilePillButton: {
     display: 'inline-flex',
