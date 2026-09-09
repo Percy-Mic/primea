@@ -137,7 +137,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   return (
     <div className="product-details-page">
-      {/* Fixed Sticky Navigation Header */}
+      {/* Static Header matching Primea Dark Theme */}
       <header className="site-header">
         <div className="container header-container">
           <UserNav />
@@ -160,25 +160,19 @@ export default async function ProductPage({ params }: ProductPageProps) {
           min-height: 100vh;
           font-family: serif;
           color: #1f1815;
-          padding-top: 100px;
           padding-bottom: 6rem;
           position: relative;
           animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         .site-header {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          z-index: 1000;
           width: 100%;
-          background: rgba(250, 248, 245, 0.9);
-          backdrop-filter: blur(12px);
-          border-bottom: 1px solid rgba(232, 226, 217, 0.8);
-          box-shadow: 0 4px 20px rgba(31, 24, 21, 0.03);
+          background: #14100e;
+          border-bottom: 1px solid #2a221e;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+          margin-bottom: 3.5rem;
         }
         .header-container {
-          padding: 0.75rem 1.5rem;
+          padding: 1rem 1.5rem;
         }
         .container {
           max-width: 1100px;
@@ -251,7 +245,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
           display: grid;
           grid-template-columns: 1fr;
           gap: 2rem;
-          transition: transform 0.3s ease;
         }
         @media (min-width: 768px) {
           .summary-card { grid-template-columns: 1fr 2fr; }
@@ -276,7 +269,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
           font-size: 0.85rem;
           margin-top: 0.75rem;
           font-family: system-ui, -apple-system, sans-serif;
-          box-shadow: 0 2px 6px rgba(19, 115, 51, 0.1);
         }
         .progress-bar-container {
           display: flex;
@@ -292,13 +284,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
           background-color: #f0eae1;
           border-radius: 6px;
           overflow: hidden;
-          box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
         }
         .progress-fill {
           height: 100%;
           background: linear-gradient(90deg, #a03b1e, #d9532b);
           border-radius: 6px;
-          transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .reviews-layout {
           display: grid;
@@ -329,12 +319,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
           font-size: 0.95rem;
           outline: none;
           background: #faf8f5;
-          transition: all 0.25s ease;
         }
         .form-input:focus, .form-textarea:focus, .form-select:focus {
           border-color: #a03b1e;
           background: #ffffff;
-          box-shadow: 0 0 0 3px rgba(160, 59, 30, 0.12);
         }
         .btn-submit {
           background: linear-gradient(135deg, #1f1815, #3b302a);
@@ -347,13 +335,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
           letter-spacing: 0.05em;
           text-transform: uppercase;
           font-size: 0.85rem;
-          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-          box-shadow: 0 4px 12px rgba(31, 24, 21, 0.15);
+          transition: all 0.3s ease;
         }
         .btn-submit:hover {
           background: linear-gradient(135deg, #a03b1e, #d9532b);
           transform: translateY(-2px);
-          box-shadow: 0 8px 20px rgba(160, 59, 30, 0.3);
         }
         .reviews-feed-container {
           max-height: 520px;
@@ -363,28 +349,18 @@ export default async function ProductPage({ params }: ProductPageProps) {
         .reviews-feed-container::-webkit-scrollbar {
           width: 6px;
         }
-        .reviews-feed-container::-webkit-scrollbar-track {
-          background: rgba(240, 234, 225, 0.5);
-          border-radius: 4px;
-        }
         .reviews-feed-container::-webkit-scrollbar-thumb {
           background-color: #c4b6a5;
           border-radius: 4px;
         }
         .review-card {
           background: rgba(255, 255, 255, 0.9);
-          backdrop-filter: blur(8px);
           padding: 1.5rem;
           border-radius: 12px;
           border: 1px solid #e8e2d9;
           margin-bottom: 1.25rem;
           font-family: system-ui, -apple-system, sans-serif;
           box-shadow: 0 6px 20px rgba(31, 24, 21, 0.03);
-          transition: all 0.3s ease;
-        }
-        .review-card:hover {
-          transform: translateY(-2px);
-          border-color: rgba(160, 59, 30, 0.3);
         }
         .review-proof-media {
           position: relative;
@@ -417,7 +393,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
           color: #786e65;
           font-size: 0.95rem;
           font-family: system-ui, -apple-system, sans-serif;
-          box-shadow: 0 10px 25px rgba(31, 24, 21, 0.04);
         }
         .related-grid {
           display: grid;
@@ -431,13 +406,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
           overflow: hidden;
           text-decoration: none;
           color: inherit;
-          transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-          box-shadow: 0 8px 20px rgba(31, 24, 21, 0.04);
+          transition: all 0.4s ease;
         }
         .related-card:hover {
           transform: translateY(-6px);
           border-color: rgba(160, 59, 30, 0.4);
-          box-shadow: 0 20px 40px -10px rgba(160, 59, 30, 0.15);
         }
         .related-img {
           position: relative;
@@ -475,7 +448,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
             <h1 className="product-title">{product.title}</h1>
             <div style={{ color: '#a03b1e', marginBottom: '1rem', fontFamily: 'system-ui', fontSize: '1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              {/* SVG Star Icons */}
               <svg className="svg-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
               <svg className="svg-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
               <svg className="svg-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
