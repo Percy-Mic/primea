@@ -681,7 +681,7 @@ export default function AdminDashboardPage() {
                         <circle
                           cx={idx * 55 + 28}
                           cy={110 - (p.revenue / maxVal) * 90}
-                          r="4"
+                          r="3"
                           fill="#ffffff"
                           stroke="#b06d50"
                           strokeWidth="2"
