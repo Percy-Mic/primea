@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 
@@ -10,6 +10,18 @@ export default function LoggedActionPage() {
   const [newMessage, setNewMessage] = useState('')
   const [user, setUser] = useState<any>(null)
   const [activeTab, setActiveTab] = useState<'chat' | 'logs'>('chat')
+
+  // Voice Recording States
+  const [isRecording, setIsRecording] = useState(false)
+  const [recordingTime, setRecordingTime] = useState(0)
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null)
+  const [audioUrlPreview, setAudioUrlPreview] = useState<string | null>(null)
+
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+  const audioChunksRef = useRef<Blob[]>([])
+  const timerRef = useRef<NodeJS.Timeout | null>(null)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const supabase = createClient()
 
@@ -39,9 +51,89 @@ export default function LoggedActionPage() {
     return () => { supabase.removeChannel(channel) }
   }, [])
 
+  // Auto-scroll to bottom of chat
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, activeTab])
+
+  // Auto-expand textarea
+  const handleInputResize = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setNewMessage(e.target.value)
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto'
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`
+    }
+  }
+
+  // Voice Recorder Handlers
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const mediaRecorder = new MediaRecorder(stream)
+      mediaRecorderRef.current = mediaRecorder
+      audioChunksRef.current = []
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) audioChunksRef.current.push(event.data)
+      }
+
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
+        setAudioBlob(audioBlob)
+        setAudioUrlPreview(URL.createObjectURL(audioBlob))
+        stream.getTracks().forEach((track) => track.stop())
+      }
+
+      mediaRecorder.start()
+      setIsRecording(true)
+      setRecordingTime(0)
+      timerRef.current = setInterval(() => {
+        setRecordingTime((prev) => prev + 1)
+      }, 1000)
+    } catch (err) {
+      alert('Microphone access denied or unavailable.')
+    }
+  }
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop()
+      setIsRecording(false)
+      if (timerRef.current) clearInterval(timerRef.current)
+    }
+  }
+
+  const cancelRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop()
+    }
+    setIsRecording(false)
+    setAudioBlob(null)
+    setAudioUrlPreview(null)
+    setRecordingTime(0)
+    if (timerRef.current) clearInterval(timerRef.current)
+  }
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!newMessage.trim() || !user) return
+    if ((!newMessage.trim() && !audioBlob) || !user) return
+
+    let uploadedAudioUrl = null
+    let duration = recordingTime
+
+    if (audioBlob) {
+      const fileName = `voice_${user.id}_${Date.now()}.webm`
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('chat-audio')
+        .upload(fileName, audioBlob)
+
+      if (!uploadError && uploadData) {
+        const { data: publicUrlData } = supabase.storage
+          .from('chat-audio')
+          .getPublicUrl(fileName)
+        uploadedAudioUrl = publicUrlData.publicUrl
+      }
+    }
 
     const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single()
     
@@ -49,55 +141,135 @@ export default function LoggedActionPage() {
       sender_id: user.id,
       sender_name: profile?.full_name || user.email,
       sender_avatar: profile?.avatar_url || '',
-      message: newMessage,
+      message: newMessage.trim() || (uploadedAudioUrl ? '🎤 Voice message' : ''),
+      audio_url: uploadedAudioUrl,
+      audio_duration: duration,
     }])
 
     setNewMessage('')
+    setAudioBlob(null)
+    setAudioUrlPreview(null)
+    setRecordingTime(0)
+    if (textareaRef.current) textareaRef.current.style.height = 'auto'
   }
 
   return (
-    <div style={{ maxWidth: '900px', margin: '2rem auto', padding: '1.5rem', fontFamily: 'sans-serif' }}>
+    <div style={{ maxWidth: '900px', margin: '2rem auto', padding: '1rem', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-        <h1 style={{ margin: 0, fontSize: '1.5rem' }}>Admin Hub & Group Chat</h1>
-        <Link href="/" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 500 }}>← Back Home</Link>
+        <h1 style={{ margin: 0, fontSize: '1.4rem', color: '#0f172a' }}>Admin Hub & Group Chat</h1>
+        <Link href="/" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 500, fontSize: '0.9rem' }}>← Back Home</Link>
       </div>
 
       <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-        <button onClick={() => setActiveTab('chat')} style={{ padding: '0.5rem 1rem', background: activeTab === 'chat' ? '#0f172a' : '#e2e8f0', color: activeTab === 'chat' ? '#fff' : '#0f172a', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}>Admin Group Chat</button>
-        <button onClick={() => setActiveTab('logs')} style={{ padding: '0.5rem 1rem', background: activeTab === 'logs' ? '#0f172a' : '#e2e8f0', color: activeTab === 'logs' ? '#fff' : '#0f172a', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}>System Activity Log</button>
+        <button onClick={() => setActiveTab('chat')} style={{ padding: '0.5rem 1rem', background: activeTab === 'chat' ? '#0f172a' : '#e2e8f0', color: activeTab === 'chat' ? '#fff' : '#0f172a', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }}>Admin Group Chat</button>
+        <button onClick={() => setActiveTab('logs')} style={{ padding: '0.5rem 1rem', background: activeTab === 'logs' ? '#0f172a' : '#e2e8f0', color: activeTab === 'logs' ? '#fff' : '#0f172a', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }}>System Activity Log</button>
       </div>
 
       {activeTab === 'chat' ? (
-        <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', display: 'flex', flexDirection: 'column', height: '500px' }}>
-          <div style={{ flex: 1, padding: '1rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', display: 'flex', flexDirection: 'column', height: '550px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)' }}>
+          
+          {/* Chat Stream Area */}
+          <div style={{ flex: 1, padding: '1rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.75rem', background: '#f8fafc' }}>
             {messages.length === 0 ? (
-              <p style={{ color: '#64748b', textAlign: 'center', marginTop: '2rem' }}>No messages yet. Start the conversation!</p>
+              <p style={{ color: '#64748b', textAlign: 'center', margin: 'auto', fontSize: '0.9rem' }}>No messages yet. Start the conversation!</p>
             ) : (
-              messages.map((msg) => (
-                <div key={msg.id} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
-                  {msg.sender_avatar ? (
-                    <img src={msg.sender_avatar} alt="" style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} />
-                  ) : (
-                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#cbd5e1', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700 }}>{msg.sender_name?.[0]}</div>
-                  )}
-                  <div>
-                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'baseline' }}>
-                      <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>{msg.sender_name}</span>
-                      <span style={{ fontSize: '0.7rem', color: '#64748b' }}>{new Date(msg.created_at).toLocaleTimeString()}</span>
+              messages.map((msg) => {
+                const isMe = msg.sender_id === user?.id
+                return (
+                  <div key={msg.id} style={{ display: 'flex', justifyContent: isMe ? 'flex-end' : 'flex-start', alignItems: 'flex-end', gap: '0.5rem' }}>
+                    
+                    {/* Other user avatar */}
+                    {!isMe && (
+                      msg.sender_avatar ? (
+                        <img src={msg.sender_avatar} alt="" style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover', marginBottom: '2px' }} />
+                      ) : (
+                        <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#cbd5e1', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 700, color: '#fff', marginBottom: '2px' }}>
+                          {msg.sender_name?.[0] || 'U'}
+                        </div>
+                      )
+                    )}
+
+                    <div style={{ maxWidth: '75%', background: isMe ? '#2563eb' : '#fff', color: isMe ? '#fff' : '#1e293b', padding: '0.65rem 0.9rem', borderRadius: isMe ? '18px 18px 4px 18px' : '18px 18px 18px 4px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', border: isMe ? 'none' : '1px solid #e2e8f0' }}>
+                      
+                      {!isMe && <div style={{ fontWeight: 600, fontSize: '0.75rem', color: '#2563eb', marginBottom: '0.2rem' }}>{msg.sender_name}</div>}
+
+                      {msg.message && <div style={{ fontSize: '0.9rem', wordBreak: 'break-word', lineHeight: 1.4 }}>{msg.message}</div>}
+
+                      {msg.audio_url && (
+                        <div style={{ marginTop: msg.message !== '🎤 Voice message' ? '0.5rem' : 0 }}>
+                          <audio controls src={msg.audio_url} style={{ height: '32px', width: '100%', maxWidth: '210px', accentColor: isMe ? '#fff' : '#2563eb' }} />
+                        </div>
+                      )}
+
+                      <div style={{ fontSize: '0.65rem', color: isMe ? 'rgba(255,255,255,0.8)' : '#94a3b8', textAlign: 'right', marginTop: '0.2rem' }}>
+                        {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </div>
                     </div>
-                    <div style={{ background: '#f1f5f9', padding: '0.5rem 0.75rem', borderRadius: '6px', fontSize: '0.9rem', marginTop: '0.2rem', color: '#0f172a' }}>{msg.message}</div>
                   </div>
-                </div>
-              ))
+                )
+              })
             )}
+            <div ref={messagesEndRef} />
           </div>
-          <form onSubmit={handleSendMessage} style={{ padding: '0.75rem', borderTop: '1px solid #e2e8f0', display: 'flex', gap: '0.5rem' }}>
-            <input type="text" placeholder="Type a message to admins..." value={newMessage} onChange={(e) => setNewMessage(e.target.value)} style={{ flex: 1, padding: '0.6rem', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '0.9rem' }} />
-            <button type="submit" style={{ padding: '0.6rem 1.25rem', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 600, cursor: 'pointer' }}>Send</button>
+
+          {/* Interactive Chat Input & Recorder Toolbar */}
+          <form onSubmit={handleSendMessage} style={{ padding: '0.75rem 1rem', background: '#fff', borderTop: '1px solid #e2e8f0', display: 'flex', alignItems: 'flex-end', gap: '0.5rem' }}>
+            
+            {isRecording ? (
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '24px', padding: '0.4rem 1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ef4444' }} />
+                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#b91c1c' }}>Recording: {Math.floor(recordingTime / 60)}:{('0' + (recordingTime % 60)).slice(-2)}</span>
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button type="button" onClick={cancelRecording} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>Cancel</button>
+                  <button type="button" onClick={stopRecording} style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: '16px', padding: '0.3rem 0.8rem', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>Done</button>
+                </div>
+              </div>
+            ) : audioUrlPreview ? (
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#f1f5f9', borderRadius: '24px', padding: '0.3rem 0.75rem' }}>
+                <audio controls src={audioUrlPreview} style={{ height: '30px', width: '100%', maxWidth: '220px' }} />
+                <button type="button" onClick={cancelRecording} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>Discard</button>
+              </div>
+            ) : (
+              <textarea
+                ref={textareaRef}
+                rows={1}
+                placeholder="Type a message to admins..."
+                value={newMessage}
+                onChange={handleInputResize}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault()
+                    handleSendMessage(e)
+                  }
+                }}
+                style={{ flex: 1, resize: 'none', maxHeight: '120px', padding: '0.65rem 1rem', border: '1px solid #cbd5e1', borderRadius: '20px', outline: 'none', fontSize: '0.9rem', fontFamily: 'inherit', background: '#f8fafc', lineHeight: 1.4 }}
+              />
+            )}
+
+            {!isRecording && !audioUrlPreview && (
+              <button
+                type="button"
+                onClick={startRecording}
+                title="Record voice note"
+                style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', color: '#475569', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
+              >
+                🎤
+              </button>
+            )}
+
+            <button 
+              type="submit" 
+              disabled={!newMessage.trim() && !audioBlob}
+              style={{ background: (!newMessage.trim() && !audioBlob) ? '#93c5fd' : '#2563eb', color: '#fff', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, cursor: (!newMessage.trim() && !audioBlob) ? 'default' : 'pointer', flexShrink: 0 }}
+            >
+              ➤
+            </button>
           </form>
         </div>
       ) : (
-        <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '1.5rem' }}>
+        <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '1.5rem' }}>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {logs.length === 0 ? (
               <p style={{ color: '#64748b' }}>No system actions logged.</p>
