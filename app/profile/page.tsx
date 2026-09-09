@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 
@@ -17,6 +17,8 @@ export default function AdminProfilePage() {
   const [bio, setBio] = useState('')
   const [fullName, setFullName] = useState('')
   const [avatarUrl, setAvatarUrl] = useState('')
+  const [tempAvatarUrl, setTempAvatarUrl] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
   
   const [activitySearch, setActivitySearch] = useState('')
   const [activityStatus, setActivityStatus] = useState('all')
@@ -62,6 +64,7 @@ export default function AdminProfilePage() {
         setFullName(userData.full_name)
         setBio(userData.bio)
         setAvatarUrl(userData.avatar_url)
+        setTempAvatarUrl(userData.avatar_url)
 
         const { data: ordersData, error: ordersError } = await supabase
           .from('orders')
@@ -89,7 +92,7 @@ export default function AdminProfilePage() {
       if (!e.target.files || e.target.files.length === 0) return
       const file = e.target.files[0]
       const fileExt = file.name.split('.').pop()
-      const fileName = `${user?.id}-${Math.random()}.${fileExt}`
+      const fileName = `${user?.id}-${Date.now()}.${fileExt}`
       const filePath = `${fileName}`
 
       setUploading(true)
@@ -104,8 +107,8 @@ export default function AdminProfilePage() {
       }
 
       const { data } = supabase.storage.from('avatars').getPublicUrl(filePath)
-      setAvatarUrl(data.publicUrl)
-      setMessage({ type: 'success', text: 'Avatar uploaded successfully! Don’t forget to save changes.' })
+      setTempAvatarUrl(data.publicUrl)
+      setMessage({ type: 'success', text: 'Avatar uploaded successfully. Click "Save changes" below to confirm!' })
     } catch (error: any) {
       setMessage({ type: 'error', text: error.message || 'Error uploading avatar image.' })
     } finally {
@@ -117,6 +120,7 @@ export default function AdminProfilePage() {
     setFullName(user?.full_name || '')
     setBio(user?.bio || '')
     setAvatarUrl(user?.avatar_url || '')
+    setTempAvatarUrl(user?.avatar_url || '')
     setIsEditing(false)
   }
 
@@ -128,20 +132,22 @@ export default function AdminProfilePage() {
     setMessage(null)
 
     try {
+      const finalAvatar = tempAvatarUrl || avatarUrl
       const { error } = await supabase
         .from('profiles')
         .upsert({
           id: user.id,
           full_name: fullName,
           bio,
-          avatar_url: avatarUrl,
+          avatar_url: finalAvatar,
           updated_at: new Date().toISOString(),
         })
 
       if (error) throw error
 
-      setUser((prev: any) => ({ ...prev, full_name: fullName, bio, avatar_url: avatarUrl }))
-      setMessage({ type: 'success', text: 'Profile updated successfully!' })
+      setUser((prev: any) => ({ ...prev, full_name: fullName, bio, avatar_url: finalAvatar }))
+      setAvatarUrl(finalAvatar)
+      setMessage({ type: 'success', text: 'Profile updated and saved successfully!' })
       setIsEditing(false)
     } catch (err: any) {
       setMessage({ type: 'error', text: err.message || 'Failed to save changes.' })
@@ -186,6 +192,7 @@ export default function AdminProfilePage() {
         <Header />
         <div style={styles.container}>
           <div style={styles.loadingCard}>
+            <div style={styles.spinner} />
             <h2 style={styles.loadingTitle}>Loading profile...</h2>
             <p style={styles.muted}>Please wait while we fetch your live data.</p>
           </div>
@@ -237,11 +244,11 @@ export default function AdminProfilePage() {
           <div style={styles.cover}>
             <div style={styles.coverActions}>
               {!isEditing ? (
-                <button onClick={() => { setIsEditing(true); setActiveTab('more_info'); }} style={styles.secondaryDarkButton}>
+                <button onClick={() => { setIsEditing(true); setActiveTab('more_info'); }} style={styles.secondaryDarkButton} className="interactive-btn">
                   Edit Profile
                 </button>
               ) : (
-                <button onClick={handleCancelEditing} style={styles.secondaryDarkButton}>
+                <button onClick={handleCancelEditing} style={styles.secondaryDarkButton} className="interactive-btn">
                   Cancel Editing
                 </button>
               )}
@@ -251,13 +258,16 @@ export default function AdminProfilePage() {
                 style={styles.avatar} 
                 onClick={() => { setIsEditing(true); setActiveTab('more_info'); }} 
                 title="Click to edit profile picture"
+                className="avatar-container"
               >
-                {user.avatar_url ? (
-                  <img src={user.avatar_url} alt={user.full_name} style={styles.avatarImage} />
+                {(isEditing ? tempAvatarUrl : user.avatar_url) ? (
+                  <img src={isEditing ? tempAvatarUrl : user.avatar_url} alt={user.full_name} style={styles.avatarImage} />
                 ) : (
                   <span style={styles.avatarInitials}>{initials}</span>
                 )}
-                <div style={styles.avatarOverlay}>Edit</div>
+                <div style={styles.avatarOverlay}>
+                  <span>Edit</span>
+                </div>
               </div>
             </div>
           </div>
@@ -280,7 +290,7 @@ export default function AdminProfilePage() {
 
           <div style={styles.tabs}>
             <TabButton active={activeTab === 'overview'} onClick={() => { setActiveTab('overview'); setIsEditing(false); }}>Overview</TabButton>
-            <TabButton active={activeTab === 'more_info'} onClick={() => setActiveTab('more_info')}>More Profile Info</TabButton>
+            <TabButton active={activeTab === 'more_info'} onClick={() => { setActiveTab('more_info'); }}>More Profile Info</TabButton>
             <TabButton active={activeTab === 'activity'} onClick={() => { setActiveTab('activity'); setIsEditing(false); }}>Activity Stream</TabButton>
             <TabButton active={activeTab === 'security'} onClick={() => { setActiveTab('security'); setIsEditing(false); }}>Security</TabButton>
           </div>
@@ -315,7 +325,7 @@ export default function AdminProfilePage() {
                 ) : (
                   <div style={styles.orderList}>
                     {orders.slice(0, 3).map(order => (
-                      <div key={order.id} onClick={() => setSelectedOrder(order)} style={styles.orderRow}>
+                      <div key={order.id} onClick={() => setSelectedOrder(order)} style={styles.orderRow} className="interactive-row">
                         <div style={styles.orderMain}>
                           <strong style={styles.orderTitle}>Order #{String(order.id).slice(0, 8)}</strong>
                           <span style={styles.orderDate}>{order.customer_name || order.email || 'Client Order'} • {formatDate(order.created_at)}</span>
@@ -340,7 +350,7 @@ export default function AdminProfilePage() {
                     <h2 style={styles.sectionTitle}>More Profile Information</h2>
                     <p style={styles.muted}>Detailed overview of your current account configuration.</p>
                   </div>
-                  <button onClick={() => setIsEditing(true)} style={styles.primaryButton}>
+                  <button onClick={() => setIsEditing(true)} style={styles.primaryButton} className="interactive-btn">
                     Edit Details
                   </button>
                 </div>
@@ -369,7 +379,7 @@ export default function AdminProfilePage() {
                   </div>
 
                   <div style={styles.infoFieldCard}>
-                    <span style={styles.infoCardLabel}>Avatar URL Reference</span>
+                    <span style={styles.infoCardLabel}>Avatar Preview Link</span>
                     <p style={{ ...styles.infoCardValue, fontWeight: 400, fontSize: '12px', wordBreak: 'break-all', color: '#555' }}>
                       {user.avatar_url || 'Using default initials badge.'}
                     </p>
@@ -388,31 +398,48 @@ export default function AdminProfilePage() {
                 </div>
 
                 <form onSubmit={handleSaveProfile} style={styles.form}>
-                  <label style={styles.field}>
-                    <span style={styles.label}>Profile Picture Upload</span>
-                    <div style={styles.uploadRow}>
+                  <div style={styles.uploadSectionContainer}>
+                    <div style={styles.uploadPreviewWrapper}>
+                      {tempAvatarUrl ? (
+                        <img src={tempAvatarUrl} alt="Preview" style={styles.previewImage} />
+                      ) : (
+                        <div style={styles.previewPlaceholder}>{initials}</div>
+                      )}
+                    </div>
+
+                    <div style={styles.uploadControls}>
+                      <span style={styles.label}>Custom Avatar Upload</span>
                       <input
                         type="file"
                         accept="image/*"
+                        ref={fileInputRef}
                         onChange={handleFileUpload}
-                        disabled={uploading}
-                        style={styles.fileInput}
+                        style={{ display: 'none' }}
                       />
-                      {uploading && <span style={styles.muted}>Uploading image...</span>}
+                      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          disabled={uploading}
+                          style={styles.customUploadButton}
+                          className="interactive-btn"
+                        >
+                          {uploading ? 'Uploading...' : '📁 Choose Image File'}
+                        </button>
+                        {tempAvatarUrl !== user.avatar_url && (
+                          <button
+                            type="button"
+                            onClick={() => setTempAvatarUrl(user.avatar_url)}
+                            style={styles.secondaryButton}
+                            className="interactive-btn"
+                          >
+                            Reset Image
+                          </button>
+                        )}
+                      </div>
+                      <span style={styles.helperText}>Uploads directly to secure cloud storage with instant preview.</span>
                     </div>
-                    <span style={styles.helperText}>Select an image file from your device to upload automatically.</span>
-                  </label>
-
-                  <label style={styles.field}>
-                    <span style={styles.label}>Profile Picture URL (Alternative)</span>
-                    <input
-                      type="url"
-                      value={avatarUrl}
-                      onChange={e => setAvatarUrl(e.target.value)}
-                      placeholder="https://example.com/avatar.jpg"
-                      style={styles.input}
-                    />
-                  </label>
+                  </div>
 
                   <label style={styles.field}>
                     <span style={styles.label}>Full Name</span>
@@ -455,6 +482,7 @@ export default function AdminProfilePage() {
                       onClick={handleCancelEditing}
                       disabled={saving}
                       style={styles.secondaryButton}
+                      className="interactive-btn"
                     >
                       Cancel
                     </button>
@@ -463,8 +491,9 @@ export default function AdminProfilePage() {
                       type="submit"
                       disabled={saving}
                       style={styles.primaryButton}
+                      className="interactive-btn"
                     >
-                      {saving ? 'Saving...' : 'Save changes'}
+                      {saving ? 'Saving...' : '💾 Save Changes'}
                     </button>
                   </div>
                 </form>
@@ -511,7 +540,7 @@ export default function AdminProfilePage() {
                 ) : (
                   <div style={styles.activityList}>
                     {filteredActivity.map(item => (
-                      <div key={item.id} style={styles.activityItem} onClick={() => setSelectedOrder(item)}>
+                      <div key={item.id} style={styles.activityItem} onClick={() => setSelectedOrder(item)} className="interactive-row">
                         <div>
                           <strong style={styles.activityTitle}>Order #{String(item.id).slice(0, 8)} - {formatCurrency(getOrderAmount(item))}</strong>
                           <p style={styles.activityDesc}>{item.customer_name || item.email || 'Client Transaction'}</p>
@@ -548,6 +577,7 @@ export default function AdminProfilePage() {
                     type="button"
                     onClick={handleSignOut}
                     style={styles.dangerButton}
+                    className="interactive-btn"
                   >
                     Sign out of account
                   </button>
@@ -559,8 +589,8 @@ export default function AdminProfilePage() {
       </main>
 
       {selectedOrder && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modalContent}>
+        <div style={styles.modalOverlay} onClick={() => setSelectedOrder(null)}>
+          <div style={styles.modalContent} onClick={e => e.stopPropagation()}>
             <div style={styles.modalHeader}>
               <h3>Order Details #{String(selectedOrder.id).slice(0, 8)}</h3>
               <button
@@ -578,6 +608,42 @@ export default function AdminProfilePage() {
           </div>
         </div>
       )}
+
+      <style jsx global>{`
+        * {
+          box-sizing: border-box;
+          scrollbar-width: none; /* Hide scrollbars for ultra clean mobile layout */
+        }
+        *::-webkit-scrollbar {
+          display: none;
+        }
+        body {
+          margin: 0;
+          padding: 0;
+          overflow-x: hidden;
+        }
+        .interactive-btn {
+          transition: all 0.2s ease-in-out;
+        }
+        .interactive-btn:hover {
+          transform: translateY(-1px);
+          filter: brightness(1.08);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .interactive-row {
+          transition: all 0.15s ease-in-out;
+        }
+        .interactive-row:hover {
+          background-color: #f4f4f2 !important;
+          transform: scale(1.005);
+        }
+        .avatar-container {
+          transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .avatar-container:hover {
+          transform: scale(1.08);
+        }
+      `}</style>
     </div>
   )
 }
@@ -589,7 +655,7 @@ function Header() {
         <span style={styles.logoText}>PRIMEA</span>
       </div>
       <div style={styles.navLinks}>
-        <Link href="/admin/dashboard" style={styles.navLink}>
+        <Link href="/admin/dashboard" style={styles.navLink} className="interactive-btn">
           Dashboard
         </Link>
       </div>
@@ -615,6 +681,7 @@ function TabButton({ active, onClick, children }: { active: boolean; onClick: ()
         ...styles.tabButton,
         ...(active ? styles.tabButtonActive : {}),
       }}
+      className="interactive-btn"
     >
       {children}
     </button>
@@ -641,91 +708,96 @@ function getStatusStyle(status: string) {
 }
 
 const styles: { [key: string]: React.CSSProperties } = {
-  page: { minHeight: '100vh', backgroundColor: '#f8f5f0', color: '#1a1a1a', fontFamily: 'Inter, system-ui, sans-serif', overflowX: 'hidden' },
-  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', backgroundColor: '#121212', color: '#ffffff' },
+  page: { minHeight: '100vh', backgroundColor: '#f8f5f0', color: '#1a1a1a', fontFamily: 'Inter, system-ui, sans-serif', width: '100%', maxWidth: '100vw', overflowX: 'hidden' },
+  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', backgroundColor: '#121212', color: '#ffffff', width: '100%', position: 'sticky', top: 0, zIndex: 100 },
   logoArea: { fontWeight: 800, fontSize: '18px', letterSpacing: '1px' },
   logoText: { color: '#ffffff' },
   navLinks: { display: 'flex', gap: '15px' },
-  navLink: { color: '#d4af37', textDecoration: 'none', fontSize: '14px', fontWeight: 500 },
-  container: { maxWidth: '1000px', margin: '0 auto', padding: '20px 15px', width: '100%', boxSizing: 'border-box' },
-  loadingCard: { textAlign: 'center' as const, padding: '40px 20px', backgroundColor: '#fff', borderRadius: '8px' },
-  loadingTitle: { fontSize: '18px', fontWeight: 600, marginTop: '15px' },
-  muted: { color: '#666', fontSize: '14px' },
-  emptyCard: { textAlign: 'center' as const, padding: '40px 20px', backgroundColor: '#fff', borderRadius: '8px' },
+  navLink: { color: '#d4af37', textDecoration: 'none', fontSize: '14px', fontWeight: 500, padding: '4px 8px', borderRadius: '4px' },
+  container: { maxWidth: '900px', margin: '0 auto', padding: '15px 12px', width: '100%', boxSizing: 'border-box' },
+  loadingCard: { textAlign: 'center' as const, padding: '40px 20px', backgroundColor: '#fff', borderRadius: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px' },
+  spinner: { width: '36px', height: '36px', border: '3px solid #f3f3f3', borderTop: '3px solid #d4af37', borderRadius: '50%', animation: 'spin 0.8s linear infinite' },
+  loadingTitle: { fontSize: '18px', fontWeight: 600, margin: 0 },
+  muted: { color: '#666', fontSize: '13px', margin: 0 },
+  emptyCard: { textAlign: 'center' as const, padding: '40px 20px', backgroundColor: '#fff', borderRadius: '12px' },
   emptyIcon: { fontSize: '32px', marginBottom: '10px' },
-  sectionTitle: { fontSize: '18px', fontWeight: 700, marginBottom: '4px' },
-  primaryButton: { backgroundColor: '#1a1a1a', color: '#fff', padding: '10px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '14px' },
-  profileCard: { backgroundColor: '#fff', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', marginBottom: '20px', width: '100%', boxSizing: 'border-box' },
-  cover: { backgroundColor: '#121212', height: '120px', position: 'relative', padding: '15px' },
+  sectionTitle: { fontSize: '17px', fontWeight: 700, margin: 0 },
+  primaryButton: { backgroundColor: '#1a1a1a', color: '#fff', padding: '10px 18px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '13px' },
+  profileCard: { backgroundColor: '#fff', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.06)', marginBottom: '16px', width: '100%' },
+  cover: { backgroundColor: '#121212', height: '110px', position: 'relative', padding: '12px' },
   coverActions: { display: 'flex', gap: '10px', justifyContent: 'flex-end' },
-  secondaryDarkButton: { backgroundColor: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' },
-  avatarWrapper: { position: 'absolute', bottom: '-30px', left: '20px' },
-  avatar: { width: '70px', height: '70px', borderRadius: '50%', backgroundColor: '#fff', border: '3px solid #fff', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', cursor: 'pointer' },
+  secondaryDarkButton: { backgroundColor: 'rgba(255,255,255,0.12)', color: '#fff', border: '1px solid rgba(255,255,255,0.25)', padding: '6px 14px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 500 },
+  avatarWrapper: { position: 'absolute', bottom: '-26px', left: '16px' },
+  avatar: { width: '68px', height: '68px', borderRadius: '50%', backgroundColor: '#fff', border: '3px solid #fff', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', cursor: 'pointer', boxShadow: '0 4px 10px rgba(0,0,0,0.15)' },
   avatarImage: { width: '100%', height: '100%', objectFit: 'cover' },
   avatarInitials: { fontSize: '20px', fontWeight: 700, color: '#1a1a1a' },
-  avatarOverlay: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(0,0,0,0.6)', color: '#fff', fontSize: '10px', textAlign: 'center', padding: '2px 0' },
-  profileSummary: { padding: '35px 20px 20px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap' as const, gap: '20px' },
-  identity: { flex: 1, minWidth: '220px' },
-  nameRow: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px', flexWrap: 'wrap' as const },
-  name: { fontSize: '22px', fontWeight: 700, wordBreak: 'break-word' },
+  avatarOverlay: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(0,0,0,0.65)', color: '#fff', fontSize: '10px', textAlign: 'center', padding: '3px 0', fontWeight: 600, letterSpacing: '0.5px' },
+  profileSummary: { padding: '32px 16px 16px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '15px' },
+  identity: { flex: 1, minWidth: '200px' },
+  nameRow: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' },
+  name: { fontSize: '20px', fontWeight: 700, margin: 0, wordBreak: 'break-word' },
   adminBadge: { backgroundColor: '#eef2ff', color: '#3730a3', padding: '2px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 700 },
-  email: { color: '#666', fontSize: '13px', marginBottom: '4px', wordBreak: 'break-all' },
-  lastUpdated: { color: '#888', fontSize: '12px' },
-  metricStrip: { display: 'flex', gap: '20px', width: '100%', justifyContent: 'flex-start', borderTop: '1px solid #f0f0f0', paddingTop: '15px', marginTop: '10px', flexWrap: 'wrap' as const },
+  email: { color: '#666', fontSize: '12px', marginBottom: '4px', wordBreak: 'break-all' },
+  lastUpdated: { color: '#888', fontSize: '11px' },
+  metricStrip: { display: 'flex', gap: '20px', width: '100%', justifyContent: 'flex-start', borderTop: '1px solid #f0f0f0', paddingTop: '12px', marginTop: '8px', flexWrap: 'wrap' },
   metricItem: { textAlign: 'left' as const },
-  metricValue: { display: 'block', fontSize: '16px', fontWeight: 700 },
-  metricLabel: { fontSize: '12px', color: '#666' },
-  tabs: { display: 'flex', borderTop: '1px solid #eaeaea', padding: '0 10px', overflowX: 'auto' as const, width: '100%', boxSizing: 'border-box' },
-  tabButton: { background: 'none', border: 'none', padding: '12px 15px', cursor: 'pointer', fontSize: '13px', fontWeight: 600, color: '#666', borderBottom: '2px solid transparent', whiteSpace: 'nowrap' as const },
-  tabButtonActive: { color: '#1a1a1a', borderBottomColor: '#d4af37' },
-  message: { padding: '12px 16px', borderRadius: '6px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '14px', wordBreak: 'break-word' },
+  metricValue: { display: 'block', fontSize: '15px', fontWeight: 700 },
+  metricLabel: { fontSize: '11px', color: '#666' },
+  tabs: { display: 'flex', borderTop: '1px solid #eaeaea', padding: '0 6px', overflowX: 'auto', width: '100%', backgroundColor: '#faf9f6' },
+  tabButton: { background: 'none', border: 'none', padding: '10px 14px', cursor: 'pointer', fontSize: '12px', fontWeight: 600, color: '#666', borderBottom: '2px solid transparent', whiteSpace: 'nowrap', flexShrink: 0 },
+  tabButtonActive: { color: '#1a1a1a', borderBottomColor: '#d4af37', backgroundColor: '#fff' },
+  message: { padding: '12px 16px', borderRadius: '8px', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', wordBreak: 'break-word', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' },
   errorMessage: { backgroundColor: '#f8d7da', color: '#721c24' },
   successMessage: { backgroundColor: '#d4edda', color: '#155724' },
   infoMessage: { backgroundColor: '#d1ecf1', color: '#0c5460' },
-  messageClose: { background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: 'inherit' },
-  contentGrid: { display: 'flex', flexDirection: 'column' as const, gap: '20px', width: '100%', boxSizing: 'border-box' },
-  mainCard: { backgroundColor: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', width: '100%', boxSizing: 'border-box' },
-  sectionHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px', flexWrap: 'wrap' as const, gap: '10px' },
-  bioBox: { backgroundColor: '#f9f9f9', padding: '15px', borderRadius: '6px', marginBottom: '25px', wordBreak: 'break-word' as const, overflowWrap: 'break-word' as const },
-  smallLabel: { fontSize: '11px', fontWeight: '700', color: '#888', letterSpacing: '0.5px', display: 'block', marginBottom: '6px' },
-  bio: { fontSize: '14px', lineHeight: 1.5, color: '#333', wordBreak: 'break-word' as const, overflowWrap: 'break-word' as const },
-  textLink: { color: '#d4af37', textDecoration: 'none', fontSize: '14px', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' },
-  orderList: { display: 'flex', flexDirection: 'column' as const, gap: '10px', width: '100%' },
-  orderRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', padding: '12px', backgroundColor: '#fff', border: '1px solid #eee', borderRadius: '6px', cursor: 'pointer', textAlign: 'left' as const, gap: '10px', boxSizing: 'border-box' },
-  orderMain: { display: 'flex', flexDirection: 'column' as const, gap: '2px', minWidth: 0, flex: 1 },
-  orderTitle: { fontSize: '13px', color: '#1a1a1a', whiteSpace: 'nowrap' as const, overflow: 'hidden', textOverflow: 'ellipsis' },
-  orderDate: { fontSize: '11px', color: '#888', whiteSpace: 'nowrap' as const, overflow: 'hidden', textOverflow: 'ellipsis' },
-  statusBadge: { padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 600, whiteSpace: 'nowrap' as const },
-  orderAmount: { fontSize: '13px', fontWeight: 700, whiteSpace: 'nowrap' as const },
-  infoCardGrid: { display: 'flex', flexDirection: 'column' as const, gap: '12px', marginTop: '10px', width: '100%' },
-  infoFieldCard: { backgroundColor: '#faf9f6', border: '1px solid #eee', borderRadius: '6px', padding: '12px 15px', display: 'flex', flexDirection: 'column' as const, gap: '4px', boxSizing: 'border-box', width: '100%' },
-  infoCardLabel: { fontSize: '11px', fontWeight: 700, color: '#777', textTransform: 'uppercase' as const, letterSpacing: '0.5px' },
-  infoCardValue: { fontSize: '14px', color: '#222', wordBreak: 'break-word' as const },
-  form: { display: 'flex', flexDirection: 'column' as const, gap: '15px', width: '100%' },
-  uploadRow: { display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' as const },
-  fileInput: { fontSize: '13px', width: '100%' },
-  helperText: { fontSize: '11px', color: '#888', marginTop: '4px', display: 'block' },
-  field: { display: 'flex', flexDirection: 'column' as const, gap: '6px', width: '100%' },
-  label: { fontSize: '13px', fontWeight: 600 },
-  input: { padding: '10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '14px', width: '100%', boxSizing: 'border-box' },
-  textarea: { padding: '10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '14px', resize: 'vertical' as const, width: '100%', boxSizing: 'border-box' },
-  actionRow: { display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px', flexWrap: 'wrap' as const },
-  secondaryButton: { backgroundColor: '#f0f0f0', color: '#333', padding: '10px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '14px' },
-  filterRow: { display: 'flex', gap: '10px', marginBottom: '15px', flexWrap: 'wrap' as const, width: '100%' },
-  searchInput: { flex: 1, minWidth: '180px', padding: '10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '14px', boxSizing: 'border-box' },
-  selectInput: { padding: '10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '14px', backgroundColor: '#fff', boxSizing: 'border-box' },
-  activityList: { display: 'flex', flexDirection: 'column' as const, gap: '10px', width: '100%' },
-  activityItem: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', backgroundColor: '#fcfcfc', border: '1px solid #eee', borderRadius: '6px', cursor: 'pointer', gap: '10px', boxSizing: 'border-box', width: '100%' },
-  activityTitle: { fontSize: '13px', display: 'block', marginBottom: '2px', wordBreak: 'break-word' },
-  activityDesc: { fontSize: '11px', color: '#666', wordBreak: 'break-word' },
-  activityTime: { fontSize: '11px', color: '#888', whiteSpace: 'nowrap' as const },
-  securityBox: { display: 'flex', flexDirection: 'column' as const, gap: '15px' },
-  securityMeta: { paddingBottom: '12px', borderBottom: '1px solid #eee' },
-  dangerButton: { backgroundColor: '#dc3545', color: '#fff', padding: '10px 16px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 600, alignSelf: 'flex-start', fontSize: '14px' },
-  modalOverlay: { position: 'fixed' as const, top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '15px', boxSizing: 'border-box' },
-  modalContent: { backgroundColor: '#fff', padding: '20px', borderRadius: '8px', width: '400px', maxWidth: '100%', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', boxSizing: 'border-box' },
-  modalHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' },
-  closeButton: { background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer' },
-  emptyStateContainer: { textAlign: 'center' as const, padding: '30px' },
-  emptyStateTitle: { fontSize: '15px', fontWeight: 600, marginBottom: '4px' },
+  messageClose: { background: 'none', border: 'none', fontSize: '16px', cursor: 'pointer', color: 'inherit' },
+  contentGrid: { display: 'flex', flexDirection: 'column', gap: '16px', width: '100%' },
+  mainCard: { backgroundColor: '#fff', padding: '16px', borderRadius: '12px', boxShadow: '0 4px 16px rgba(0,0,0,0.06)', width: '100%' },
+  sectionHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' },
+  bioBox: { backgroundColor: '#fcfbfa', padding: '14px', borderRadius: '8px', marginBottom: '20px', wordBreak: 'break-word', border: '1px solid #f0ede6' },
+  smallLabel: { fontSize: '10px', fontWeight: '700', color: '#888', letterSpacing: '0.5px', display: 'block', marginBottom: '4px' },
+  bio: { fontSize: '13px', lineHeight: 1.5, color: '#333', margin: 0, wordBreak: 'break-word' },
+  textLink: { color: '#d4af37', textDecoration: 'none', fontSize: '13px', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0 },
+  orderList: { display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' },
+  orderRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', padding: '10px 12px', backgroundColor: '#faf9f6', border: '1px solid #eee', borderRadius: '8px', cursor: 'pointer', textAlign: 'left', gap: '10px' },
+  orderMain: { display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0, flex: 1 },
+  orderTitle: { fontSize: '13px', color: '#1a1a1a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+  orderDate: { fontSize: '11px', color: '#888', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+  statusBadge: { padding: '3px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: 600, whiteSpace: 'nowrap' },
+  orderAmount: { fontSize: '13px', fontWeight: 700, whiteSpace: 'nowrap' },
+  infoCardGrid: { display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px', width: '100%' },
+  infoFieldCard: { backgroundColor: '#faf9f6', border: '1px solid #f0ede6', borderRadius: '8px', padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: '3px', width: '100%' },
+  infoCardLabel: { fontSize: '10px', fontWeight: 700, color: '#777', textTransform: 'uppercase', letterSpacing: '0.5px' },
+  infoCardValue: { fontSize: '13px', color: '#222', wordBreak: 'break-word', margin: 0 },
+  form: { display: 'flex', flexDirection: 'column', gap: '14px', width: '100%' },
+  uploadSectionContainer: { display: 'flex', alignItems: 'center', gap: '14px', backgroundColor: '#faf9f6', padding: '12px', borderRadius: '8px', border: '1px solid #f0ede6', flexWrap: 'wrap' },
+  uploadPreviewWrapper: { width: '56px', height: '56px', borderRadius: '50%', overflow: 'hidden', border: '2px solid #d4af37', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff', flexShrink: 0 },
+  previewImage: { width: '100%', height: '100%', objectFit: 'cover' },
+  previewPlaceholder: { fontSize: '16px', fontWeight: 700, color: '#333' },
+  uploadControls: { flex: 1, minWidth: '180px', display: 'flex', flexDirection: 'column', gap: '6px' },
+  customUploadButton: { backgroundColor: '#d4af37', color: '#111', padding: '8px 14px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: '12px' },
+  helperText: { fontSize: '10px', color: '#888', margin: 0 },
+  field: { display: 'flex', flexDirection: 'column', gap: '5px', width: '100%' },
+  label: { fontSize: '12px', fontWeight: 600, color: '#333' },
+  input: { padding: '9px 12px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '13px', width: '100%', outline: 'none' },
+  textarea: { padding: '9px 12px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '13px', resize: 'vertical', width: '100%', outline: 'none' },
+  actionRow: { display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '6px', flexWrap: 'wrap' },
+  secondaryButton: { backgroundColor: '#f0f0f0', color: '#333', padding: '9px 14px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '13px' },
+  filterRow: { display: 'flex', gap: '8px', marginBottom: '14px', flexWrap: 'wrap', width: '100%' },
+  searchInput: { flex: 1, minWidth: '160px', padding: '9px 12px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '13px', outline: 'none' },
+  selectInput: { padding: '9px 12px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '13px', backgroundColor: '#fff', outline: 'none' },
+  activityList: { display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' },
+  activityItem: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 12px', backgroundColor: '#fcfcfc', border: '1px solid #eee', borderRadius: '8px', cursor: 'pointer', gap: '10px', width: '100%' },
+  activityTitle: { fontSize: '12px', display: 'block', marginBottom: '2px', wordBreak: 'break-word' },
+  activityDesc: { fontSize: '10px', color: '#666', wordBreak: 'break-word', margin: 0 },
+  activityTime: { fontSize: '10px', color: '#888', whiteSpace: 'nowrap' },
+  securityBox: { display: 'flex', flexDirection: 'column', gap: '14px' },
+  securityMeta: { paddingBottom: '10px', borderBottom: '1px solid #eee' },
+  dangerButton: { backgroundColor: '#dc3545', color: '#fff', padding: '9px 14px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 600, alignSelf: 'flex-start', fontSize: '13px' },
+  modalOverlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '12px' },
+  modalContent: { backgroundColor: '#fff', padding: '18px', borderRadius: '12px', width: '380px', maxWidth: '100%', boxShadow: '0 8px 24px rgba(0,0,0,0.2)' },
+  modalHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' },
+  closeButton: { background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', padding: 0 },
+  emptyStateContainer: { textAlign: 'center', padding: '24px' },
+  emptyStateTitle: { fontSize: '14px', fontWeight: 600, marginBottom: '2px' },
 }
