@@ -64,6 +64,7 @@ export default function AdminDashboardPage() {
   
   const [selectedMonth, setSelectedMonth] = useState<number>(currentDate.getMonth())
   const [selectedYear, setSelectedYear] = useState<number>(currentDate.getFullYear())
+  const [chartMode, setChartMode] = useState<'daily' | 'weekly'>('daily')
 
   const [userEmail, setUserEmail] = useState<string>('Loading...')
   const [isAuthorized, setIsAuthorized] = useState<boolean>(false)
@@ -170,6 +171,7 @@ export default function AdminDashboardPage() {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
+      maximumFractionDigits: 0,
     }).format(amount)
   }
 
@@ -216,8 +218,33 @@ export default function AdminDashboardPage() {
   }
 
   const lowStockCount = stats.lowStockItems?.length || 0
-  const maxVal = Math.max(...dailyTrend.map(p => p.revenue), 1)
-  const chartWidth = Math.max(dailyTrend.length * 55, 600)
+
+  // Helper to compute weekly trend points from daily trend data
+  const getWeeklyTrend = () => {
+    const weeks: { label: string; revenue: number }[] = []
+    let currentWeekRevenue = 0
+    let weekCount = 1
+    
+    dailyTrend.forEach((p, idx) => {
+      currentWeekRevenue += p.revenue
+      if ((idx + 1) % 7 === 0 || idx === dailyTrend.length - 1) {
+        weeks.push({
+          label: `Week ${weekCount}`,
+          revenue: currentWeekRevenue
+        })
+        currentWeekRevenue = 0
+        weekCount++
+      }
+    })
+    return weeks
+  }
+
+  const activeTrend = chartMode === 'daily' ? dailyTrend : getWeeklyTrend()
+  const rawMaxVal = Math.max(...activeTrend.map(p => p.revenue), 10)
+  // Round up max value nicely for grid markers
+  const maxVal = Math.ceil(rawMaxVal / 50) * 50 || 100
+  const chartWidth = Math.max(activeTrend.length * 70, 650)
+  const chartHeight = 180
 
   return (
     <div className="admin-layout-wrapper">
@@ -651,53 +678,130 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* Real Daily Trend Graph up to Today */}
+        {/* Store Progress Graph with Grid lines and Value Identifiers */}
         <div className="analytics-grid">
           <div className="dashboard-section">
             <div className="section-title-wrap">
-              <h2 className="section-title">Daily Store Progress ({MONTH_NAMES[selectedMonth]} {selectedYear})</h2>
-              <span className="analysis-badge">Live Stream Active</span>
+              <h2 className="section-title">
+                {chartMode === 'daily' ? 'Daily' : 'Weekly'} Revenue Progress ({MONTH_NAMES[selectedMonth]} {selectedYear})
+              </h2>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', background: '#f4efe6', padding: '0.15rem', borderRadius: '6px', border: '1px solid #e8e2d9' }}>
+                  <button
+                    type="button"
+                    onClick={() => setChartMode('daily')}
+                    style={{
+                      background: chartMode === 'daily' ? '#1f1815' : 'transparent',
+                      color: chartMode === 'daily' ? '#ffffff' : '#8c827a',
+                      border: 'none',
+                      padding: '0.2rem 0.5rem',
+                      borderRadius: '4px',
+                      fontSize: '0.72rem',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    Daily
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setChartMode('weekly')}
+                    style={{
+                      background: chartMode === 'weekly' ? '#1f1815' : 'transparent',
+                      color: chartMode === 'weekly' ? '#ffffff' : '#8c827a',
+                      border: 'none',
+                      padding: '0.2rem 0.5rem',
+                      borderRadius: '4px',
+                      fontSize: '0.72rem',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    Weekly
+                  </button>
+                </div>
+                <span className="analysis-badge">Live Stream</span>
+              </div>
             </div>
             <p style={{ fontSize: '0.75rem', color: '#8c827a', margin: '0 0 0.5rem 0' }}>
-              Real daily sales tracked from day 1 up to the current date:
+              {chartMode === 'daily' ? 'Daily sales with value identifiers (smaller dots):' : 'Weekly aggregated sales (larger dots):'}
             </p>
             
             <div className="scrollable-graph-container">
-              {dailyTrend.length === 0 ? (
-                <div style={{ height: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8c827a', fontSize: '0.85rem' }}>
-                  No daily transaction data recorded for this period.
+              {activeTrend.length === 0 ? (
+                <div style={{ height: '190px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8c827a', fontSize: '0.85rem' }}>
+                  No transaction data recorded for this period.
                 </div>
               ) : (
-                <div style={{ width: `${chartWidth}px`, height: '160px', display: 'flex', alignItems: 'flex-end' }}>
-                  <svg viewBox={`0 0 ${chartWidth} 120`} style={{ width: '100%', height: '100%', overflow: 'visible' }}>
+                <div style={{ width: `${chartWidth}px`, height: '200px', position: 'relative' }}>
+                  <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} style={{ width: '100%', height: '100%', overflow: 'visible' }}>
+                    {/* Horizontal Grid Lines */}
+                    {[0, 0.25, 0.5, 0.75, 1].map((ratio, index) => {
+                      const yPos = 25 + ratio * 120
+                      const labelVal = Math.round(maxVal * (1 - ratio))
+                      return (
+                        <g key={index}>
+                          <line x1="45" y1={yPos} x2={chartWidth - 10} y2={yPos} stroke="#eee8e0" strokeWidth="1" strokeDasharray={index === 4 ? 'none' : '3,3'} />
+                          <text x="38" y={yPos + 4} textAnchor="end" fontSize="9" fill="#8c827a" fontWeight="500">
+                            ${labelVal}
+                          </text>
+                        </g>
+                      )
+                    })}
+
+                    {/* Vertical Axis Line */}
+                    <line x1="45" y1="25" x2="45" y2="145" stroke="#ded7cc" strokeWidth="1.5" />
+
+                    {/* Polyline Path */}
                     <polyline
                       fill="none"
                       stroke="#b06d50"
                       strokeWidth="2.5"
-                      points={dailyTrend.map((p, idx) => `${idx * 55 + 28},${110 - (p.revenue / maxVal) * 90}`).join(' ')}
+                      points={activeTrend.map((p, idx) => {
+                        const cx = 70 + idx * 70
+                        const cy = 145 - (p.revenue / maxVal) * 120
+                        return `${cx},${cy}`
+                      }).join(' ')}
                     />
-                    {dailyTrend.map((p, idx) => (
-                      <g key={idx}>
-                        <circle
-                          cx={idx * 55 + 28}
-                          cy={110 - (p.revenue / maxVal) * 90}
-                          r="3"
-                          fill="#ffffff"
-                          stroke="#b06d50"
-                          strokeWidth="2"
-                        />
-                        <text 
-                          x={idx * 55 + 28} 
-                          y="125" 
-                          textAnchor="middle" 
-                          fontSize="10" 
-                          fill="#8c827a"
-                          fontWeight="500"
-                        >
-                          {p.label}
-                        </text>
-                      </g>
-                    ))}
+
+                    {/* Data Points and Identifiers */}
+                    {activeTrend.map((p, idx) => {
+                      const cx = 70 + idx * 70
+                      const cy = 145 - (p.revenue / maxVal) * 120
+                      const dotRadius = chartMode === 'daily' ? 3 : 5
+                      return (
+                        <g key={idx}>
+                          {/* Value Identifier / Label above dot */}
+                          <text x={cx} y={cy - 9} textAnchor="middle" fontSize="9" fill="#3b332e" fontWeight="600">
+                            {p.revenue > 0 ? `$${p.revenue}` : '$0'}
+                          </text>
+
+                          {/* Data Point Dot */}
+                          <circle
+                            cx={cx}
+                            cy={cy}
+                            r={dotRadius}
+                            fill="#ffffff"
+                            stroke="#b06d50"
+                            strokeWidth="2"
+                          />
+
+                          {/* X-Axis Label */}
+                          <text 
+                            x={cx} 
+                            y="165" 
+                            textAnchor="middle" 
+                            fontSize="10" 
+                            fill="#8c827a"
+                            fontWeight="500"
+                          >
+                            {p.label}
+                          </text>
+                        </g>
+                      )
+                    })}
                   </svg>
                 </div>
               )}
@@ -709,7 +813,7 @@ export default function AdminDashboardPage() {
               <h2 className="section-title">Live Performance Analysis</h2>
             </div>
             <p style={{ fontSize: '0.85rem', color: '#3b332e', lineHeight: '1.5', margin: '0 0 0.75rem 0' }}>
-              The chart automatically bounds data up to the current calendar day, preventing future dates from showing prematurely.
+              The graph incorporates horizontal axis thresholds and individual monetary identifiers directly over each data point for instant auditing.
             </p>
             <div style={{ background: '#fcfbfa', padding: '0.6rem 0.75rem', borderRadius: '6px', border: '1px solid #f2ede4' }}>
               <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#8c827a', textTransform: 'uppercase' }}>Stream Status</span>
