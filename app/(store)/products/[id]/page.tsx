@@ -137,70 +137,114 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   return (
     <div className="product-details-page">
-      {/* Fixed Custom UserNav Header Container */}
-      <div
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 1000,
-          width: '100%',
-          backgroundColor: '#faf8f5',
-        }}
-      >
-        <UserNav />
-      </div>
+      {/* Edge-to-Edge Fixed Header */}
+      <header className="page-header">
+        <div className="nav-inner">
+          <UserNav />
+        </div>
+      </header>
 
       <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(12px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
         .product-details-page {
-          background-color: #faf8f5;
+          background: linear-gradient(135deg, #faf8f5 0%, #f3ede2 100%);
           min-height: 100vh;
           font-family: serif;
           color: #1f1815;
-          padding-top: 100px;
+          padding-top: 110px;
           padding-bottom: 5rem;
           position: relative;
+          animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
+
+        .page-header {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          z-index: 9999;
+          width: 100vw;
+          background: rgba(250, 248, 245, 0.85);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border-bottom: 1px solid rgba(232, 226, 217, 0.6);
+          margin: 0;
+          box-shadow: 0 4px 20px rgba(31, 24, 21, 0.02);
+        }
+
+        .nav-inner {
+          width: 100%;
+          max-width: 100%;
+          padding: 0.75rem 2rem;
+        }
+
         .container {
           max-width: 1100px;
           margin: 0 auto;
           padding: 0 1.5rem;
         }
+
         .product-grid {
           display: grid;
           grid-template-columns: 1fr;
           gap: 3rem;
           margin-bottom: 4rem;
         }
+
         @media (min-width: 768px) {
           .product-grid { grid-template-columns: 1fr 1fr; }
         }
+
         .image-container {
           position: relative;
           aspect-ratio: 1 / 1;
           width: 100%;
-          background-color: #f5f2ed;
-          border-radius: 12px;
+          background: linear-gradient(145deg, #f5f2ed, #ede6dc);
+          border-radius: 16px;
           overflow: hidden;
-          border: 1px solid #e8e2d9;
+          border: 1px solid rgba(232, 226, 217, 0.8);
           display: flex;
           align-items: center;
           justify-content: center;
+          box-shadow: 0 10px 30px -10px rgba(31, 24, 21, 0.05);
+          transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
+
+        .image-container:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 20px 40px -12px rgba(31, 24, 21, 0.1);
+        }
+
+        .image-container img {
+          transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .image-container:hover img {
+          transform: scale(1.03);
+        }
+
         .product-title {
           font-family: serif;
           font-size: 2.25rem;
           margin: 0 0 0.5rem 0;
           font-weight: 400;
+          letter-spacing: -0.01em;
         }
+
         .product-price {
           font-family: system-ui, -apple-system, sans-serif;
           font-size: 1.75rem;
           font-weight: 700;
-          color: #a03b1e;
+          background: linear-gradient(135deg, #a03b1e, #d9532b);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
           margin-bottom: 1.5rem;
         }
+
         .section-heading {
           font-family: serif;
           font-size: 1.75rem;
@@ -208,48 +252,73 @@ export default async function ProductPage({ params }: ProductPageProps) {
           border-bottom: 1px solid #e2dad0;
           padding-bottom: 0.75rem;
           font-weight: 400;
+          position: relative;
         }
+
+        .section-heading::after {
+          content: '';
+          position: absolute;
+          bottom: -1px;
+          left: 0;
+          width: 80px;
+          height: 2px;
+          background: linear-gradient(90deg, #a03b1e, #d9532b);
+        }
+
         .summary-card {
-          background: #ffffff;
-          border: 1px solid #e8e2d9;
-          border-radius: 12px;
-          padding: 1.5rem;
+          background: linear-gradient(145deg, #ffffff, #fcfbfa);
+          border: 1px solid rgba(232, 226, 217, 0.8);
+          border-radius: 16px;
+          padding: 2rem;
           margin-bottom: 2rem;
           display: grid;
           grid-template-columns: 1fr;
           gap: 1.5rem;
+          box-shadow: 0 10px 30px -10px rgba(31, 24, 21, 0.03);
+          transition: box-shadow 0.3s ease;
         }
+
+        .summary-card:hover {
+          box-shadow: 0 15px 35px -10px rgba(31, 24, 21, 0.06);
+        }
+
         @media (min-width: 768px) {
           .summary-card { grid-template-columns: 1fr 2fr; }
         }
+
         .overall-score {
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          background: #faf7f2;
-          border-radius: 8px;
-          padding: 1rem;
-          text-align: center;
-        }
-        .satisfaction-tag {
-          background: #e6f4ea;
-          color: #137333;
-          padding: 0.25rem 0.75rem;
+          background: linear-gradient(145deg, #faf7f2, #f2ece1);
           border-radius: 12px;
+          padding: 1.25rem;
+          text-align: center;
+          border: 1px solid rgba(232, 226, 217, 0.5);
+        }
+
+        .satisfaction-tag {
+          background: linear-gradient(135deg, #e6f4ea, #d0ede0);
+          color: #137333;
+          padding: 0.3rem 0.85rem;
+          border-radius: 20px;
           font-weight: 600;
           font-size: 0.85rem;
-          margin-top: 0.5rem;
+          margin-top: 0.75rem;
           font-family: system-ui, -apple-system, sans-serif;
+          box-shadow: 0 2px 6px rgba(19, 115, 51, 0.08);
         }
+
         .progress-bar-container {
           display: flex;
           align-items: center;
           gap: 0.75rem;
           font-size: 0.85rem;
-          margin-bottom: 0.35rem;
+          margin-bottom: 0.5rem;
           font-family: system-ui, -apple-system, sans-serif;
         }
+
         .progress-track {
           flex-grow: 1;
           height: 8px;
@@ -257,73 +326,106 @@ export default async function ProductPage({ params }: ProductPageProps) {
           border-radius: 4px;
           overflow: hidden;
         }
+
         .progress-fill {
           height: 100%;
-          background-color: #a03b1e;
+          background: linear-gradient(90deg, #a03b1e, #d9532b);
+          border-radius: 4px;
+          transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
         }
+
         .reviews-layout {
           display: grid;
           grid-template-columns: 1fr;
           gap: 2.5rem;
           margin-bottom: 4rem;
         }
+
         @media (min-width: 768px) {
           .reviews-layout { grid-template-columns: 1fr 2fr; }
         }
+
         .review-form {
           background: #ffffff;
-          padding: 1.5rem;
-          border-radius: 12px;
-          border: 1px solid #e8e2d9;
+          padding: 1.75rem;
+          border-radius: 16px;
+          border: 1px solid rgba(232, 226, 217, 0.8);
           display: flex;
           flex-direction: column;
-          gap: 1rem;
+          gap: 1.1rem;
           font-family: system-ui, -apple-system, sans-serif;
+          box-shadow: 0 10px 30px -10px rgba(31, 24, 21, 0.03);
         }
+
         .form-input, .form-textarea, .form-select {
           width: 100%;
-          padding: 0.65rem;
+          padding: 0.75rem 1rem;
           border: 1px solid #e2dad0;
-          border-radius: 6px;
+          border-radius: 8px;
           font-size: 0.9rem;
           outline: none;
+          background: #faf8f5;
+          transition: all 0.25s ease;
         }
+
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+          border-color: #a03b1e;
+          background: #ffffff;
+          box-shadow: 0 0 0 3px rgba(160, 59, 30, 0.1);
+        }
+
         .btn-submit {
-          background: #1f1815;
+          background: linear-gradient(135deg, #1f1815, #3b302a);
           color: #ffffff;
           border: none;
-          padding: 0.75rem;
-          border-radius: 6px;
+          padding: 0.85rem;
+          border-radius: 8px;
           font-weight: 600;
           cursor: pointer;
           letter-spacing: 0.05em;
           text-transform: uppercase;
           font-size: 0.8rem;
-          transition: background-color 0.2s ease;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          box-shadow: 0 4px 12px rgba(31, 24, 21, 0.15);
         }
+
         .btn-submit:hover {
-          background-color: #3b302a;
+          transform: translateY(-2px);
+          box-shadow: 0 8px 20px rgba(31, 24, 21, 0.25);
+          background: linear-gradient(135deg, #2a211d, #4a3c35);
         }
+
         .reviews-feed-container {
-          max-height: 480px;
+          max-height: 520px;
           overflow-y: auto;
           padding-right: 0.5rem;
         }
+
         .reviews-feed-container::-webkit-scrollbar {
           width: 6px;
         }
+
         .reviews-feed-container::-webkit-scrollbar-thumb {
           background-color: #d1c7bc;
           border-radius: 4px;
         }
+
         .review-card {
           background: #ffffff;
-          padding: 1.25rem;
-          border-radius: 10px;
-          border: 1px solid #e8e2d9;
+          padding: 1.5rem;
+          border-radius: 12px;
+          border: 1px solid rgba(232, 226, 217, 0.8);
           margin-bottom: 1rem;
           font-family: system-ui, -apple-system, sans-serif;
+          box-shadow: 0 4px 16px rgba(31, 24, 21, 0.02);
+          transition: transform 0.25s ease, box-shadow 0.25s ease;
         }
+
+        .review-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 24px rgba(31, 24, 21, 0.06);
+        }
+
         .review-proof-media {
           position: relative;
           width: 140px;
@@ -333,49 +435,73 @@ export default async function ProductPage({ params }: ProductPageProps) {
           margin-top: 0.75rem;
           border: 1px solid #e2dad0;
           background: #000;
+          transition: transform 0.25s ease;
         }
+
+        .review-proof-media:hover {
+          transform: scale(1.02);
+        }
+
         .verified-badge {
           background: #f0f7f4;
           color: #2e7d32;
           font-size: 0.75rem;
-          padding: 0.2rem 0.5rem;
-          border-radius: 4px;
+          padding: 0.2rem 0.6rem;
+          border-radius: 6px;
           font-weight: 600;
-          display: inline-block;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.25rem;
           margin-left: 0.5rem;
         }
+
         .purchase-warning {
           background: #ffffff;
-          border: 1px solid #e8e2d9;
-          padding: 1.5rem;
-          border-radius: 12px;
+          border: 1px solid rgba(232, 226, 217, 0.8);
+          padding: 2rem 1.5rem;
+          border-radius: 16px;
           text-align: center;
           color: #786e65;
           font-size: 0.9rem;
           font-family: system-ui, -apple-system, sans-serif;
+          box-shadow: 0 10px 30px -10px rgba(31, 24, 21, 0.03);
         }
+
         .related-grid {
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
           gap: 1.5rem;
         }
+
         .related-card {
           background: #ffffff;
-          border: 1px solid #e8e2d9;
-          border-radius: 12px;
+          border: 1px solid rgba(232, 226, 217, 0.8);
+          border-radius: 16px;
           overflow: hidden;
           text-decoration: none;
           color: inherit;
-          transition: transform 0.25s ease, box-shadow 0.25s ease;
+          transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+          box-shadow: 0 4px 16px rgba(31, 24, 21, 0.03);
         }
+
         .related-card:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 12px 24px -8px rgba(31, 24, 21, 0.1);
+          transform: translateY(-6px);
+          box-shadow: 0 16px 32px -8px rgba(31, 24, 21, 0.1);
         }
+
         .related-img {
           position: relative;
           height: 200px;
           background: #f5f2ed;
+          overflow: hidden;
+        }
+
+        .related-img img {
+          transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .related-card:hover .related-img img {
+          transform: scale(1.06);
         }
       `}</style>
 
@@ -489,7 +615,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 </form>
               ) : (
                 <div className="purchase-warning">
-                  <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>🔒</div>
+                  <div style={{ display: 'inline-flex', padding: '0.75rem', background: '#faf7f2', borderRadius: '50%', marginBottom: '0.75rem', border: '1px solid #e8e2d9' }}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a03b1e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                  </div>
                   <strong style={{ display: 'block', color: '#1f1815', marginBottom: '0.25rem' }}>
                     Verified Buyers Only
                   </strong>
@@ -508,7 +639,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                         <div>
                           <strong>{rev.user_name}</strong>
-                          <span className="verified-badge">✓ Verified Owner</span>
+                          <span className="verified-badge">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                              polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            Verified Owner
+                          </span>
                         </div>
                         <span style={{ color: '#a03b1e' }}>{'★'.repeat(rev.rating || 5)}</span>
                       </div>
@@ -538,7 +674,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   )
                 })
               ) : (
-                <div style={{ background: '#ffffff', padding: '2rem', borderRadius: '10px', textAlign: 'center', color: '#786e65', border: '1px solid #e8e2d9', fontFamily: 'system-ui' }}>
+                <div style={{ background: '#ffffff', padding: '2rem', borderRadius: '12px', textAlign: 'center', color: '#786e65', border: '1px solid rgba(232, 226, 217, 0.8)', fontFamily: 'system-ui', boxShadow: '0 4px 16px rgba(31, 24, 21, 0.02)' }}>
                   No customer reviews yet.
                 </div>
               )}
@@ -570,11 +706,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
                         </div>
                       )}
                     </div>
-                    <div style={{ padding: '1rem', fontFamily: 'system-ui' }}>
-                      <strong style={{ fontSize: '0.95rem', display: 'block', marginBottom: '0.25rem' }}>
+                    <div style={{ padding: '1.25rem', fontFamily: 'system-ui' }}>
+                      <strong style={{ fontSize: '0.95rem', display: 'block', marginBottom: '0.35rem', color: '#1f1815' }}>
                         {rel.title}
                       </strong>
-                      <span style={{ color: '#a03b1e', fontWeight: 700, fontSize: '0.9rem' }}>
+                      <span style={{ color: '#a03b1e', fontWeight: 700, fontSize: '0.95rem' }}>
                         ${Number(rel.price).toFixed(2)}
                       </span>
                     </div>
