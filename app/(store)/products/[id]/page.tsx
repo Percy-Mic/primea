@@ -137,12 +137,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   return (
     <div className="product-details-page">
-      {/* Static Header matching Primea Dark Theme */}
-      <header className="site-header">
-        <div className="container header-container">
-          <UserNav />
-        </div>
-      </header>
+      {/* UserNav renders its own proper navigation structure */}
+      <UserNav />
 
       <style>{`
         @keyframes fadeInUp {
@@ -164,20 +160,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
           position: relative;
           animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
-        .site-header {
-          width: 100%;
-          background: #14100e;
-          border-bottom: 1px solid #2a221e;
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-          margin-bottom: 3.5rem;
-        }
-        .header-container {
-          padding: 1rem 1.5rem;
-        }
         .container {
           max-width: 1100px;
           margin: 0 auto;
-          padding: 0 1.5rem;
+          padding: 2.5rem 1.5rem 0 1.5rem;
         }
         .product-grid {
           display: grid;
