@@ -675,8 +675,8 @@ function Header() {
         <span style={styles.logoText}>PRIMEA</span>
       </div>
       <div style={styles.navLinks}>
-        <Link href="/admin/dashboard" style={styles.navLink} className="interactive-btn">
-          Dashboard
+        <Link href="/admin/dashboard" style={styles.dashboardButton} className="interactive-btn">
+          <span style={{ fontSize: '16px', lineHeight: 1 }}>←</span> Return to Dashboard
         </Link>
       </div>
     </header>
@@ -728,6 +728,20 @@ function getStatusStyle(status: string) {
 }
 
 const styles: { [key: string]: React.CSSProperties } = {
+  dashboardButton: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    backgroundColor: 'rgba(212, 175, 55, 0.15)',
+    color: '#d4af37',
+    textDecoration: 'none',
+    fontSize: '13px',
+    fontWeight: 600,
+    padding: '6px 12px',
+    borderRadius: '6px',
+    border: '1px solid rgba(212, 175, 55, 0.3)',
+    transition: 'all 0.2s ease-in-out',
+  },
   page: { minHeight: '100vh', backgroundColor: '#f8f5f0', color: '#1a1a1a', fontFamily: 'Inter, system-ui, sans-serif', width: '100%', maxWidth: '100vw', overflowX: 'hidden' },
   header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', backgroundColor: '#121212', color: '#ffffff', width: '100%', position: 'sticky', top: 0, zIndex: 100 },
   logoArea: { fontWeight: 800, fontSize: '18px', letterSpacing: '1px' },
