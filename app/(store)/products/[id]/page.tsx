@@ -137,8 +137,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   return (
     <div className="product-details-page">
-      {/* UserNav renders its own proper navigation structure */}
-      <UserNav />
+      {/* Sticky wrapper keeping UserNav fixed at the top */}
+      <div className="sticky-nav-wrapper">
+        <UserNav />
+      </div>
 
       <style>{`
         @keyframes fadeInUp {
@@ -159,6 +161,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
           padding-bottom: 6rem;
           position: relative;
           animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .sticky-nav-wrapper {
+          position: sticky;
+          top: 0;
+          z-index: 50;
+          width: 100%;
         }
         .container {
           max-width: 1100px;
