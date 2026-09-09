@@ -137,22 +137,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   return (
     <div className="product-details-page">
-      {/* Fixed Custom UserNav Header Container */}
-      <div
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 1000,
-          width: '100%',
-          backgroundColor: '#faf8f5',
-          backdropFilter: 'blur(10px)',
-          borderBottom: '1px solid rgba(232, 226, 217, 0.6)',
-        }}
-      >
-        <UserNav />
-      </div>
+      {/* Fixed Sticky Navigation Header */}
+      <header className="site-header">
+        <div className="container header-container">
+          <UserNav />
+        </div>
+      </header>
 
       <style>{`
         @keyframes fadeInUp {
@@ -165,19 +155,30 @@ export default async function ProductPage({ params }: ProductPageProps) {
             transform: translateY(0);
           }
         }
-        @keyframes shimmer {
-          0% { background-position: -200% 0; }
-          100% { background-position: 200% 0; }
-        }
         .product-details-page {
           background: linear-gradient(135deg, #faf8f5 0%, #f3eee3 100%);
           min-height: 100vh;
           font-family: serif;
           color: #1f1815;
-          padding-top: 110px;
+          padding-top: 100px;
           padding-bottom: 6rem;
           position: relative;
           animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .site-header {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          z-index: 1000;
+          width: 100%;
+          background: rgba(250, 248, 245, 0.9);
+          backdrop-filter: blur(12px);
+          border-bottom: 1px solid rgba(232, 226, 217, 0.8);
+          box-shadow: 0 4px 20px rgba(31, 24, 21, 0.03);
+        }
+        .header-container {
+          padding: 0.75rem 1.5rem;
         }
         .container {
           max-width: 1100px;
@@ -255,9 +256,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
         @media (min-width: 768px) {
           .summary-card { grid-template-columns: 1fr 2fr; }
         }
-        .summary-card:hover {
-          border-color: rgba(160, 59, 30, 0.3);
-        }
         .overall-score {
           display: flex;
           flex-direction: column;
@@ -322,11 +320,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
           flex-direction: column;
           gap: 1.25rem;
           font-family: system-ui, -apple-system, sans-serif;
-          transition: all 0.3s ease;
-        }
-        .review-form:focus-within {
-          border-color: #a03b1e;
-          box-shadow: 0 20px 40px -10px rgba(160, 59, 30, 0.12);
         }
         .form-input, .form-textarea, .form-select {
           width: 100%;
@@ -362,9 +355,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
           transform: translateY(-2px);
           box-shadow: 0 8px 20px rgba(160, 59, 30, 0.3);
         }
-        .btn-submit:active {
-          transform: translateY(0);
-        }
         .reviews-feed-container {
           max-height: 520px;
           overflow-y: auto;
@@ -381,9 +371,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
           background-color: #c4b6a5;
           border-radius: 4px;
         }
-        .reviews-feed-container::-webkit-scrollbar-thumb:hover {
-          background-color: #a03b1e;
-        }
         .review-card {
           background: rgba(255, 255, 255, 0.9);
           backdrop-filter: blur(8px);
@@ -393,12 +380,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
           margin-bottom: 1.25rem;
           font-family: system-ui, -apple-system, sans-serif;
           box-shadow: 0 6px 20px rgba(31, 24, 21, 0.03);
-          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          transition: all 0.3s ease;
         }
         .review-card:hover {
           transform: translateY(-2px);
           border-color: rgba(160, 59, 30, 0.3);
-          box-shadow: 0 12px 30px rgba(31, 24, 21, 0.07);
         }
         .review-proof-media {
           position: relative;
@@ -409,10 +395,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
           margin-top: 1rem;
           border: 1px solid #e2dad0;
           background: #000;
-          transition: transform 0.3s ease;
-        }
-        .review-proof-media:hover {
-          transform: scale(1.03);
         }
         .verified-badge {
           background: linear-gradient(135deg, #f0f7f4, #e2f0ec);
@@ -421,9 +403,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
           padding: 0.25rem 0.6rem;
           border-radius: 6px;
           font-weight: 600;
-          display: inline-block;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.3rem;
           margin-left: 0.5rem;
-          box-shadow: 0 2px 4px rgba(46, 125, 50, 0.06);
         }
         .purchase-warning {
           background: rgba(255, 255, 255, 0.9);
@@ -462,11 +445,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
           background: linear-gradient(145deg, #f5f2ed, #eae3d5);
           overflow: hidden;
         }
-        .related-img img {
-          transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .related-card:hover .related-img img {
-          transform: scale(1.08);
+        .svg-icon {
+          width: 16px;
+          height: 16px;
+          display: inline-block;
+          vertical-align: middle;
+          fill: currentColor;
         }
       `}</style>
 
@@ -490,8 +474,15 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
             <h1 className="product-title">{product.title}</h1>
-            <div style={{ color: '#a03b1e', marginBottom: '1rem', fontFamily: 'system-ui', fontSize: '1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ letterSpacing: '0.1em' }}>★★★★★</span> <span style={{ color: '#1f1815' }}>{avgRating}</span> <span style={{ color: '#786e65', fontWeight: 400 }}>({reviewCount} reviews)</span>
+            <div style={{ color: '#a03b1e', marginBottom: '1rem', fontFamily: 'system-ui', fontSize: '1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              {/* SVG Star Icons */}
+              <svg className="svg-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              <svg className="svg-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              <svg className="svg-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              <svg className="svg-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              <svg className="svg-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              <span style={{ color: '#1f1815', marginLeft: '0.2rem' }}>{avgRating}</span> 
+              <span style={{ color: '#786e65', fontWeight: 400 }}>({reviewCount} reviews)</span>
             </div>
             <div className="product-price">${Number(product.price).toFixed(2)}</div>
             <p style={{ color: '#524842', lineHeight: 1.7, marginBottom: '2rem', fontFamily: 'system-ui', fontSize: '1rem' }}>
@@ -516,7 +507,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <div className="summary-card">
             <div className="overall-score">
               <div style={{ fontSize: '3.5rem', fontWeight: 800, lineHeight: 1, fontFamily: 'system-ui', background: 'linear-gradient(135deg, #1f1815, #a03b1e)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{avgRating}</div>
-              <div style={{ color: '#a03b1e', fontSize: '1.25rem', marginTop: '0.35rem', letterSpacing: '0.1em' }}>★★★★★</div>
+              <div style={{ color: '#a03b1e', fontSize: '1rem', marginTop: '0.5rem', display: 'flex', gap: '2px' }}>
+                <svg className="svg-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg className="svg-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg className="svg-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg className="svg-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                <svg className="svg-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              </div>
               <div style={{ fontSize: '0.85rem', color: '#786e65', marginTop: '0.35rem', fontFamily: 'system-ui' }}>
                 Based on {reviewCount} reviews
               </div>
@@ -547,11 +544,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   <input type="text" name="name" placeholder="Your Name" required className="form-input" />
 
                   <select name="rating" className="form-select" defaultValue="5">
-                    <option value="5">★★★★★ (5/5) - Very Satisfied</option>
-                    <option value="4">★★★★☆ (4/5) - Satisfied</option>
-                    <option value="3">★★★☆☆ (3/5) - Average</option>
-                    <option value="2">★★☆☆☆ (2/5) - Unsatisfied</option>
-                    <option value="1">★☆☆☆☆ (1/5) - Very Unsatisfied</option>
+                    <option value="5">5 Stars - Very Satisfied</option>
+                    <option value="4">4 Stars - Satisfied</option>
+                    <option value="3">3 Stars - Average</option>
+                    <option value="2">2 Stars - Unsatisfied</option>
+                    <option value="1">1 Star - Very Unsatisfied</option>
                   </select>
 
                   <textarea
@@ -580,7 +577,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 </form>
               ) : (
                 <div className="purchase-warning">
-                  <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🔒</div>
+                  <div style={{ marginBottom: '0.75rem', color: '#a03b1e', display: 'inline-block' }}>
+                    <svg style={{ width: '32px', height: '32px', fill: 'currentColor' }} viewBox="0 0 24 24">
+                      <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+                    </svg>
+                  </div>
                   <strong style={{ display: 'block', color: '#1f1815', marginBottom: '0.35rem', fontSize: '1.05rem' }}>
                     Verified Buyers Only
                   </strong>
@@ -599,9 +600,16 @@ export default async function ProductPage({ params }: ProductPageProps) {
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem', alignItems: 'center' }}>
                         <div>
                           <strong style={{ fontSize: '1rem', color: '#1f1815' }}>{rev.user_name}</strong>
-                          <span className="verified-badge">✓ Verified Owner</span>
+                          <span className="verified-badge">
+                            <svg style={{ width: '12px', height: '12px', fill: 'currentColor' }} viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                            Verified Owner
+                          </span>
                         </div>
-                        <span style={{ color: '#a03b1e', letterSpacing: '0.05em' }}>{'★'.repeat(rev.rating || 5)}</span>
+                        <span style={{ color: '#a03b1e', display: 'flex', gap: '1px' }}>
+                          {Array.from({ length: rev.rating || 5 }).map((_, i) => (
+                            <svg key={i} className="svg-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                          ))}
+                        </span>
                       </div>
                       <p style={{ margin: 0, color: '#524842', fontSize: '0.95rem', lineHeight: 1.6 }}>{rev.comment}</p>
 
@@ -629,7 +637,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   )
                 })
               ) : (
-                <div style={{ background: 'rgba(255, 255, 255, 0.9)', padding: '2.5rem', borderRadius: '12px', textAlign: 'center', color: '#786e65', border: '1px solid #e8e2d9', fontFamily: 'system-ui', boxShadow: '0 8px 25px rgba(31, 24, 21, 0.03)' }}>
+                <div style={{ background: 'rgba(255, 255, 255, 0.9)', padding: '2.5rem', borderRadius: '12px', textAlign: 'center', color: '#786e65', border: '1px solid #e8e2d9', fontFamily: 'system-ui' }}>
                   No customer reviews yet. Be the first to share your experience!
                 </div>
               )}
