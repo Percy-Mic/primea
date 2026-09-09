@@ -137,50 +137,48 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   return (
     <div className="product-details-page">
-      {/* Fixed wrapper locking UserNav at the top */}
-      <div className="fixed-nav-wrapper">
-        <UserNav />
-      </div>
+      {/* Refactored Header Container for proper fixed positioning and stacking */}
+      <header className="page-header">
+        <div className="nav-inner">
+          <UserNav />
+        </div>
+      </header>
 
       <style>{`
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
         .product-details-page {
-          background: linear-gradient(135deg, #faf8f5 0%, #f3eee3 100%);
+          background-color: #faf8f5;
           min-height: 100vh;
           font-family: serif;
           color: #1f1815;
-          padding-bottom: 6rem;
+          padding-top: 110px;
+          padding-bottom: 5rem;
           position: relative;
-          animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
-        .fixed-nav-wrapper {
+        .page-header {
           position: fixed;
           top: 0;
           left: 0;
-          z-index: 50;
+          right: 0;
+          z-index: 9999;
           width: 100%;
-          background: rgba(250, 248, 245, 0.95);
-          backdrop-filter: blur(8px);
+          background-color: #faf8f5;
+          border-bottom: 1px solid #e8e2d9;
+        }
+        .nav-inner {
+          max-width: 1100px;
+          margin: 0 auto;
+          padding: 0.75rem 1.5rem;
         }
         .container {
           max-width: 1100px;
           margin: 0 auto;
-          padding: 6rem 1.5rem 0 1.5rem; /* Added top padding to prevent content from hiding under the fixed header */
+          padding: 0 1.5rem;
         }
         .product-grid {
           display: grid;
           grid-template-columns: 1fr;
-          gap: 3.5rem;
-          margin-bottom: 5rem;
+          gap: 3rem;
+          margin-bottom: 4rem;
         }
         @media (min-width: 768px) {
           .product-grid { grid-template-columns: 1fr 1fr; }
@@ -189,59 +187,44 @@ export default async function ProductPage({ params }: ProductPageProps) {
           position: relative;
           aspect-ratio: 1 / 1;
           width: 100%;
-          background: linear-gradient(145deg, #f5f2ed, #eae3d5);
-          border-radius: 16px;
+          background-color: #f5f2ed;
+          border-radius: 12px;
           overflow: hidden;
-          border: 1px solid rgba(232, 226, 217, 0.8);
-          box-shadow: 0 20px 40px -15px rgba(60, 40, 25, 0.08);
+          border: 1px solid #e8e2d9;
           display: flex;
           align-items: center;
           justify-content: center;
-          transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
-        }
-        .image-container:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 30px 60px -20px rgba(160, 59, 30, 0.15);
         }
         .product-title {
           font-family: serif;
-          font-size: 2.5rem;
+          font-size: 2.25rem;
           margin: 0 0 0.5rem 0;
           font-weight: 400;
-          letter-spacing: -0.02em;
-          background: linear-gradient(120deg, #1f1815, #4d3a31);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
         }
         .product-price {
           font-family: system-ui, -apple-system, sans-serif;
-          font-size: 2rem;
+          font-size: 1.75rem;
           font-weight: 700;
-          background: linear-gradient(135deg, #a03b1e, #d9532b);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
+          color: #a03b1e;
           margin-bottom: 1.5rem;
         }
         .section-heading {
           font-family: serif;
-          font-size: 2rem;
-          margin-bottom: 2rem;
-          border-bottom: 2px solid;
-          border-image: linear-gradient(to right, #a03b1e, #e2dad0, transparent) 1;
+          font-size: 1.75rem;
+          margin-bottom: 1.5rem;
+          border-bottom: 1px solid #e2dad0;
           padding-bottom: 0.75rem;
           font-weight: 400;
         }
         .summary-card {
-          background: rgba(255, 255, 255, 0.85);
-          backdrop-filter: blur(12px);
-          border: 1px solid rgba(232, 226, 217, 0.9);
-          border-radius: 16px;
-          padding: 2rem;
-          margin-bottom: 2.5rem;
-          box-shadow: 0 12px 30px -10px rgba(31, 24, 21, 0.05);
+          background: #ffffff;
+          border: 1px solid #e8e2d9;
+          border-radius: 12px;
+          padding: 1.5rem;
+          margin-bottom: 2rem;
           display: grid;
           grid-template-columns: 1fr;
-          gap: 2rem;
+          gap: 1.5rem;
         }
         @media (min-width: 768px) {
           .summary-card { grid-template-columns: 1fr 2fr; }
@@ -251,20 +234,19 @@ export default async function ProductPage({ params }: ProductPageProps) {
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          background: linear-gradient(135deg, #faf7f2, #f2ece1);
-          border-radius: 12px;
-          padding: 1.5rem;
+          background: #faf7f2;
+          border-radius: 8px;
+          padding: 1rem;
           text-align: center;
-          border: 1px solid #e8e2d9;
         }
         .satisfaction-tag {
-          background: linear-gradient(135deg, #e6f4ea, #d1e7dd);
+          background: #e6f4ea;
           color: #137333;
-          padding: 0.35rem 0.85rem;
-          border-radius: 20px;
+          padding: 0.25rem 0.75rem;
+          border-radius: 12px;
           font-weight: 600;
           font-size: 0.85rem;
-          margin-top: 0.75rem;
+          margin-top: 0.5rem;
           font-family: system-ui, -apple-system, sans-serif;
         }
         .progress-bar-container {
@@ -272,20 +254,19 @@ export default async function ProductPage({ params }: ProductPageProps) {
           align-items: center;
           gap: 0.75rem;
           font-size: 0.85rem;
-          margin-bottom: 0.5rem;
+          margin-bottom: 0.35rem;
           font-family: system-ui, -apple-system, sans-serif;
         }
         .progress-track {
           flex-grow: 1;
-          height: 10px;
+          height: 8px;
           background-color: #f0eae1;
-          border-radius: 6px;
+          border-radius: 4px;
           overflow: hidden;
         }
         .progress-fill {
           height: 100%;
-          background: linear-gradient(90deg, #a03b1e, #d9532b);
-          border-radius: 6px;
+          background-color: #a03b1e;
         }
         .reviews-layout {
           display: grid;
@@ -297,49 +278,41 @@ export default async function ProductPage({ params }: ProductPageProps) {
           .reviews-layout { grid-template-columns: 1fr 2fr; }
         }
         .review-form {
-          background: rgba(255, 255, 255, 0.9);
-          backdrop-filter: blur(10px);
-          padding: 2rem;
-          border-radius: 16px;
+          background: #ffffff;
+          padding: 1.5rem;
+          border-radius: 12px;
           border: 1px solid #e8e2d9;
-          box-shadow: 0 15px 35px -10px rgba(31, 24, 21, 0.06);
           display: flex;
           flex-direction: column;
-          gap: 1.25rem;
+          gap: 1rem;
           font-family: system-ui, -apple-system, sans-serif;
         }
         .form-input, .form-textarea, .form-select {
           width: 100%;
-          padding: 0.75rem 1rem;
+          padding: 0.65rem;
           border: 1px solid #e2dad0;
-          border-radius: 8px;
-          font-size: 0.95rem;
+          border-radius: 6px;
+          font-size: 0.9rem;
           outline: none;
-          background: #faf8f5;
-        }
-        .form-input:focus, .form-textarea:focus, .form-select:focus {
-          border-color: #a03b1e;
-          background: #ffffff;
         }
         .btn-submit {
-          background: linear-gradient(135deg, #1f1815, #3b302a);
+          background: #1f1815;
           color: #ffffff;
           border: none;
-          padding: 0.85rem;
-          border-radius: 8px;
+          padding: 0.75rem;
+          border-radius: 6px;
           font-weight: 600;
           cursor: pointer;
           letter-spacing: 0.05em;
           text-transform: uppercase;
-          font-size: 0.85rem;
-          transition: all 0.3s ease;
+          font-size: 0.8rem;
+          transition: background-color 0.2s ease;
         }
         .btn-submit:hover {
-          background: linear-gradient(135deg, #a03b1e, #d9532b);
-          transform: translateY(-2px);
+          background-color: #3b302a;
         }
         .reviews-feed-container {
-          max-height: 520px;
+          max-height: 480px;
           overflow-y: auto;
           padding-right: 0.5rem;
         }
@@ -347,80 +320,69 @@ export default async function ProductPage({ params }: ProductPageProps) {
           width: 6px;
         }
         .reviews-feed-container::-webkit-scrollbar-thumb {
-          background-color: #c4b6a5;
+          background-color: #d1c7bc;
           border-radius: 4px;
         }
         .review-card {
-          background: rgba(255, 255, 255, 0.9);
-          padding: 1.5rem;
-          border-radius: 12px;
+          background: #ffffff;
+          padding: 1.25rem;
+          border-radius: 10px;
           border: 1px solid #e8e2d9;
-          margin-bottom: 1.25rem;
+          margin-bottom: 1rem;
           font-family: system-ui, -apple-system, sans-serif;
-          box-shadow: 0 6px 20px rgba(31, 24, 21, 0.03);
         }
         .review-proof-media {
           position: relative;
-          width: 150px;
-          height: 110px;
-          border-radius: 10px;
+          width: 140px;
+          height: 100px;
+          border-radius: 8px;
           overflow: hidden;
-          margin-top: 1rem;
+          margin-top: 0.75rem;
           border: 1px solid #e2dad0;
           background: #000;
         }
         .verified-badge {
-          background: linear-gradient(135deg, #f0f7f4, #e2f0ec);
+          background: #f0f7f4;
           color: #2e7d32;
           font-size: 0.75rem;
-          padding: 0.25rem 0.6rem;
-          border-radius: 6px;
+          padding: 0.2rem 0.5rem;
+          border-radius: 4px;
           font-weight: 600;
-          display: inline-flex;
-          align-items: center;
-          gap: 0.3rem;
+          display: inline-block;
           margin-left: 0.5rem;
         }
         .purchase-warning {
-          background: rgba(255, 255, 255, 0.9);
+          background: #ffffff;
           border: 1px solid #e8e2d9;
-          padding: 2rem;
-          border-radius: 16px;
+          padding: 1.5rem;
+          border-radius: 12px;
           text-align: center;
           color: #786e65;
-          font-size: 0.95rem;
+          font-size: 0.9rem;
           font-family: system-ui, -apple-system, sans-serif;
         }
         .related-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-          gap: 2rem;
+          grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+          gap: 1.5rem;
         }
         .related-card {
-          background: rgba(255, 255, 255, 0.9);
+          background: #ffffff;
           border: 1px solid #e8e2d9;
-          border-radius: 16px;
+          border-radius: 12px;
           overflow: hidden;
           text-decoration: none;
           color: inherit;
-          transition: all 0.4s ease;
+          transition: transform 0.25s ease, box-shadow 0.25s ease;
         }
         .related-card:hover {
-          transform: translateY(-6px);
-          border-color: rgba(160, 59, 30, 0.4);
+          transform: translateY(-4px);
+          box-shadow: 0 12px 24px -8px rgba(31, 24, 21, 0.1);
         }
         .related-img {
           position: relative;
-          height: 220px;
-          background: linear-gradient(145deg, #f5f2ed, #eae3d5);
-          overflow: hidden;
-        }
-        .svg-icon {
-          width: 16px;
-          height: 16px;
-          display: inline-block;
-          vertical-align: middle;
-          fill: currentColor;
+          height: 200px;
+          background: #f5f2ed;
         }
       `}</style>
 
@@ -444,17 +406,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
             <h1 className="product-title">{product.title}</h1>
-            <div style={{ color: '#a03b1e', marginBottom: '1rem', fontFamily: 'system-ui', fontSize: '1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <svg className="svg-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-              <svg className="svg-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-              <svg className="svg-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-              <svg className="svg-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-              <svg className="svg-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-              <span style={{ color: '#1f1815', marginLeft: '0.2rem' }}>{avgRating}</span> 
-              <span style={{ color: '#786e65', fontWeight: 400 }}>({reviewCount} reviews)</span>
+            <div style={{ color: '#a03b1e', marginBottom: '1rem', fontFamily: 'system-ui', fontSize: '0.95rem' }}>
+              ★ {avgRating} ({reviewCount} reviews)
             </div>
             <div className="product-price">${Number(product.price).toFixed(2)}</div>
-            <p style={{ color: '#524842', lineHeight: 1.7, marginBottom: '2rem', fontFamily: 'system-ui', fontSize: '1rem' }}>
+            <p style={{ color: '#524842', lineHeight: 1.6, marginBottom: '1.5rem', fontFamily: 'system-ui', fontSize: '0.95rem' }}>
               {product.description || 'Elevate your style with this high-quality artisanal product.'}
             </p>
 
@@ -475,15 +431,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
           <div className="summary-card">
             <div className="overall-score">
-              <div style={{ fontSize: '3.5rem', fontWeight: 800, lineHeight: 1, fontFamily: 'system-ui', background: 'linear-gradient(135deg, #1f1815, #a03b1e)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{avgRating}</div>
-              <div style={{ color: '#a03b1e', fontSize: '1rem', marginTop: '0.5rem', display: 'flex', gap: '2px' }}>
-                <svg className="svg-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                <svg className="svg-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                <svg className="svg-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                <svg className="svg-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                <svg className="svg-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-              </div>
-              <div style={{ fontSize: '0.85rem', color: '#786e65', marginTop: '0.35rem', fontFamily: 'system-ui' }}>
+              <div style={{ fontSize: '3rem', fontWeight: 800, lineHeight: 1, fontFamily: 'system-ui' }}>{avgRating}</div>
+              <div style={{ color: '#a03b1e', fontSize: '1.25rem', marginTop: '0.25rem' }}>★★★★★</div>
+              <div style={{ fontSize: '0.85rem', color: '#786e65', marginTop: '0.25rem', fontFamily: 'system-ui' }}>
                 Based on {reviewCount} reviews
               </div>
               <span className="satisfaction-tag">
@@ -492,14 +442,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </div>
 
             <div>
-              <h4 style={{ margin: '0 0 1rem 0', fontSize: '1rem', fontFamily: 'system-ui', fontWeight: 600 }}>Rating Breakdown</h4>
+              <h4 style={{ margin: '0 0 0.75rem 0', fontSize: '0.95rem', fontFamily: 'system-ui' }}>Rating Breakdown</h4>
               {starCounts.map((s) => (
                 <div key={s.stars} className="progress-bar-container">
-                  <span style={{ width: '55px', color: '#786e65', fontWeight: 500 }}>{s.stars} stars</span>
+                  <span style={{ width: '50px', color: '#786e65' }}>{s.stars} stars</span>
                   <div className="progress-track">
                     <div className="progress-fill" style={{ width: `${s.percentage}%` }} />
                   </div>
-                  <span style={{ width: '40px', textAlign: 'right', color: '#786e65', fontWeight: 500 }}>{s.percentage}%</span>
+                  <span style={{ width: '35px', textAlign: 'right', color: '#786e65' }}>{s.percentage}%</span>
                 </div>
               ))}
             </div>
@@ -509,15 +459,15 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <div>
               {hasPurchased ? (
                 <form action={submitReview} encType="multipart/form-data" className="review-form">
-                  <h3 style={{ margin: 0, fontSize: '1.25rem', fontFamily: 'serif', fontWeight: 400, color: '#1f1815' }}>Write a Review</h3>
+                  <h3 style={{ margin: 0, fontSize: '1.1rem', fontFamily: 'serif', fontWeight: 400 }}>Write a Review</h3>
                   <input type="text" name="name" placeholder="Your Name" required className="form-input" />
 
                   <select name="rating" className="form-select" defaultValue="5">
-                    <option value="5">5 Stars - Very Satisfied</option>
-                    <option value="4">4 Stars - Satisfied</option>
-                    <option value="3">3 Stars - Average</option>
-                    <option value="2">2 Stars - Unsatisfied</option>
-                    <option value="1">1 Star - Very Unsatisfied</option>
+                    <option value="5">★★★★★ (5/5) - Very Satisfied</option>
+                    <option value="4">★★★★☆ (4/5) - Satisfied</option>
+                    <option value="3">★★★☆☆ (3/5) - Average</option>
+                    <option value="2">★★☆☆☆ (2/5) - Unsatisfied</option>
+                    <option value="1">★☆☆☆☆ (1/5) - Very Unsatisfied</option>
                   </select>
 
                   <textarea
@@ -529,7 +479,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   />
 
                   <div>
-                    <label style={{ fontSize: '0.85rem', fontWeight: 600, display: 'block', marginBottom: '0.4rem', color: '#524842' }}>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 600, display: 'block', marginBottom: '0.35rem' }}>
                       Attach Photo or Video Proof (Optional)
                     </label>
                     <input 
@@ -546,12 +496,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 </form>
               ) : (
                 <div className="purchase-warning">
-                  <div style={{ marginBottom: '0.75rem', color: '#a03b1e', display: 'inline-block' }}>
-                    <svg style={{ width: '32px', height: '32px', fill: 'currentColor' }} viewBox="0 0 24 24">
-                      <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
-                    </svg>
-                  </div>
-                  <strong style={{ display: 'block', color: '#1f1815', marginBottom: '0.35rem', fontSize: '1.05rem' }}>
+                  <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>🔒</div>
+                  <strong style={{ display: 'block', color: '#1f1815', marginBottom: '0.25rem' }}>
                     Verified Buyers Only
                   </strong>
                   You must complete a purchase of this product before writing a review.
@@ -566,21 +512,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
                   return (
                     <div key={rev.id} className="review-card">
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                         <div>
-                          <strong style={{ fontSize: '1rem', color: '#1f1815' }}>{rev.user_name}</strong>
-                          <span className="verified-badge">
-                            <svg style={{ width: '12px', height: '12px', fill: 'currentColor' }} viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-                            Verified Owner
-                          </span>
+                          <strong>{rev.user_name}</strong>
+                          <span className="verified-badge">✓ Verified Owner</span>
                         </div>
-                        <span style={{ color: '#a03b1e', display: 'flex', gap: '1px' }}>
-                          {Array.from({ length: rev.rating || 5 }).map((_, i) => (
-                            <svg key={i} className="svg-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                          ))}
-                        </span>
+                        <span style={{ color: '#a03b1e' }}>{'★'.repeat(rev.rating || 5)}</span>
                       </div>
-                      <p style={{ margin: 0, color: '#524842', fontSize: '0.95rem', lineHeight: 1.6 }}>{rev.comment}</p>
+                      <p style={{ margin: 0, color: '#524842', fontSize: '0.9rem' }}>{rev.comment}</p>
 
                       {rev.image_url && (
                         <div className="review-proof-media">
@@ -606,8 +545,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   )
                 })
               ) : (
-                <div style={{ background: 'rgba(255, 255, 255, 0.9)', padding: '2.5rem', borderRadius: '12px', textAlign: 'center', color: '#786e65', border: '1px solid #e8e2d9', fontFamily: 'system-ui' }}>
-                  No customer reviews yet. Be the first to share your experience!
+                <div style={{ background: '#ffffff', padding: '2rem', borderRadius: '10px', textAlign: 'center', color: '#786e65', border: '1px solid #e8e2d9', fontFamily: 'system-ui' }}>
+                  No customer reviews yet.
                 </div>
               )}
             </div>
@@ -638,11 +577,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
                         </div>
                       )}
                     </div>
-                    <div style={{ padding: '1.25rem', fontFamily: 'system-ui' }}>
-                      <strong style={{ fontSize: '1rem', display: 'block', marginBottom: '0.35rem', color: '#1f1815' }}>
+                    <div style={{ padding: '1rem', fontFamily: 'system-ui' }}>
+                      <strong style={{ fontSize: '0.95rem', display: 'block', marginBottom: '0.25rem' }}>
                         {rel.title}
                       </strong>
-                      <span style={{ color: '#a03b1e', fontWeight: 700, fontSize: '1rem' }}>
+                      <span style={{ color: '#a03b1e', fontWeight: 700, fontSize: '0.9rem' }}>
                         ${Number(rel.price).toFixed(2)}
                       </span>
                     </div>
