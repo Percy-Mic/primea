@@ -141,7 +141,7 @@ export default function LoggedActionPage() {
       sender_id: user.id,
       sender_name: profile?.full_name || user.email,
       sender_avatar: profile?.avatar_url || '',
-      message: newMessage.trim() || (uploadedAudioUrl ? '🎤 Voice message' : ''),
+      message: newMessage.trim(),
       audio_url: uploadedAudioUrl,
       audio_duration: duration,
     }])
@@ -157,7 +157,7 @@ export default function LoggedActionPage() {
     <div style={{ maxWidth: '900px', margin: '2rem auto', padding: '1rem', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <h1 style={{ margin: 0, fontSize: '1.4rem', color: '#0f172a' }}>Admin Hub & Group Chat</h1>
-        <Link href="/" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 500, fontSize: '0.9rem' }}>← Back Home</Link>
+        <Link href="/admin/dashboard" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 500, fontSize: '0.9rem' }}>← Back to Dashboard</Link>
       </div>
 
       <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
@@ -196,7 +196,7 @@ export default function LoggedActionPage() {
                       {msg.message && <div style={{ fontSize: '0.9rem', wordBreak: 'break-word', lineHeight: 1.4 }}>{msg.message}</div>}
 
                       {msg.audio_url && (
-                        <div style={{ marginTop: msg.message !== '🎤 Voice message' ? '0.5rem' : 0 }}>
+                        <div style={{ marginTop: msg.message ? '0.5rem' : 0 }}>
                           <audio controls src={msg.audio_url} style={{ height: '32px', width: '100%', maxWidth: '210px', accentColor: isMe ? '#fff' : '#2563eb' }} />
                         </div>
                       )}
@@ -235,7 +235,7 @@ export default function LoggedActionPage() {
               <textarea
                 ref={textareaRef}
                 rows={1}
-                placeholder="Type a message to admins..."
+                placeholder="Type a message..."
                 value={newMessage}
                 onChange={handleInputResize}
                 onKeyDown={(e) => {
@@ -255,16 +255,16 @@ export default function LoggedActionPage() {
                 title="Record voice note"
                 style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', color: '#475569', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
               >
-                🎤
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path><path d="M19 10v1a7 7 0 0 1-14 0v-1"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>
               </button>
             )}
 
             <button 
               type="submit" 
               disabled={!newMessage.trim() && !audioBlob}
-              style={{ background: (!newMessage.trim() && !audioBlob) ? '#93c5fd' : '#2563eb', color: '#fff', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, cursor: (!newMessage.trim() && !audioBlob) ? 'default' : 'pointer', flexShrink: 0 }}
+              style={{ background: (!newMessage.trim() && !audioBlob) ? '#93c5fd' : '#2563eb', color: '#fff', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: (!newMessage.trim() && !audioBlob) ? 'default' : 'pointer', flexShrink: 0 }}
             >
-              ➤
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
             </button>
           </form>
         </div>
