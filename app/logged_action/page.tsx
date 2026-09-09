@@ -17,6 +17,11 @@ export default function LoggedActionPage() {
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null)
   const [audioUrlPreview, setAudioUrlPreview] = useState<string | null>(null)
 
+  // Active playing audio state for custom Messenger player
+  const [playingAudioId, setPlayingAudioId] = useState<string | null>(null)
+  const [playbackProgress, setPlaybackProgress] = useState<{ [key: string]: number }>({})
+  const activeAudioRef = useRef<HTMLAudioElement | null>(null)
+
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const audioChunksRef = useRef<Blob[]>([])
   const timerRef = useRef<NodeJS.Timeout | null>(null)
@@ -24,6 +29,7 @@ export default function LoggedActionPage() {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const supabase = createClient()
+  const MIN_MESSAGE_LENGTH = 2
 
   useEffect(() => {
     const init = async () => {
@@ -114,9 +120,49 @@ export default function LoggedActionPage() {
     if (timerRef.current) clearInterval(timerRef.current)
   }
 
+  // Custom Messenger Audio Player Handler
+  const togglePlayAudio = (id: string, url: string) => {
+    if (playingAudioId === id) {
+      if (activeAudioRef.current) {
+        activeAudioRef.current.pause()
+        setPlayingAudioId(null)
+      }
+    } else {
+      if (activeAudioRef.current) {
+        activeAudioRef.current.pause()
+      }
+      const audio = new Audio(url)
+      activeAudioRef.current = audio
+      setPlayingAudioId(id)
+
+      audio.ontimeupdate = () => {
+        if (audio.duration) {
+          setPlaybackProgress(prev => ({
+            ...prev,
+            [id]: (audio.currentTime / audio.duration) * 100
+          }))
+        }
+      }
+
+      audio.onended = () => {
+        setPlayingAudioId(null)
+        setPlaybackProgress(prev => ({ ...prev, [id]: 0 }))
+      }
+
+      audio.play().catch(() => setPlayingAudioId(null))
+    }
+  }
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault()
-    if ((!newMessage.trim() && !audioBlob) || !user) return
+    const trimmedMessage = newMessage.trim()
+    
+    if (!audioBlob && trimmedMessage.length > 0 && trimmedMessage.length < MIN_MESSAGE_LENGTH) {
+      alert(`Message must be at least ${MIN_MESSAGE_LENGTH} characters long.`)
+      return
+    }
+
+    if ((!trimmedMessage && !audioBlob) || !user) return
 
     let uploadedAudioUrl = null
     let duration = recordingTime
@@ -141,7 +187,7 @@ export default function LoggedActionPage() {
       sender_id: user.id,
       sender_name: profile?.full_name || user.email,
       sender_avatar: profile?.avatar_url || '',
-      message: newMessage.trim(),
+      message: trimmedMessage,
       audio_url: uploadedAudioUrl,
       audio_duration: duration,
     }])
@@ -155,7 +201,24 @@ export default function LoggedActionPage() {
 
   return (
     <div style={{ maxWidth: '900px', margin: '2rem auto', padding: '1rem', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+      <style>{`
+        @keyframes wavePulse {
+          0%, 100% { height: 6px; }
+          50% { height: 24px; }
+        }
+        .wave-bar {
+          width: 3px;
+          background-color: currentColor;
+          border-radius: 2px;
+          animation: wavePulse 1.2s ease-in-out infinite;
+        }
+        .wave-bar:nth-child(2) { animation-delay: 0.1s; }
+        .wave-bar:nth-child(3) { animation-delay: 0.2s; }
+        .wave-bar:nth-child(4) { animation-delay: 0.3s; }
+        .wave-bar:nth-child(5) { animation-delay: 0.4s; }
+      `}</style>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
         <h1 style={{ margin: 0, fontSize: '1.4rem', color: '#0f172a' }}>Admin Hub & Group Chat</h1>
         <Link href="/admin/dashboard" style={{ color: '#2563eb', textDecoration: 'none', fontWeight: 500, fontSize: '0.9rem' }}>← Back to Dashboard</Link>
       </div>
@@ -175,29 +238,63 @@ export default function LoggedActionPage() {
             ) : (
               messages.map((msg) => {
                 const isMe = msg.sender_id === user?.id
+                const isPlaying = playingAudioId === msg.id
+                const progress = playbackProgress[msg.id] || 0
+
                 return (
                   <div key={msg.id} style={{ display: 'flex', justifyContent: isMe ? 'flex-end' : 'flex-start', alignItems: 'flex-end', gap: '0.5rem' }}>
                     
                     {/* Other user avatar */}
                     {!isMe && (
                       msg.sender_avatar ? (
-                        <img src={msg.sender_avatar} alt="" style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover', marginBottom: '2px' }} />
+                        <img src={msg.sender_avatar} alt="" style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover', marginBottom: '2px', flexShrink: 0 }} />
                       ) : (
-                        <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#cbd5e1', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 700, color: '#fff', marginBottom: '2px' }}>
+                        <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#cbd5e1', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 700, color: '#fff', marginBottom: '2px', flexShrink: 0 }}>
                           {msg.sender_name?.[0] || 'U'}
                         </div>
                       )
                     )}
 
-                    <div style={{ maxWidth: '75%', background: isMe ? '#2563eb' : '#fff', color: isMe ? '#fff' : '#1e293b', padding: '0.65rem 0.9rem', borderRadius: isMe ? '18px 18px 4px 18px' : '18px 18px 18px 4px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', border: isMe ? 'none' : '1px solid #e2e8f0' }}>
+                    <div style={{ maxWidth: '80%', width: '100%', sm: { maxWidth: '70%' }, background: isMe ? '#2563eb' : '#fff', color: isMe ? '#fff' : '#1e293b', padding: '0.65rem 0.9rem', borderRadius: isMe ? '18px 18px 4px 18px' : '18px 18px 18px 4px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', border: isMe ? 'none' : '1px solid #e2e8f0' }}>
                       
                       {!isMe && <div style={{ fontWeight: 600, fontSize: '0.75rem', color: '#2563eb', marginBottom: '0.2rem' }}>{msg.sender_name}</div>}
 
                       {msg.message && <div style={{ fontSize: '0.9rem', wordBreak: 'break-word', lineHeight: 1.4 }}>{msg.message}</div>}
 
+                      {/* Messenger Style Audio Player */}
                       {msg.audio_url && (
-                        <div style={{ marginTop: msg.message ? '0.5rem' : 0 }}>
-                          <audio controls src={msg.audio_url} style={{ height: '32px', width: '100%', maxWidth: '210px', accentColor: isMe ? '#fff' : '#2563eb' }} />
+                        <div style={{ marginTop: msg.message ? '0.5rem' : 0, display: 'flex', alignItems: 'center', gap: '0.75rem', background: isMe ? 'rgba(0,0,0,0.1)' : '#f1f5f9', padding: '0.4rem 0.75rem', borderRadius: '20px', minWidth: '180px' }}>
+                          <button
+                            type="button"
+                            onClick={() => togglePlayAudio(msg.id, msg.audio_url)}
+                            style={{ background: isMe ? '#fff' : '#2563eb', color: isMe ? '#2563eb' : '#fff', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
+                          >
+                            {isPlaying ? (
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                            ) : (
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                            )}
+                          </button>
+
+                          {/* Wave Bars / Progress Indicator */}
+                          <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '3px', height: '24px' }}>
+                            {[4, 12, 18, 8, 15, 22, 10, 18, 12, 6].map((h, i) => (
+                              <div
+                                key={i}
+                                style={{
+                                  width: '3px',
+                                  height: isPlaying ? `${Math.max(6, (h * (1 + Math.sin(i + Date.now() / 200))))}px` : `${h}px`,
+                                  backgroundColor: isMe ? 'rgba(255,255,255,0.7)' : '#94a3b8',
+                                  borderRadius: '2px',
+                                  transition: 'height 0.2s ease'
+                                }}
+                              />
+                            ))}
+                          </div>
+
+                          <span style={{ fontSize: '0.7rem', color: isMe ? 'rgba(255,255,255,0.9)' : '#64748b', minWidth: '32px', textAlign: 'right' }}>
+                            {msg.audio_duration ? `${Math.floor(msg.audio_duration / 60)}:${('0' + (msg.audio_duration % 60)).slice(-2)}` : '0:00'}
+                          </span>
                         </div>
                       )}
 
@@ -217,9 +314,15 @@ export default function LoggedActionPage() {
             
             {isRecording ? (
               <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '24px', padding: '0.4rem 1rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ef4444' }} />
-                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#b91c1c' }}>Recording: {Math.floor(recordingTime / 60)}:{('0' + (recordingTime % 60)).slice(-2)}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '3px', height: '24px' }}>
+                    <div className="wave-bar" />
+                    <div className="wave-bar" />
+                    <div className="wave-bar" />
+                    <div className="wave-bar" />
+                    <div className="wave-bar" />
+                  </div>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#b91c1c' }}>{Math.floor(recordingTime / 60)}:{('0' + (recordingTime % 60)).slice(-2)}</span>
                 </div>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   <button type="button" onClick={cancelRecording} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>Cancel</button>
@@ -235,7 +338,7 @@ export default function LoggedActionPage() {
               <textarea
                 ref={textareaRef}
                 rows={1}
-                placeholder="Type a message..."
+                placeholder="Type a message (min 2 characters)..."
                 value={newMessage}
                 onChange={handleInputResize}
                 onKeyDown={(e) => {
@@ -261,8 +364,8 @@ export default function LoggedActionPage() {
 
             <button 
               type="submit" 
-              disabled={!newMessage.trim() && !audioBlob}
-              style={{ background: (!newMessage.trim() && !audioBlob) ? '#93c5fd' : '#2563eb', color: '#fff', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: (!newMessage.trim() && !audioBlob) ? 'default' : 'pointer', flexShrink: 0 }}
+              disabled={(!audioBlob && newMessage.trim().length < MIN_MESSAGE_LENGTH)}
+              style={{ background: (!audioBlob && newMessage.trim().length < MIN_MESSAGE_LENGTH) ? '#93c5fd' : '#2563eb', color: '#fff', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: (!audioBlob && newMessage.trim().length < MIN_MESSAGE_LENGTH) ? 'default' : 'pointer', flexShrink: 0 }}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
             </button>
