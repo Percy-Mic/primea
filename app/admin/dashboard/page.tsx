@@ -46,6 +46,12 @@ interface Analytics {
   pendingOrdersCount: number
 }
 
+interface DailyPoint {
+  day: number
+  label: string
+  revenue: number
+}
+
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December'
@@ -80,6 +86,7 @@ export default function AdminDashboardPage() {
     averageOrderValue: 0,
     pendingOrdersCount: 0,
   })
+  const [dailyTrend, setDailyTrend] = useState<DailyPoint[]>([])
   const [recentOrders, setRecentOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -125,6 +132,7 @@ export default function AdminDashboardPage() {
         if (data.summaries) setSummaries(data.summaries)
         if (data.analytics) setAnalytics(data.analytics)
         if (data.recentOrders) setRecentOrders(data.recentOrders)
+        if (data.dailyTrend) setDailyTrend(data.dailyTrend)
       }
     } catch (error) {
       console.error('Error fetching admin dashboard data:', error)
@@ -208,25 +216,8 @@ export default function AdminDashboardPage() {
   }
 
   const lowStockCount = stats.lowStockItems?.length || 0
-  const monthlyRev = summaries.monthly.revenue || 0
-
-  // Daily points generation to give natural fluctuation instead of a flat straight line
-  const dailyTrendPoints = [
-    { label: 'W1-D2', val: monthlyRev > 0 ? monthlyRev * 0.05 : 0 },
-    { label: 'W1-D5', val: monthlyRev > 0 ? monthlyRev * 0.18 : 0 },
-    { label: 'Week 1', val: monthlyRev > 0 ? monthlyRev * 0.22 : 0 },
-    { label: 'W2-D3', val: monthlyRev > 0 ? monthlyRev * 0.31 : 0 },
-    { label: 'W2-D6', val: monthlyRev > 0 ? monthlyRev * 0.40 : 0 },
-    { label: 'Week 2', val: monthlyRev > 0 ? monthlyRev * 0.45 : 0 },
-    { label: 'W3-D2', val: monthlyRev > 0 ? monthlyRev * 0.52 : 0 },
-    { label: 'W3-D5', val: monthlyRev > 0 ? monthlyRev * 0.64 : 0 },
-    { label: 'Week 3', val: monthlyRev > 0 ? monthlyRev * 0.68 : 0 },
-    { label: 'W4-D2', val: monthlyRev > 0 ? monthlyRev * 0.75 : 0 },
-    { label: 'W4-D5', val: monthlyRev > 0 ? monthlyRev * 0.85 : 0 },
-    { label: 'Week 4', val: monthlyRev > 0 ? monthlyRev * 0.90 : 0 }
-  ]
-
-  const maxVal = Math.max(...dailyTrendPoints.map(p => p.val), 1)
+  const maxVal = Math.max(...dailyTrend.map(p => p.revenue), 1)
+  const chartWidth = Math.max(dailyTrend.length * 55, 600)
 
   return (
     <div className="admin-layout-wrapper">
@@ -237,7 +228,6 @@ export default function AdminDashboardPage() {
           padding: 0;
         }
         body {
-          /* Matched exact background gradient tone from screenshot reference */
           background: #fbf7f2;
           background-image: 
             radial-gradient(circle at 85% 15%, rgba(243, 225, 208, 0.6) 0%, transparent 45%),
@@ -260,29 +250,16 @@ export default function AdminDashboardPage() {
         }
 
         @media (max-width: 768px) {
-          .admin-layout-wrapper {
-            padding-top: 135px;
-          }
+          .admin-layout-wrapper { padding-top: 135px; }
         }
 
         .header-fixed-container {
           position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          margin: 0;
-          padding: 0;
+          top: 0; left: 0; right: 0;
           z-index: 9999;
           background-color: #ffffff;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-          box-sizing: border-box;
           width: 100%;
-        }
-
-        .fixed-top-header {
-          padding: 0;
-          width: 100%;
-          box-sizing: border-box;
         }
 
         .top-nav-bar {
@@ -294,7 +271,6 @@ export default function AdminDashboardPage() {
           border-bottom: 1px solid #e8e2d9;
           padding: 0.4rem 1.5rem;
           width: 100%;
-          box-sizing: border-box;
           flex-wrap: wrap;
           gap: 0.75rem;
         }
@@ -302,11 +278,8 @@ export default function AdminDashboardPage() {
         .nav-links-group {
           display: flex;
           list-style: none;
-          padding: 0;
-          margin: 0;
           gap: 0.4rem;
           align-items: center;
-          flex-wrap: wrap;
         }
 
         .nav-link {
@@ -345,17 +318,12 @@ export default function AdminDashboardPage() {
         }
 
         @media (max-width: 768px) {
-          .mobile-menu-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-          }
+          .mobile-menu-btn { display: inline-flex; align-items: center; gap: 0.4rem; }
           .nav-links-group {
             display: ${mobileMenuOpen ? 'flex' : 'none'};
             width: 100%;
             flex-direction: column;
             align-items: stretch;
-            padding-bottom: 0.5rem;
             border-top: 1px solid #f2ede4;
             margin-top: 0.4rem;
             padding-top: 0.4rem;
@@ -366,7 +334,6 @@ export default function AdminDashboardPage() {
           flex: 1;
           display: flex;
           flex-direction: column;
-          box-sizing: border-box;
           padding: 1rem;
           width: 100%;
           max-width: 1400px;
@@ -374,9 +341,7 @@ export default function AdminDashboardPage() {
         }
 
         @media (min-width: 640px) {
-          .admin-main-content {
-            padding: 1.25rem 1.5rem 3rem 1.5rem;
-          }
+          .admin-main-content { padding: 1.25rem 1.5rem 3rem 1.5rem; }
         }
 
         .dashboard-actions-bar {
@@ -397,15 +362,7 @@ export default function AdminDashboardPage() {
           border: 1px solid #e8e2d9;
           padding: 0.45rem 0.85rem;
           border-radius: 10px;
-          flex-wrap: wrap;
-          width: 100%;
           box-shadow: 0 4px 15px rgba(44, 34, 30, 0.02);
-        }
-
-        @media (min-width: 640px) {
-          .filter-bar {
-            width: auto;
-          }
         }
 
         .filter-label {
@@ -431,17 +388,9 @@ export default function AdminDashboardPage() {
           display: flex;
           gap: 0.5rem;
           align-items: center;
-          width: 100%;
-        }
-
-        @media (min-width: 640px) {
-          .action-buttons-group {
-            width: auto;
-          }
         }
 
         .btn-action {
-          flex: 1;
           display: inline-flex;
           align-items: center;
           justify-content: center;
@@ -454,14 +403,8 @@ export default function AdminDashboardPage() {
           font-size: 0.82rem;
           font-weight: 500;
           cursor: pointer;
-          transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+          transition: all 0.3s ease;
           box-shadow: 0 2px 8px rgba(44, 34, 30, 0.02);
-        }
-
-        @media (min-width: 640px) {
-          .btn-action {
-            flex: initial;
-          }
         }
 
         .btn-action:hover {
@@ -469,7 +412,6 @@ export default function AdminDashboardPage() {
           color: #ffffff;
           border-color: #1f1815;
           transform: translateY(-2px);
-          box-shadow: 0 6px 15px rgba(176, 109, 80, 0.15);
         }
 
         .metrics-grid {
@@ -477,20 +419,10 @@ export default function AdminDashboardPage() {
           grid-template-columns: 1fr;
           gap: 1rem;
           margin-bottom: 1.25rem;
-          width: 100%;
         }
 
-        @media (min-width: 480px) {
-          .metrics-grid {
-            grid-template-columns: repeat(2, 1fr);
-          }
-        }
-
-        @media (min-width: 1024px) {
-          .metrics-grid {
-            grid-template-columns: repeat(4, 1fr);
-          }
-        }
+        @media (min-width: 480px) { .metrics-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 1024px) { .metrics-grid { grid-template-columns: repeat(4, 1fr); } }
 
         .metric-card {
           background: linear-gradient(145deg, #ffffff 0%, #faf8f5 100%);
@@ -498,23 +430,6 @@ export default function AdminDashboardPage() {
           border-radius: 12px;
           padding: 1.25rem;
           box-shadow: 0 4px 20px rgba(44, 34, 30, 0.03);
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-          transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
-        }
-
-        .metric-card:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 12px 30px rgba(176, 109, 80, 0.1);
-          border-color: rgba(176, 109, 80, 0.3);
-        }
-
-        .metric-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 0.5rem;
         }
 
         .metric-label {
@@ -529,8 +444,7 @@ export default function AdminDashboardPage() {
           font-size: 1.4rem;
           font-weight: 700;
           color: #1f1815;
-          line-height: 1.2;
-          word-break: break-word;
+          margin-top: 0.3rem;
         }
 
         .analytics-grid {
@@ -538,28 +452,16 @@ export default function AdminDashboardPage() {
           grid-template-columns: 1fr;
           gap: 1.25rem;
           margin-bottom: 1.25rem;
-          width: 100%;
         }
 
-        @media (min-width: 1024px) {
-          .analytics-grid {
-            grid-template-columns: 2fr 1fr;
-          }
-        }
+        @media (min-width: 1024px) { .analytics-grid { grid-template-columns: 2fr 1fr; } }
 
         .dashboard-section {
           background: linear-gradient(145deg, #ffffff 0%, #faf8f5 100%);
           border: 1px solid rgba(232, 226, 217, 0.8);
           border-radius: 12px;
           padding: 1.25rem;
-          overflow: hidden;
           box-shadow: 0 4px 20px rgba(44, 34, 30, 0.03);
-          transition: box-shadow 0.3s ease;
-          width: 100%;
-        }
-
-        .dashboard-section:hover {
-          box-shadow: 0 8px 25px rgba(44, 34, 30, 0.06);
         }
 
         .section-title-wrap {
@@ -569,26 +471,15 @@ export default function AdminDashboardPage() {
           margin-bottom: 0.85rem;
           padding-bottom: 0.5rem;
           border-bottom: 1px solid #f2ede4;
-          flex-wrap: wrap;
-          gap: 0.5rem;
         }
 
         .section-title {
           font-size: 1rem;
           font-weight: 700;
           color: #1f1815;
-          margin: 0;
-        }
-
-        .analysis-text {
-          font-size: 0.85rem;
-          color: #3b332e;
-          line-height: 1.5;
-          margin: 0 0 0.75rem 0;
         }
 
         .analysis-badge {
-          display: inline-block;
           background: #f4efe6;
           color: #b06d50;
           padding: 0.2rem 0.5rem;
@@ -605,27 +496,15 @@ export default function AdminDashboardPage() {
           margin-top: 0.5rem;
           scrollbar-width: thin;
           scrollbar-color: #ded7cc #fcfbfa;
-          -webkit-overflow-scrolling: touch;
         }
 
         .content-grid {
           display: grid;
           grid-template-columns: 1fr;
           gap: 1.25rem;
-          width: 100%;
         }
 
-        @media (min-width: 1024px) {
-          .content-grid {
-            grid-template-columns: 2fr 1fr;
-          }
-        }
-
-        .table-responsive-wrapper {
-          width: 100%;
-          overflow-x: auto;
-          -webkit-overflow-scrolling: touch;
-        }
+        @media (min-width: 1024px) { .content-grid { grid-template-columns: 2fr 1fr; } }
 
         .orders-table {
           width: 100%;
@@ -640,7 +519,6 @@ export default function AdminDashboardPage() {
           color: #8c827a;
           font-weight: 600;
           border-bottom: 1px solid #eee8e0;
-          white-space: nowrap;
         }
 
         .orders-table td {
@@ -655,43 +533,18 @@ export default function AdminDashboardPage() {
           border-radius: 999px;
           font-size: 0.7rem;
           font-weight: 600;
-          white-space: nowrap;
         }
 
         .status-completed { background-color: #f0f7f0; color: #2e6930; }
         .status-processing { background-color: #fcf8ee; color: #8a6200; }
 
-        /* Professional Clean Print Styling (Hidden web elements, formatted invoice-style report) */
+        /* Clean Print Formatting */
         @media print {
-          body {
-            background: #ffffff !important;
-            background-image: none !important;
-            color: #000000 !important;
-          }
-          .header-fixed-container,
-          .dashboard-actions-bar,
-          .action-buttons-group,
-          .mobile-menu-btn,
-          .top-nav-bar,
-          link,
-          button {
-            display: none !important;
-          }
-          .admin-layout-wrapper {
-            padding-top: 0 !important;
-          }
-          .admin-main-content {
-            max-width: 100% !important;
-            padding: 0 !important;
-          }
-          .dashboard-section, .metric-card {
-            border: 1px solid #ccc !important;
-            box-shadow: none !important;
-            background: #ffffff !important;
-            margin-bottom: 1rem !important;
-            page-break-inside: avoid;
-          }
-          /* Print header insert */
+          body { background: #ffffff !important; color: #000000 !important; }
+          .header-fixed-container, .dashboard-actions-bar, .action-buttons-group, .mobile-menu-btn, .top-nav-bar, button { display: none !important; }
+          .admin-layout-wrapper { padding-top: 0 !important; }
+          .admin-main-content { max-width: 100% !important; padding: 0 !important; }
+          .dashboard-section, .metric-card { border: 1px solid #ccc !important; box-shadow: none !important; background: #ffffff !important; }
           .admin-main-content::before {
             content: "PRYMEA FASHION — EXECUTIVE PERFORMANCE REPORT (" attr(data-print-month) ")";
             display: block;
@@ -716,13 +569,7 @@ export default function AdminDashboardPage() {
         </div>
 
         <nav className="top-nav-bar">
-          <button 
-            type="button" 
-            className="mobile-menu-btn" 
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            Menu
-          </button>
+          <button type="button" className="mobile-menu-btn" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>Menu</button>
           <ul className="nav-links-group">
             <li><Link href="/admin/dashboard" className={`nav-link ${pathname === '/admin/dashboard' ? 'active' : ''}`}>Dashboard</Link></li>
             <li><Link href="/admin/orders" className={`nav-link ${pathname === '/admin/orders' ? 'active' : ''}`}>Orders</Link></li>
@@ -735,7 +582,6 @@ export default function AdminDashboardPage() {
 
       {/* Main Content Area */}
       <div className="admin-main-content" data-print-month={`${MONTH_NAMES[selectedMonth]} ${selectedYear}`}>
-        {/* Actions & Period Filters */}
         <div className="dashboard-actions-bar">
           <div className="filter-bar">
             <span className="filter-label">Statistics Period:</span>
@@ -760,66 +606,66 @@ export default function AdminDashboardPage() {
         {/* Metrics Cards */}
         <div className="metrics-grid">
           <div className="metric-card">
-            <div className="metric-header"><span className="metric-label">Lifetime Revenue</span></div>
+            <div className="metric-label">Lifetime Revenue</div>
             <div className="metric-value">{loading ? '...' : formatCurrency(stats.revenue)}</div>
           </div>
           <div className="metric-card">
-            <div className="metric-header"><span className="metric-label">Completed Orders</span></div>
+            <div className="metric-label">Completed Orders</div>
             <div className="metric-value">{loading ? '...' : stats.totalOrders}</div>
           </div>
           <div className="metric-card">
-            <div className="metric-header"><span className="metric-label">Active Products</span></div>
+            <div className="metric-label">Active Products</div>
             <div className="metric-value">{loading ? '...' : stats.activeProducts}</div>
           </div>
           <div className="metric-card">
-            <div className="metric-header"><span className="metric-label">{MONTH_NAMES[selectedMonth]} Revenue</span></div>
+            <div className="metric-label">{MONTH_NAMES[selectedMonth]} Revenue</div>
             <div className="metric-value">{loading ? '...' : formatCurrency(summaries.monthly.revenue)}</div>
             {!loading && renderGrowthBadge(summaries.monthly.revenueGrowth)}
           </div>
         </div>
 
-        {/* Scrollable Graph Field with Daily & Weekly Progress Dots */}
+        {/* Real Daily Trend Graph up to Today */}
         <div className="analytics-grid">
           <div className="dashboard-section">
             <div className="section-title-wrap">
-              <h2 className="section-title">Revenue Trend & Daily Progress ({MONTH_NAMES[selectedMonth]} {selectedYear})</h2>
+              <h2 className="section-title">Daily Store Progress ({MONTH_NAMES[selectedMonth]} {selectedYear})</h2>
               <span className="analysis-badge">Live Stream Active</span>
             </div>
             <p style={{ fontSize: '0.75rem', color: '#8c827a', margin: '0 0 0.5rem 0' }}>
-              Detailed daily fluctuations and weekly checkpoints for continuous progress tracking:
+              Real daily sales tracked from day 1 up to the current date:
             </p>
             
             <div className="scrollable-graph-container">
-              {monthlyRev === 0 ? (
+              {dailyTrend.length === 0 ? (
                 <div style={{ height: '160px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8c827a', fontSize: '0.85rem' }}>
-                  No revenue data recorded for {MONTH_NAMES[selectedMonth]} {selectedYear}.
+                  No daily transaction data recorded for this period.
                 </div>
               ) : (
-                <div style={{ width: '850px', height: '160px', display: 'flex', alignItems: 'flex-end' }}>
-                  <svg viewBox="0 0 850 120" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
+                <div style={{ width: `${chartWidth}px`, height: '160px', display: 'flex', alignItems: 'flex-end' }}>
+                  <svg viewBox={`0 0 ${chartWidth} 120`} style={{ width: '100%', height: '100%', overflow: 'visible' }}>
                     <polyline
                       fill="none"
                       stroke="#b06d50"
                       strokeWidth="2.5"
-                      points={dailyTrendPoints.map((p, idx) => `${idx * 70 + 35},${110 - (p.val / maxVal) * 90}`).join(' ')}
+                      points={dailyTrend.map((p, idx) => `${idx * 55 + 28},${110 - (p.revenue / maxVal) * 90}`).join(' ')}
                     />
-                    {dailyTrendPoints.map((p, idx) => (
+                    {dailyTrend.map((p, idx) => (
                       <g key={idx}>
                         <circle
-                          cx={idx * 70 + 35}
-                          cy={110 - (p.val / maxVal) * 90}
-                          r={p.label.includes('Week') ? '5.5' : '3.5'}
-                          fill={p.label.includes('Week') ? '#b06d50' : '#ffffff'}
+                          cx={idx * 55 + 28}
+                          cy={110 - (p.revenue / maxVal) * 90}
+                          r="4"
+                          fill="#ffffff"
                           stroke="#b06d50"
                           strokeWidth="2"
                         />
                         <text 
-                          x={idx * 70 + 35} 
+                          x={idx * 55 + 28} 
                           y="125" 
                           textAnchor="middle" 
                           fontSize="10" 
-                          fill={p.label.includes('Week') ? '#1f1815' : '#8c827a'} 
-                          fontWeight={p.label.includes('Week') ? '700' : '500'}
+                          fill="#8c827a"
+                          fontWeight="500"
                         >
                           {p.label}
                         </text>
@@ -835,8 +681,8 @@ export default function AdminDashboardPage() {
             <div className="section-title-wrap">
               <h2 className="section-title">Live Performance Analysis</h2>
             </div>
-            <p className="analysis-text">
-              Real-time tracking is connected for <strong>{MONTH_NAMES[selectedMonth]} {selectedYear}</strong>. Any newly completed orders or inventory edits sync instantly via Supabase channels.
+            <p style={{ fontSize: '0.85rem', color: '#3b332e', lineHeight: '1.5', margin: '0 0 0.75rem 0' }}>
+              The chart automatically bounds data up to the current calendar day, preventing future dates from showing prematurely.
             </p>
             <div style={{ background: '#fcfbfa', padding: '0.6rem 0.75rem', borderRadius: '6px', border: '1px solid #f2ede4' }}>
               <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#8c827a', textTransform: 'uppercase' }}>Stream Status</span>
@@ -859,7 +705,7 @@ export default function AdminDashboardPage() {
             ) : recentOrders.length === 0 ? (
               <p style={{ fontSize: '0.85rem', color: '#8c827a' }}>No recent orders found.</p>
             ) : (
-              <div className="table-responsive-wrapper">
+              <div style={{ width: '100%', overflowX: 'auto' }}>
                 <table className="orders-table">
                   <thead>
                     <tr>
