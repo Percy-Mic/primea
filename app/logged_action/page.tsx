@@ -173,7 +173,11 @@ export default function LoggedActionPage() {
         .from('chat-audio')
         .upload(fileName, audioBlob)
 
-      if (!uploadError && uploadData) {
+      if (uploadError) {
+        console.error('Storage upload error:', uploadError.message)
+        alert(`Failed to upload audio: ${uploadError.message}`)
+        return
+      } else if (uploadData) {
         const { data: publicUrlData } = supabase.storage
           .from('chat-audio')
           .getPublicUrl(fileName)
@@ -183,7 +187,7 @@ export default function LoggedActionPage() {
 
     const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single()
     
-    await supabase.from('messages').insert([{
+    const { error: insertError } = await supabase.from('messages').insert([{
       sender_id: user.id,
       sender_name: profile?.full_name || user.email,
       sender_avatar: profile?.avatar_url || '',
@@ -191,6 +195,12 @@ export default function LoggedActionPage() {
       audio_url: uploadedAudioUrl,
       audio_duration: duration,
     }])
+
+    if (insertError) {
+      console.error('Message insert error:', insertError.message)
+      alert(`Failed to send message: ${insertError.message}`)
+      return
+    }
 
     setNewMessage('')
     setAudioBlob(null)
@@ -239,7 +249,6 @@ export default function LoggedActionPage() {
               messages.map((msg) => {
                 const isMe = msg.sender_id === user?.id
                 const isPlaying = playingAudioId === msg.id
-                const progress = playbackProgress[msg.id] || 0
 
                 return (
                   <div key={msg.id} style={{ display: 'flex', justifyContent: isMe ? 'flex-end' : 'flex-start', alignItems: 'flex-end', gap: '0.5rem' }}>
@@ -255,7 +264,7 @@ export default function LoggedActionPage() {
                       )
                     )}
 
-                    <div style={{ maxWidth: '80%', width: '100%', sm: { maxWidth: '70%' }, background: isMe ? '#2563eb' : '#fff', color: isMe ? '#fff' : '#1e293b', padding: '0.65rem 0.9rem', borderRadius: isMe ? '18px 18px 4px 18px' : '18px 18px 18px 4px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', border: isMe ? 'none' : '1px solid #e2e8f0' }}>
+                    <div style={{ maxWidth: '80%', width: '100%', background: isMe ? '#2563eb' : '#fff', color: isMe ? '#fff' : '#1e293b', padding: '0.65rem 0.9rem', borderRadius: isMe ? '18px 18px 4px 18px' : '18px 18px 18px 4px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', border: isMe ? 'none' : '1px solid #e2e8f0' }}>
                       
                       {!isMe && <div style={{ fontWeight: 600, fontSize: '0.75rem', color: '#2563eb', marginBottom: '0.2rem' }}>{msg.sender_name}</div>}
 
