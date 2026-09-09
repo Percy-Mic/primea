@@ -94,7 +94,7 @@ export default function AttendancePage() {
       setActiveRecord(data)
       setNotes('')
       await supabase.from('logged_actions').insert([{ admin_id: user.id, admin_name: name, action_name: 'Clocked In' }])
-      fetchAttendance(user.id) // Refresh list immediately after action
+      fetchAttendance(user.id)
     }
   }
 
@@ -110,7 +110,7 @@ export default function AttendancePage() {
       setActiveRecord(null)
       const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', user.id).single()
       await supabase.from('logged_actions').insert([{ admin_id: user.id, admin_name: profile?.full_name || user.email, action_name: 'Clocked Out' }])
-      fetchAttendance(user.id) // Refresh list immediately after action
+      fetchAttendance(user.id)
     }
   }
 
@@ -236,7 +236,7 @@ export default function AttendancePage() {
                       <td style={{ padding: '0.75rem 0.85rem' }}>
                         <span style={{ padding: '0.2rem 0.5rem', borderRadius: '5px', fontSize: '0.72rem', background: '#dcfce7', color: '#166534', fontWeight: 600, display: 'inline-block' }}>{rec.status}</span>
                       </td>
-                      <td style={{ padding: '0.75rem 0.85rem', color: '#33415']}>{new Date(rec.time_in).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</td>
+                      <td style={{ padding: '0.75rem 0.85rem', color: '#334155' }}>{new Date(rec.time_in).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</td>
                       <td style={{ padding: '0.75rem 0.85rem', color: '#334155' }}>
                         {rec.time_out ? new Date(rec.time_out).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : <span style={{ color: '#d97706', fontWeight: 600, background: '#fef3c7', padding: '0.15rem 0.4rem', borderRadius: '4px', fontSize: '0.75rem' }}>Active Shift</span>}
                       </td>
