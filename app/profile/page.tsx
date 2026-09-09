@@ -307,15 +307,13 @@ export default function AdminProfilePage() {
                 <form onSubmit={handleSaveProfile} style={styles.form}>
                   <label style={styles.field}>
                     <span style={styles.label}>Profile Picture URL</span>
-                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                      <input
-                        type="url"
-                        value={avatarUrl}
-                        onChange={e => setAvatarUrl(e.target.value)}
-                        placeholder="https://example.com/avatar.jpg"
-                        style={styles.input}
-                      />
-                    </div>
+                    <input
+                      type="url"
+                      value={avatarUrl}
+                      onChange={e => setAvatarUrl(e.target.value)}
+                      placeholder="https://example.com/avatar.jpg"
+                      style={styles.input}
+                    />
                     <span style={styles.helperText}>Paste a direct public image link for your profile picture.</span>
                   </label>
 
@@ -568,7 +566,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   avatar: { width: '70px', height: '70px', borderRadius: '50%', backgroundColor: '#fff', border: '3px solid #fff', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', cursor: 'pointer' },
   avatarImage: { width: '100%', height: '100%', objectFit: 'cover' },
   avatarInitials: { fontSize: '20px', fontWeight: 700, color: '#1a1a1a' },
-  avatarOverlay: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(0,0,0,0.6)', color: '#fff', fontSize: '10px', textAlign: 'center', padding: '2px 0', opacity: 0, transition: 'opacity 0.2s' },
+  avatarOverlay: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(0,0,0,0.6)', color: '#fff', fontSize: '10px', textAlign: 'center', padding: '2px 0' },
   profileSummary: { padding: '35px 20px 20px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap' as const, gap: '20px' },
   identity: { flex: 1, minWidth: '220px' },
   nameRow: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px', flexWrap: 'wrap' as const },
