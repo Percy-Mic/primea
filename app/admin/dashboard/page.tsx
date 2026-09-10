@@ -228,7 +228,7 @@ export default function AdminDashboardPage() {
       currentWeekRevenue += p.revenue
       if ((idx + 1) % 7 === 0 || idx === dailyTrend.length - 1) {
         weeks.push({
-          label: `Week ${weekCount}`,
+          label: `Wk ${weekCount}`,
           revenue: currentWeekRevenue
         })
         currentWeekRevenue = 0
@@ -241,7 +241,7 @@ export default function AdminDashboardPage() {
   const activeTrend = chartMode === 'daily' ? dailyTrend : getWeeklyTrend()
   const rawMaxVal = Math.max(...activeTrend.map(p => p.revenue), 10)
   const maxVal = Math.ceil(rawMaxVal / 50) * 50 || 100
-  const chartWidth = Math.max(activeTrend.length * 70, 650)
+  const chartWidth = Math.max(activeTrend.length * 48, 320)
   const chartHeight = 180
 
   return (
@@ -287,7 +287,7 @@ export default function AdminDashboardPage() {
           .admin-layout-wrapper { padding-top: 135px; }
         }
 
-        /* Stylish and Elegant Grid Pattern Background on Main Content */
+        /* Clean Main Content Background (Grid Pattern Removed) */
         .admin-main-content {
           flex: 1;
           display: flex;
@@ -298,25 +298,6 @@ export default function AdminDashboardPage() {
           margin: 0 auto;
           position: relative;
           background-color: #FAFAFA;
-          background-image: 
-            linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
-          background-size: 24px 24px;
-        }
-
-        .admin-main-content::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background: radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.8) 0%, rgba(250, 250, 250, 0) 70%);
-          pointer-events: none;
-          z-index: 0;
-        }
-
-        /* Ensure cards/sections stay cleanly layered above the background grid */
-        .admin-main-content > * {
-          position: relative;
-          z-index: 1;
         }
 
         @media (min-width: 768px) {
@@ -510,8 +491,9 @@ export default function AdminDashboardPage() {
         .scrollable-graph-container {
           width: 100%;
           overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
           white-space: nowrap;
-          padding-bottom: 6px;
+          padding-bottom: 8px;
           margin-top: 10px;
           scrollbar-width: thin;
           scrollbar-color: #EBEBEB #FAFAFA;
@@ -562,11 +544,13 @@ export default function AdminDashboardPage() {
         .status-processing { background-color: #FAFAFA; border: 1px solid #EBEBEB; color: #666666; }
 
         @media print {
-          body, html { background: #FFFFFF !important; background-image: none !important; color: #000000 !important; }
+          body, html { background: #FFFFFF !important; color: #000000 !important; }
           .header-fixed-container, .dashboard-actions-bar, .action-buttons-group, button { display: none !important; }
           .admin-layout-wrapper { padding-top: 0 !important; }
-          .admin-main-content { max-width: 100% !important; padding: 0 !important; background: #FFFFFF !important; background-image: none !important; }
+          .admin-main-content { max-width: 100% !important; padding: 0 !important; background: #FFFFFF !important; }
           .dashboard-section, .metric-card { border: 1px solid #000000 !important; box-shadow: none !important; background: #FFFFFF !important; }
+          .scrollable-graph-container { overflow-x: visible !important; width: 100% !important; }
+          svg { width: 100% !important; height: auto !important; max-height: 180px; }
         }
       `}</style>
 
@@ -581,7 +565,7 @@ export default function AdminDashboardPage() {
         <AdminSubNav />
       </div>
 
-      {/* Main Content Area with Stylish Grid Background */}
+      {/* Main Content Area */}
       <div className="admin-main-content" data-print-month={`${MONTH_NAMES[selectedMonth]} ${selectedYear}`}>
         {/* Actions Bar */}
         <div className="dashboard-actions-bar">
@@ -718,7 +702,7 @@ export default function AdminDashboardPage() {
                       stroke="#171717"
                       strokeWidth="2"
                       points={activeTrend.map((p, idx) => {
-                        const cx = 70 + idx * 70
+                        const cx = 55 + idx * 48
                         const cy = 145 - (p.revenue / maxVal) * 120
                         return `${cx},${cy}`
                       }).join(' ')}
@@ -726,12 +710,12 @@ export default function AdminDashboardPage() {
 
                     {/* Data Points */}
                     {activeTrend.map((p, idx) => {
-                      const cx = 70 + idx * 70
+                      const cx = 55 + idx * 48
                       const cy = 145 - (p.revenue / maxVal) * 120
-                      const dotRadius = chartMode === 'daily' ? 3 : 5
+                      const dotRadius = chartMode === 'daily' ? 3 : 4
                       return (
                         <g key={idx}>
-                          <text x={cx} y={cy - 9} textAnchor="middle" fontSize="10" fill="#171717" fontWeight="500">
+                          <text x={cx} y={cy - 9} textAnchor="middle" fontSize="9" fill="#171717" fontWeight="500">
                             {p.revenue > 0 ? `$${p.revenue}` : '$0'}
                           </text>
 
@@ -748,7 +732,7 @@ export default function AdminDashboardPage() {
                             x={cx} 
                             y="165" 
                             textAnchor="middle" 
-                            fontSize="11" 
+                            fontSize="10" 
                             fill="#666666"
                             fontWeight="500"
                           >
