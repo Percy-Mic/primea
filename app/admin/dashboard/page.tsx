@@ -287,7 +287,7 @@ export default function AdminDashboardPage() {
           .admin-layout-wrapper { padding-top: 135px; }
         }
 
-        /* Clean Main Content Background (Grid Pattern Removed) */
+        /* Stylish Grid Pattern Background on Main Content Area */
         .admin-main-content {
           flex: 1;
           display: flex;
@@ -298,6 +298,24 @@ export default function AdminDashboardPage() {
           margin: 0 auto;
           position: relative;
           background-color: #FAFAFA;
+          background-image: 
+            linear-gradient(to right, rgba(0, 0, 0, 0.035) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(0, 0, 0, 0.035) 1px, transparent 1px);
+          background-size: 24px 24px;
+        }
+
+        .admin-main-content::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.8) 0%, rgba(250, 250, 250, 0) 70%);
+          pointer-events: none;
+          z-index: 0;
+        }
+
+        .admin-main-content > * {
+          position: relative;
+          z-index: 1;
         }
 
         @media (min-width: 768px) {
@@ -547,7 +565,7 @@ export default function AdminDashboardPage() {
           body, html { background: #FFFFFF !important; color: #000000 !important; }
           .header-fixed-container, .dashboard-actions-bar, .action-buttons-group, button { display: none !important; }
           .admin-layout-wrapper { padding-top: 0 !important; }
-          .admin-main-content { max-width: 100% !important; padding: 0 !important; background: #FFFFFF !important; }
+          .admin-main-content { max-width: 100% !important; padding: 0 !important; background: #FFFFFF !important; background-image: none !important; }
           .dashboard-section, .metric-card { border: 1px solid #000000 !important; box-shadow: none !important; background: #FFFFFF !important; }
           .scrollable-graph-container { overflow-x: visible !important; width: 100% !important; }
           svg { width: 100% !important; height: auto !important; max-height: 180px; }
@@ -565,7 +583,7 @@ export default function AdminDashboardPage() {
         <AdminSubNav />
       </div>
 
-      {/* Main Content Area */}
+      {/* Main Content Area with Stylish Grid Background */}
       <div className="admin-main-content" data-print-month={`${MONTH_NAMES[selectedMonth]} ${selectedYear}`}>
         {/* Actions Bar */}
         <div className="dashboard-actions-bar">
