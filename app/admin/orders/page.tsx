@@ -235,8 +235,7 @@ export default function AdminOrdersPage() {
           display: flex;
           flex-direction: column;
           min-height: 100vh;
-          /* Leaves enough offset space so content doesn't slip under the fixed top headers */
-          padding-top: 140px; 
+          padding-top: 145px; /* Offset to prevent content from going underneath fixed headers */
           width: 100%;
           position: relative;
           background: #FAFAFA;
