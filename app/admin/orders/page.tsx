@@ -132,12 +132,12 @@ export default function AdminOrdersPage() {
     return (
       <div
         style={{
-          marginTop: '12px',
-          paddingTop: '12px',
+          marginTop: '10px',
+          paddingTop: '10px',
           borderTop: '1px solid #EBEBEB',
           display: 'flex',
           flexDirection: 'column',
-          gap: '8px',
+          gap: '6px',
         }}
       >
         {items.map((item, idx) => {
@@ -153,9 +153,9 @@ export default function AdminOrdersPage() {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '12px',
+                gap: '10px',
                 background: '#FAFAFA',
-                padding: '8px 12px',
+                padding: '6px 10px',
                 borderRadius: '6px',
                 border: '1px solid #EBEBEB',
               }}
@@ -165,8 +165,8 @@ export default function AdminOrdersPage() {
                   src={imageSrc}
                   alt={title}
                   style={{
-                    width: '36px',
-                    height: '36px',
+                    width: '32px',
+                    height: '32px',
                     objectFit: 'cover',
                     borderRadius: '4px',
                     border: '1px solid #EBEBEB',
@@ -176,14 +176,14 @@ export default function AdminOrdersPage() {
               ) : (
                 <div
                   style={{
-                    width: '36px',
-                    height: '36px',
+                    width: '32px',
+                    height: '32px',
                     borderRadius: '4px',
                     background: '#EBEBEB',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '11px',
+                    fontSize: '10px',
                     color: '#666666',
                     flexShrink: 0,
                   }}
@@ -191,11 +191,11 @@ export default function AdminOrdersPage() {
                   IMG
                 </div>
               )}
-              <div style={{ display: 'flex', flexDirection: 'column', lineHeight: '1.4' }}>
-                <span style={{ fontWeight: 500, fontSize: '14px', color: '#171717' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', lineHeight: '1.3' }}>
+                <span style={{ fontWeight: 500, fontSize: '13px', color: '#171717' }}>
                   {title}
                 </span>
-                <span style={{ fontSize: '12px', color: '#666666' }}>
+                <span style={{ fontSize: '11px', color: '#666666' }}>
                   Qty: {quantity} × ${Number(price).toFixed(2)}
                 </span>
               </div>
@@ -242,7 +242,6 @@ export default function AdminOrdersPage() {
           background-size: 40px 40px;
         }
 
-        /* Permanently fixed header stack at the top of the viewport */
         .header-fixed-container {
           position: fixed;
           top: 0;
@@ -254,17 +253,25 @@ export default function AdminOrdersPage() {
           width: 100%;
         }
 
+        /* Responsive clean padding clearance */
         .admin-main-content {
           flex: 1;
           display: flex;
           flex-direction: column;
           box-sizing: border-box;
-          padding: 155px 40px 40px 40px; /* Leaves exact top clearance so content doesn't hide under the fixed header */
+          padding: 110px 16px 24px 16px;
           width: 100%;
-          margin: 0;
+          max-width: 1400px;
+          margin: 0 auto;
           position: relative;
           z-index: 1;
           animation: fadeInScale 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @media (min-width: 768px) {
+          .admin-main-content {
+            padding: 120px 32px 32px 32px;
+          }
         }
 
         .order-card-hover {
@@ -292,10 +299,10 @@ export default function AdminOrdersPage() {
         }
 
         .admin-select-input {
-          padding: 8px 16px;
+          padding: 6px 12px;
           border-radius: 9999px;
           border: 1px solid #EBEBEB;
-          font-size: 14px;
+          font-size: 13px;
           background: #FFFFFF;
           color: #171717;
           cursor: pointer;
@@ -331,15 +338,15 @@ export default function AdminOrdersPage() {
             flexDirection: isMobile ? 'column' : 'row',
             justifyContent: 'space-between',
             alignItems: isMobile ? 'flex-start' : 'center',
-            gap: isMobile ? '16px' : '0',
-            marginBottom: '32px',
+            gap: isMobile ? '12px' : '0',
+            marginBottom: '20px',
           }}
         >
           <div>
-            <h1 style={{ fontSize: isMobile ? '32px' : '48px', margin: 0, fontWeight: 400, letterSpacing: '-2px', color: '#171717' }}>
+            <h1 style={{ fontSize: isMobile ? '26px' : '38px', margin: 0, fontWeight: 400, letterSpacing: '-1.5px', color: '#171717' }}>
               Orders Monitor
             </h1>
-            <p style={{ fontSize: '16px', color: '#666666', marginTop: '8px', letterSpacing: '-0.2px' }}>
+            <p style={{ fontSize: isMobile ? '13px' : '15px', color: '#666666', marginTop: '4px', letterSpacing: '-0.2px' }}>
               Manage active storefront orders in real-time with zero-latency synchronization.
             </p>
           </div>
@@ -347,20 +354,20 @@ export default function AdminOrdersPage() {
             style={{
               background: '#171717',
               color: '#FFFFFF',
-              padding: '10px 20px',
+              padding: '8px 16px',
               borderRadius: '9999px',
-              fontSize: '14px',
+              fontSize: '13px',
               fontWeight: 500,
               boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-              alignSelf: isMobile ? 'stretch' : 'auto',
+              alignSelf: isMobile ? 'flex-start' : 'auto',
               textAlign: 'center',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '8px',
+              gap: '6px',
             }}
           >
-            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#22C55e', display: 'inline-block' }}></span>
+            <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#22C55e', display: 'inline-block' }}></span>
             Active Orders: {activeOrders.length}
           </div>
         </div>
@@ -371,20 +378,20 @@ export default function AdminOrdersPage() {
             style={{
               background: '#171717',
               color: '#FFFFFF',
-              padding: '16px 20px',
-              borderRadius: '12px',
-              marginBottom: '24px',
-              fontSize: '14px',
+              padding: '12px 16px',
+              borderRadius: '10px',
+              marginBottom: '16px',
+              fontSize: '13px',
               fontWeight: 500,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
               animation: 'fadeInScale 0.3s ease-out forwards',
             }}
           >
             <span>{notification}</span>
-            <span style={{ fontSize: '12px', color: '#A3A3A3', textTransform: 'uppercase', letterSpacing: '1px' }}>Live Stream</span>
+            <span style={{ fontSize: '11px', color: '#A3A3A3', textTransform: 'uppercase', letterSpacing: '1px' }}>Live Stream</span>
           </div>
         )}
 
@@ -392,7 +399,7 @@ export default function AdminOrdersPage() {
         {activeOrders.length === 0 ? (
           <div
             style={{
-              padding: '80px 32px',
+              padding: '50px 24px',
               textAlign: 'center',
               color: '#666666',
               background: '#FFFFFF',
@@ -401,12 +408,12 @@ export default function AdminOrdersPage() {
               boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
             }}
           >
-            <p style={{ fontSize: '18px', fontWeight: 400, color: '#171717', marginBottom: '8px' }}>No active pending orders.</p>
-            <p style={{ fontSize: '14px', color: '#A3A3A3' }}>Incoming requests will automatically appear here.</p>
+            <p style={{ fontSize: '16px', fontWeight: 400, color: '#171717', marginBottom: '6px' }}>No active pending orders.</p>
+            <p style={{ fontSize: '13px', color: '#A3A3A3' }}>Incoming requests will automatically appear here.</p>
           </div>
         ) : isMobile ? (
           /* MOBILE CARDS VIEW */
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {activeOrders.map((order) => {
               const customerName = order.customer_name || order.shipping?.fullName || 'Guest'
               const email = order.email || order.shipping?.email || 'N/A'
@@ -423,25 +430,25 @@ export default function AdminOrdersPage() {
                   style={{
                     background: '#FFFFFF',
                     border: '1px solid #EBEBEB',
-                    borderRadius: '12px',
-                    padding: '20px',
+                    borderRadius: '10px',
+                    padding: '16px',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '16px',
+                    gap: '12px',
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid #EBEBEB', paddingBottom: '12px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid #EBEBEB', paddingBottom: '10px' }}>
                     <div>
-                      <div style={{ fontWeight: 600, fontSize: '16px', color: '#171717' }}>#{String(order.id).slice(0, 8)}</div>
-                      <div style={{ fontSize: '12px', color: '#666666', marginTop: '4px' }}>
+                      <div style={{ fontWeight: 600, fontSize: '15px', color: '#171717' }}>#{String(order.id).slice(0, 8)}</div>
+                      <div style={{ fontSize: '11px', color: '#666666', marginTop: '2px' }}>
                         {order.created_at ? new Date(order.created_at).toLocaleString() : 'N/A'}
                       </div>
                     </div>
                     <span
                       style={{
-                        padding: '4px 10px',
+                        padding: '3px 8px',
                         borderRadius: '9999px',
-                        fontSize: '12px',
+                        fontSize: '11px',
                         fontWeight: 500,
                       }}
                       className={
@@ -454,15 +461,15 @@ export default function AdminOrdersPage() {
 
                   {renderProductItems(items)}
 
-                  <div style={{ fontSize: '14px' }}>
+                  <div style={{ fontSize: '13px' }}>
                     <div style={{ fontWeight: 600, color: '#171717' }}>{customerName}</div>
-                    <div style={{ color: '#666666', fontSize: '13px', wordBreak: 'break-all', marginTop: '2px' }}>{email}</div>
-                    <div style={{ color: '#A3A3A3', fontSize: '12px', marginTop: '4px' }}>{address}</div>
+                    <div style={{ color: '#666666', fontSize: '12px', wordBreak: 'break-all', marginTop: '2px' }}>{email}</div>
+                    <div style={{ color: '#A3A3A3', fontSize: '11px', marginTop: '2px' }}>{address}</div>
                   </div>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '14px', borderTop: '1px solid #EBEBEB', paddingTop: '12px' }}>
-                    <span style={{ textTransform: 'uppercase', color: '#666666', fontSize: '12px', fontWeight: 500, letterSpacing: '0.5px' }}>{paymentMethod}</span>
-                    <span style={{ fontWeight: 600, fontSize: '18px', color: '#171717' }}>${Number(total).toFixed(2)}</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', borderTop: '1px solid #EBEBEB', paddingTop: '10px' }}>
+                    <span style={{ textTransform: 'uppercase', color: '#666666', fontSize: '11px', fontWeight: 500, letterSpacing: '0.5px' }}>{paymentMethod}</span>
+                    <span style={{ fontWeight: 600, fontSize: '16px', color: '#171717' }}>${Number(total).toFixed(2)}</span>
                   </div>
 
                   <div>
@@ -494,13 +501,13 @@ export default function AdminOrdersPage() {
               }}
             >
               <thead>
-                <tr style={{ background: '#171717', color: '#FFFFFF', fontSize: '12px', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
-                  <th style={{ padding: '16px 20px', width: '35%', fontWeight: 500 }}>Order Details & Time</th>
-                  <th style={{ padding: '16px 20px', width: '25%', fontWeight: 500 }}>Customer</th>
-                  <th style={{ padding: '16px 20px', width: '15%', fontWeight: 500 }}>Payment</th>
-                  <th style={{ padding: '16px 20px', width: '10%', fontWeight: 500 }}>Total</th>
-                  <th style={{ padding: '16px 20px', width: '8%', fontWeight: 500 }}>Status</th>
-                  <th style={{ padding: '16px 20px', width: '7%', fontWeight: 500 }}>Action</th>
+                <tr style={{ background: '#171717', color: '#FFFFFF', fontSize: '11px', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+                  <th style={{ padding: '14px 18px', width: '35%', fontWeight: 500 }}>Order Details & Time</th>
+                  <th style={{ padding: '14px 18px', width: '25%', fontWeight: 500 }}>Customer</th>
+                  <th style={{ padding: '14px 18px', width: '15%', fontWeight: 500 }}>Payment</th>
+                  <th style={{ padding: '14px 18px', width: '10%', fontWeight: 500 }}>Total</th>
+                  <th style={{ padding: '14px 18px', width: '8%', fontWeight: 500 }}>Status</th>
+                  <th style={{ padding: '14px 18px', width: '7%', fontWeight: 500 }}>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -515,30 +522,30 @@ export default function AdminOrdersPage() {
 
                   return (
                     <tr key={order.id} style={{ borderBottom: '1px solid #EBEBEB', verticalAlign: 'top' }} className="order-card-hover">
-                      <td style={{ padding: '20px' }}>
-                        <div style={{ fontWeight: 600, fontSize: '15px', color: '#171717' }}>#{String(order.id).slice(0, 8)}</div>
-                        <div style={{ fontSize: '13px', color: '#666666', marginTop: '6px' }}>
+                      <td style={{ padding: '16px 18px' }}>
+                        <div style={{ fontWeight: 600, fontSize: '14px', color: '#171717' }}>#{String(order.id).slice(0, 8)}</div>
+                        <div style={{ fontSize: '12px', color: '#666666', marginTop: '4px' }}>
                           {order.created_at ? new Date(order.created_at).toLocaleString() : 'N/A'}
                         </div>
                         {renderProductItems(items)}
                       </td>
-                      <td style={{ padding: '20px' }}>
-                        <div style={{ fontWeight: 600, fontSize: '14px', color: '#171717' }}>{customerName}</div>
-                        <div style={{ fontSize: '13px', color: '#666666', marginTop: '2px' }}>{email}</div>
-                        <div style={{ fontSize: '12px', color: '#A3A3A3', marginTop: '4px' }}>{address}</div>
+                      <td style={{ padding: '16px 18px' }}>
+                        <div style={{ fontWeight: 600, fontSize: '13px', color: '#171717' }}>{customerName}</div>
+                        <div style={{ fontSize: '12px', color: '#666666', marginTop: '2px' }}>{email}</div>
+                        <div style={{ fontSize: '11px', color: '#A3A3A3', marginTop: '2px' }}>{address}</div>
                       </td>
-                      <td style={{ padding: '20px', textTransform: 'uppercase', fontSize: '13px', color: '#666666', fontWeight: 500 }}>
+                      <td style={{ padding: '16px 18px', textTransform: 'uppercase', fontSize: '12px', color: '#666666', fontWeight: 500 }}>
                         {paymentMethod}
                       </td>
-                      <td style={{ padding: '20px', fontWeight: 600, fontSize: '15px', color: '#171717' }}>
+                      <td style={{ padding: '16px 18px', fontWeight: 600, fontSize: '14px', color: '#171717' }}>
                         ${Number(total).toFixed(2)}
                       </td>
-                      <td style={{ padding: '20px' }}>
+                      <td style={{ padding: '16px 18px' }}>
                         <span
                           style={{
-                            padding: '4px 10px',
+                            padding: '3px 8px',
                             borderRadius: '9999px',
-                            fontSize: '12px',
+                            fontSize: '11px',
                             fontWeight: 500,
                             display: 'inline-block',
                           }}
@@ -549,7 +556,7 @@ export default function AdminOrdersPage() {
                           {currentStatus}
                         </span>
                       </td>
-                      <td style={{ padding: '20px' }}>
+                      <td style={{ padding: '16px 18px' }}>
                         <select
                           value={currentStatus}
                           onChange={(e) => handleStatusChange(order.id, e.target.value)}
