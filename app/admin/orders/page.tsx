@@ -222,20 +222,23 @@ export default function AdminOrdersPage() {
           to { opacity: 1; transform: scale(1); }
         }
 
+        /* Lock the body and HTML so the main viewport is not scrollable */
         html, body {
           margin: 0;
           padding: 0;
+          height: 100%;
+          overflow: hidden;
           background-color: #FAFAFA;
           color: #171717;
           font-family: GeistSans, system-ui, -apple-system, sans-serif;
-          overflow-x: hidden;
         }
 
         .admin-layout-wrapper {
           display: flex;
           flex-direction: column;
-          min-height: 100vh;
+          height: 100vh;
           width: 100%;
+          overflow: hidden;
           background-color: #FAFAFA;
           background-image: linear-gradient(to right, #EBEBEB 1px, transparent 1px),
                             linear-gradient(to bottom, #EBEBEB 1px, transparent 1px);
@@ -252,26 +255,28 @@ export default function AdminOrdersPage() {
           background-color: #171717;
           border-bottom: 1px solid #2A2A2A;
           width: 100%;
+          flex-shrink: 0;
         }
 
-        /* Main content padding-top ensures content starts safely underneath the fixed header without overlap */
+        /* Main content area takes remaining height and handles standalone scrolling */
         .admin-main-content {
           flex: 1;
           display: flex;
           flex-direction: column;
           box-sizing: border-box;
-          padding: 76px 12px 20px 12px;
+          padding: 130px 12px 20px 12px; /* Top padding clears the fixed header height */
           width: 100%;
           max-width: 1400px;
           margin: 0 auto;
           position: relative;
           z-index: 1;
+          overflow-y: auto; /* ONLY this section scrolls */
           animation: fadeInScale 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
         @media (min-width: 768px) {
           .admin-main-content {
-            padding: 90px 24px 24px 24px;
+            padding: 140px 24px 24px 24px;
           }
         }
 
@@ -331,7 +336,7 @@ export default function AdminOrdersPage() {
         <AdminSubNav />
       </div>
 
-      {/* Main Content Area */}
+      {/* Scrollable Main Content Area */}
       <div className="admin-main-content">
         <div
           style={{
