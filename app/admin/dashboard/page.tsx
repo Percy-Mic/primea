@@ -6,91 +6,18 @@ import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import AdminHeader from '@/components/AdminNav'
 
-interface Order {
-  id: string
-  customer: string
-  total: number
-  status: string
-  createdAt?: string
-}
-
-interface LowStockItem {
-  id: string
-  title: string
-  stock: number
-}
-
-interface DashboardStats {
-  revenue: number
-  totalOrders: number
-  activeProducts: number
-  totalUnits: number
-  totalInventoryValue: number
-  lowStockItems: LowStockItem[]
-}
-
-interface MonthlySummaryPeriod {
-  revenue: number
-  ordersCount: number
-  revenueGrowth: number
-  ordersGrowth: number
-}
-
-interface Summaries {
-  monthly: MonthlySummaryPeriod
-  yearly: { revenue: number; ordersCount: number }
-}
-
-interface Analytics {
-  averageOrderValue: number
-  pendingOrdersCount: number
-}
-
-interface DailyPoint {
-  day: number
-  label: string
-  revenue: number
-}
-
-const MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December'
-]
-
-export default function AdminDashboardPage() {
+export default function AdminFeaturePage() {
   const router = useRouter()
   const pathname = usePathname()
-  const currentDate = new Date()
-  
-  const [selectedMonth, setSelectedMonth] = useState<number>(currentDate.getMonth())
-  const [selectedYear, setSelectedYear] = useState<number>(currentDate.getFullYear())
-  const [chartMode, setChartMode] = useState<'daily' | 'weekly'>('daily')
 
   const [userEmail, setUserEmail] = useState<string>('Loading...')
-  const [isAuthorized, setIsAuthorized] = useState<boolean>(false)
   const [authLoading, setAuthLoading] = useState<boolean>(true)
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false)
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false)
 
-  const [stats, setStats] = useState<DashboardStats>({
-    revenue: 0,
-    totalOrders: 0,
-    activeProducts: 0,
-    totalUnits: 0,
-    totalInventoryValue: 0,
-    lowStockItems: [],
-  })
-  const [summaries, setSummaries] = useState<Summaries>({
-    monthly: { revenue: 0, ordersCount: 0, revenueGrowth: 0, ordersGrowth: 0 },
-    yearly: { revenue: 0, ordersCount: 0 },
-  })
-  const [analytics, setAnalytics] = useState<Analytics>({
-    averageOrderValue: 0,
-    pendingOrdersCount: 0,
-  })
-  const [dailyTrend, setDailyTrend] = useState<DailyPoint[]>([])
-  const [recentOrders, setRecentOrders] = useState<Order[]>([])
-  const [loading, setLoading] = useState(true)
-  const [isRefreshing, setIsRefreshing] = useState(false)
+  // Example state for your feature view
+  const [items, setItems] = useState<any[]>([])
+  const [loading, setLoading] = useState<boolean>(true)
 
   useEffect(() => {
     const checkAdminAccess = async () => {
@@ -114,94 +41,31 @@ export default function AdminDashboardPage() {
         console.warn('Access check warning: Verify user role settings.')
       }
 
-      setIsAuthorized(true)
       setAuthLoading(false)
     }
 
     checkAdminAccess()
   }, [router])
 
-  const fetchDashboardData = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     setIsRefreshing(true)
     try {
-      const response = await fetch(
-        `/api/admin/dashboard?month=${selectedMonth}&year=${selectedYear}`
-      )
-      if (response.ok) {
-        const data = await response.json()
-        if (data.stats) setStats(data.stats)
-        if (data.summaries) setSummaries(data.summaries)
-        if (data.analytics) setAnalytics(data.analytics)
-        if (data.recentOrders) setRecentOrders(data.recentOrders)
-        if (data.dailyTrend) setDailyTrend(data.dailyTrend)
-      }
+      // Fetch your custom endpoint data here
+      // const response = await fetch('/api/admin/your-endpoint')
+      // if (response.ok) { const data = await response.json(); setItems(data) }
     } catch (error) {
-      console.error('Error fetching admin dashboard data:', error)
+      console.error('Error fetching data:', error)
     } finally {
       setLoading(false)
       setIsRefreshing(false)
     }
-  }, [selectedMonth, selectedYear])
+  }, [])
 
   useEffect(() => {
-    if (!isAuthorized) return
-    fetchDashboardData()
-
-    const supabase = createClient()
-    const channel = supabase
-      .channel('admin-dashboard-realtime')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'orders' },
-        () => { fetchDashboardData() }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'products' },
-        () => { fetchDashboardData() }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
+    if (!authLoading) {
+      fetchData()
     }
-  }, [isAuthorized, fetchDashboardData])
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      maximumFractionDigits: 0,
-    }).format(amount)
-  }
-
-  const renderGrowthBadge = (value: number) => {
-    const isPositive = value >= 0
-    const color = isPositive ? '#2e6930' : '#992222'
-    const bgColor = isPositive ? '#f0f7f0' : '#fcf0f0'
-    const arrow = isPositive ? '↑' : '↓'
-
-    return (
-      <span
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '0.2rem',
-          fontSize: '0.75rem',
-          fontWeight: 600,
-          color: color,
-          backgroundColor: bgColor,
-          padding: '0.15rem 0.45rem',
-          borderRadius: '4px',
-          marginTop: '0.35rem',
-        }}
-      >
-        {arrow} {Math.abs(value).toFixed(1)}% <span style={{ fontWeight: 400, color: '#786f66' }}>vs last mo</span>
-      </span>
-    )
-  }
-
-  const handlePrint = () => { window.print() }
+  }, [authLoading, fetchData])
 
   const handleLogout = async () => {
     const supabase = createClient()
@@ -216,35 +80,6 @@ export default function AdminDashboardPage() {
       </div>
     )
   }
-
-  const lowStockCount = stats.lowStockItems?.length || 0
-
-  // Helper to compute weekly trend points from daily trend data
-  const getWeeklyTrend = () => {
-    const weeks: { label: string; revenue: number }[] = []
-    let currentWeekRevenue = 0
-    let weekCount = 1
-    
-    dailyTrend.forEach((p, idx) => {
-      currentWeekRevenue += p.revenue
-      if ((idx + 1) % 7 === 0 || idx === dailyTrend.length - 1) {
-        weeks.push({
-          label: `Week ${weekCount}`,
-          revenue: currentWeekRevenue
-        })
-        currentWeekRevenue = 0
-        weekCount++
-      }
-    })
-    return weeks
-  }
-
-  const activeTrend = chartMode === 'daily' ? dailyTrend : getWeeklyTrend()
-  const rawMaxVal = Math.max(...activeTrend.map(p => p.revenue), 10)
-  // Round up max value nicely for grid markers
-  const maxVal = Math.ceil(rawMaxVal / 50) * 50 || 100
-  const chartWidth = Math.max(activeTrend.length * 70, 650)
-  const chartHeight = 180
 
   return (
     <div className="admin-layout-wrapper">
@@ -385,43 +220,6 @@ export default function AdminDashboardPage() {
           gap: 1rem;
         }
 
-        .filter-bar {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          background: rgba(255, 255, 255, 0.85);
-          backdrop-filter: blur(8px);
-          border: 1px solid #e8e2d9;
-          padding: 0.45rem 0.85rem;
-          border-radius: 10px;
-          box-shadow: 0 4px 15px rgba(44, 34, 30, 0.02);
-          flex-wrap: wrap;
-          width: 100%;
-        }
-
-        @media (min-width: 640px) {
-          .filter-bar { width: auto; }
-        }
-
-        .filter-label {
-          font-size: 0.75rem;
-          font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          color: #8c827a;
-        }
-
-        .filter-select {
-          padding: 0.35rem 0.65rem;
-          background-color: #f7f4ef;
-          border: 1px solid #ded7cc;
-          border-radius: 6px;
-          font-size: 0.85rem;
-          font-weight: 500;
-          color: #1f1815;
-          cursor: pointer;
-        }
-
         .action-buttons-group {
           display: flex;
           gap: 0.5rem;
@@ -449,6 +247,7 @@ export default function AdminDashboardPage() {
           cursor: pointer;
           transition: all 0.3s ease;
           box-shadow: 0 2px 8px rgba(44, 34, 30, 0.02);
+          text-decoration: none;
         }
 
         @media (min-width: 640px) {
@@ -462,50 +261,6 @@ export default function AdminDashboardPage() {
           transform: translateY(-2px);
         }
 
-        .metrics-grid {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 1rem;
-          margin-bottom: 1.25rem;
-        }
-
-        @media (min-width: 480px) { .metrics-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (min-width: 1024px) { .metrics-grid { grid-template-columns: repeat(4, 1fr); } }
-
-        .metric-card {
-          background: linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(250, 248, 245, 0.9) 100%);
-          backdrop-filter: blur(4px);
-          border: 1px solid rgba(232, 226, 217, 0.8);
-          border-radius: 12px;
-          padding: 1.25rem;
-          box-shadow: 0 4px 20px rgba(44, 34, 30, 0.03);
-        }
-
-        .metric-label {
-          font-size: 0.75rem;
-          font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          color: #8c827a;
-        }
-
-        .metric-value {
-          font-size: 1.4rem;
-          font-weight: 700;
-          color: #1f1815;
-          margin-top: 0.3rem;
-          word-break: break-word;
-        }
-
-        .analytics-grid {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 1.25rem;
-          margin-bottom: 1.25rem;
-        }
-
-        @media (min-width: 1024px) { .analytics-grid { grid-template-columns: 2fr 1fr; } }
-
         .dashboard-section {
           background: linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(250, 248, 245, 0.9) 100%);
           backdrop-filter: blur(4px);
@@ -514,6 +269,7 @@ export default function AdminDashboardPage() {
           padding: 1.25rem;
           box-shadow: 0 4px 20px rgba(44, 34, 30, 0.03);
           overflow: hidden;
+          margin-bottom: 1.25rem;
         }
 
         .section-title-wrap {
@@ -532,91 +288,14 @@ export default function AdminDashboardPage() {
           font-weight: 700;
           color: #1f1815;
         }
-
-        .analysis-badge {
-          background: #f4efe6;
-          color: #b06d50;
-          padding: 0.2rem 0.5rem;
-          border-radius: 4px;
-          font-weight: 600;
-          font-size: 0.78rem;
-        }
-
-        .scrollable-graph-container {
-          width: 100%;
-          overflow-x: auto;
-          white-space: nowrap;
-          padding-bottom: 0.5rem;
-          margin-top: 0.5rem;
-          scrollbar-width: thin;
-          scrollbar-color: #ded7cc #fcfbfa;
-        }
-
-        .content-grid {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 1.25rem;
-        }
-
-        @media (min-width: 1024px) { .content-grid { grid-template-columns: 2fr 1fr; } }
-
-        .orders-table {
-          width: 100%;
-          border-collapse: collapse;
-          font-size: 0.85rem;
-          min-width: 450px;
-        }
-
-        .orders-table th {
-          text-align: left;
-          padding: 0.5rem;
-          color: #8c827a;
-          font-weight: 600;
-          border-bottom: 1px solid #eee8e0;
-        }
-
-        .orders-table td {
-          padding: 0.7rem 0.5rem;
-          border-bottom: 1px solid #f7f4ef;
-          color: #3b332e;
-        }
-
-        .status-badge {
-          display: inline-block;
-          padding: 0.15rem 0.5rem;
-          border-radius: 999px;
-          font-size: 0.7rem;
-          font-weight: 600;
-        }
-
-        .status-completed { background-color: #f0f7f0; color: #2e6930; }
-        .status-processing { background-color: #fcf8ee; color: #8a6200; }
-
-        /* Clean Print Formatting */
-        @media print {
-          body { background: #ffffff !important; color: #000000 !important; }
-          .header-fixed-container, .dashboard-actions-bar, .action-buttons-group, .mobile-menu-btn, .top-nav-bar, button { display: none !important; }
-          .admin-layout-wrapper { padding-top: 0 !important; }
-          .admin-main-content { max-width: 100% !important; padding: 0 !important; }
-          .dashboard-section, .metric-card { border: 1px solid #ccc !important; box-shadow: none !important; background: #ffffff !important; }
-          .admin-main-content::before {
-            content: "PRYMEA FASHION — EXECUTIVE PERFORMANCE REPORT (" attr(data-print-month) ")";
-            display: block;
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #333;
-            padding-bottom: 8px;
-          }
-        }
       `}</style>
 
       {/* Fixed Header */}
       <div className="header-fixed-container">
         <div className="fixed-top-header">
           <AdminHeader
-            title="Admin Dashboard"
-            description="Real-time store progress and inventory management dashboard"
+            title="Admin Management"
+            description="Manage your platform settings and content records"
             userEmail={userEmail}
             onLogout={handleLogout}
           />
@@ -635,256 +314,25 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Main Content Area */}
-      <div className="admin-main-content" data-print-month={`${MONTH_NAMES[selectedMonth]} ${selectedYear}`}>
+      <div className="admin-main-content">
         <div className="dashboard-actions-bar">
-          <div className="filter-bar">
-            <span className="filter-label">Statistics Period:</span>
-            <select value={selectedMonth} onChange={(e) => setSelectedMonth(Number(e.target.value))} className="filter-select">
-              {MONTH_NAMES.map((name, index) => (<option key={index} value={index}>{name}</option>))}
-            </select>
-            <select value={selectedYear} onChange={(e) => setSelectedYear(Number(e.target.value))} className="filter-select">
-              {[2024, 2025, 2026, 2027].map((year) => (<option key={year} value={year}>{year}</option>))}
-            </select>
-          </div>
-
+          <h1 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1f1815' }}>Feature Management</h1>
           <div className="action-buttons-group">
-            <button type="button" onClick={fetchDashboardData} disabled={isRefreshing} className="btn-action">
-              <span>{isRefreshing ? 'Syncing...' : 'Force Sync'}</span>
-            </button>
-            <button type="button" onClick={handlePrint} className="btn-action">
-              <span>Print Report</span>
+            <button type="button" onClick={fetchData} disabled={isRefreshing} className="btn-action">
+              <span>{isRefreshing ? 'Syncing...' : 'Refresh Data'}</span>
             </button>
           </div>
         </div>
 
-        {/* Metrics Cards */}
-        <div className="metrics-grid">
-          <div className="metric-card">
-            <div className="metric-label">Lifetime Revenue</div>
-            <div className="metric-value">{loading ? '...' : formatCurrency(stats.revenue)}</div>
+        <div className="dashboard-section">
+          <div className="section-title-wrap">
+            <h2 className="section-title">Overview Section</h2>
           </div>
-          <div className="metric-card">
-            <div className="metric-label">Completed Orders</div>
-            <div className="metric-value">{loading ? '...' : stats.totalOrders}</div>
-          </div>
-          <div className="metric-card">
-            <div className="metric-label">Active Products</div>
-            <div className="metric-value">{loading ? '...' : stats.activeProducts}</div>
-          </div>
-          <div className="metric-card">
-            <div className="metric-label">{MONTH_NAMES[selectedMonth]} Revenue</div>
-            <div className="metric-value">{loading ? '...' : formatCurrency(summaries.monthly.revenue)}</div>
-            {!loading && renderGrowthBadge(summaries.monthly.revenueGrowth)}
-          </div>
-        </div>
-
-        {/* Store Progress Graph with Grid lines and Value Identifiers */}
-        <div className="analytics-grid">
-          <div className="dashboard-section">
-            <div className="section-title-wrap">
-              <h2 className="section-title">
-                {chartMode === 'daily' ? 'Daily' : 'Weekly'} Revenue Progress ({MONTH_NAMES[selectedMonth]} {selectedYear})
-              </h2>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <div style={{ display: 'flex', background: '#f4efe6', padding: '0.15rem', borderRadius: '6px', border: '1px solid #e8e2d9' }}>
-                  <button
-                    type="button"
-                    onClick={() => setChartMode('daily')}
-                    style={{
-                      background: chartMode === 'daily' ? '#1f1815' : 'transparent',
-                      color: chartMode === 'daily' ? '#ffffff' : '#8c827a',
-                      border: 'none',
-                      padding: '0.2rem 0.5rem',
-                      borderRadius: '4px',
-                      fontSize: '0.72rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    Daily
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setChartMode('weekly')}
-                    style={{
-                      background: chartMode === 'weekly' ? '#1f1815' : 'transparent',
-                      color: chartMode === 'weekly' ? '#ffffff' : '#8c827a',
-                      border: 'none',
-                      padding: '0.2rem 0.5rem',
-                      borderRadius: '4px',
-                      fontSize: '0.72rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    Weekly
-                  </button>
-                </div>
-                <span className="analysis-badge">Live Stream</span>
-              </div>
-            </div>
-            <p style={{ fontSize: '0.75rem', color: '#8c827a', margin: '0 0 0.5rem 0' }}>
-              {chartMode === 'daily' ? 'Daily sales with value identifiers (smaller dots):' : 'Weekly aggregated sales (larger dots):'}
-            </p>
-            
-            <div className="scrollable-graph-container">
-              {activeTrend.length === 0 ? (
-                <div style={{ height: '190px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8c827a', fontSize: '0.85rem' }}>
-                  No transaction data recorded for this period.
-                </div>
-              ) : (
-                <div style={{ width: `${chartWidth}px`, height: '200px', position: 'relative' }}>
-                  <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} style={{ width: '100%', height: '100%', overflow: 'visible' }}>
-                    {/* Horizontal Grid Lines */}
-                    {[0, 0.25, 0.5, 0.75, 1].map((ratio, index) => {
-                      const yPos = 25 + ratio * 120
-                      const labelVal = Math.round(maxVal * (1 - ratio))
-                      return (
-                        <g key={index}>
-                          <line x1="45" y1={yPos} x2={chartWidth - 10} y2={yPos} stroke="#eee8e0" strokeWidth="1" strokeDasharray={index === 4 ? 'none' : '3,3'} />
-                          <text x="38" y={yPos + 4} textAnchor="end" fontSize="9" fill="#8c827a" fontWeight="500">
-                            ${labelVal}
-                          </text>
-                        </g>
-                      )
-                    })}
-
-                    {/* Vertical Axis Line */}
-                    <line x1="45" y1="25" x2="45" y2="145" stroke="#ded7cc" strokeWidth="1.5" />
-
-                    {/* Polyline Path */}
-                    <polyline
-                      fill="none"
-                      stroke="#b06d50"
-                      strokeWidth="2.5"
-                      points={activeTrend.map((p, idx) => {
-                        const cx = 70 + idx * 70
-                        const cy = 145 - (p.revenue / maxVal) * 120
-                        return `${cx},${cy}`
-                      }).join(' ')}
-                    />
-
-                    {/* Data Points and Identifiers */}
-                    {activeTrend.map((p, idx) => {
-                      const cx = 70 + idx * 70
-                      const cy = 145 - (p.revenue / maxVal) * 120
-                      const dotRadius = chartMode === 'daily' ? 3 : 5
-                      return (
-                        <g key={idx}>
-                          {/* Value Identifier / Label above dot */}
-                          <text x={cx} y={cy - 9} textAnchor="middle" fontSize="9" fill="#3b332e" fontWeight="600">
-                            {p.revenue > 0 ? `$${p.revenue}` : '$0'}
-                          </text>
-
-                          {/* Data Point Dot */}
-                          <circle
-                            cx={cx}
-                            cy={cy}
-                            r={dotRadius}
-                            fill="#ffffff"
-                            stroke="#b06d50"
-                            strokeWidth="2"
-                          />
-
-                          {/* X-Axis Label */}
-                          <text 
-                            x={cx} 
-                            y="165" 
-                            textAnchor="middle" 
-                            fontSize="10" 
-                            fill="#8c827a"
-                            fontWeight="500"
-                          >
-                            {p.label}
-                          </text>
-                        </g>
-                      )
-                    })}
-                  </svg>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="dashboard-section">
-            <div className="section-title-wrap">
-              <h2 className="section-title">Live Performance Analysis</h2>
-            </div>
-            <p style={{ fontSize: '0.85rem', color: '#3b332e', lineHeight: '1.5', margin: '0 0 0.75rem 0' }}>
-              The graph incorporates horizontal axis thresholds and individual monetary identifiers directly over each data point for instant auditing.
-            </p>
-            <div style={{ background: '#fcfbfa', padding: '0.6rem 0.75rem', borderRadius: '6px', border: '1px solid #f2ede4' }}>
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#8c827a', textTransform: 'uppercase' }}>Stream Status</span>
-              <div style={{ fontSize: '0.82rem', color: '#2e6930', fontWeight: 600, marginTop: '0.2rem' }}>
-                Connected to database stream
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Recent Orders & Inventory Health */}
-        <div className="content-grid">
-          <div className="dashboard-section">
-            <div className="section-title-wrap">
-              <h2 className="section-title">Recent Orders (Live)</h2>
-              <Link href="/admin/orders" style={{ fontSize: '0.8rem', color: '#b06d50', textDecoration: 'none', fontWeight: 600 }}>View All →</Link>
-            </div>
-            {loading ? (
-              <p style={{ fontSize: '0.85rem', color: '#8c827a' }}>Loading...</p>
-            ) : recentOrders.length === 0 ? (
-              <p style={{ fontSize: '0.85rem', color: '#8c827a' }}>No recent orders found.</p>
-            ) : (
-              <div style={{ width: '100%', overflowX: 'auto' }}>
-                <table className="orders-table">
-                  <thead>
-                    <tr>
-                      <th>Order ID</th>
-                      <th>Customer</th>
-                      <th>Total</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {recentOrders.map((order) => (
-                      <tr key={order.id}>
-                        <td style={{ fontWeight: 600 }}>{order.id}</td>
-                        <td>{order.customer}</td>
-                        <td>{formatCurrency(order.total)}</td>
-                        <td>
-                          <span className={`status-badge ${order.status?.toLowerCase() === 'completed' ? 'status-completed' : 'status-processing'}`}>
-                            {order.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-
-          <div className="dashboard-section">
-            <div className="section-title-wrap">
-              <h2 className="section-title">Inventory Health</h2>
-              <Link href="/admin/products" style={{ fontSize: '0.8rem', color: '#b06d50', textDecoration: 'none', fontWeight: 600 }}>Manage →</Link>
-            </div>
-            {lowStockCount === 0 ? (
-              <div style={{ color: '#2e6930', fontSize: '0.85rem', background: '#f2f8f2', padding: '0.85rem', borderRadius: '6px' }}>
-                Inventory levels are optimal. All items are in stock.
-              </div>
-            ) : (
-              <div style={{ color: '#992222', fontSize: '0.85rem', background: '#fdf5f5', padding: '0.85rem', borderRadius: '6px' }}>
-                <strong>Low Stock Alerts ({lowStockCount})</strong>
-                <ul style={{ margin: '0.5rem 0 0 0', paddingLeft: '1rem' }}>
-                  {stats.lowStockItems.map((item) => (
-                    <li key={item.id}>{item.title} — {item.stock} left</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
+          {loading ? (
+            <p style={{ fontSize: '0.85rem', color: '#8c827a' }}>Loading content...</p>
+          ) : (
+            <p style={{ fontSize: '0.85rem', color: '#3b332e' }}>Your custom components and tables can go here.</p>
+          )}
         </div>
       </div>
     </div>
