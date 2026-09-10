@@ -72,13 +72,17 @@ export default function AdminSubNav() {
         .sub-nav-bar {
           display: flex;
           align-items: center;
-          justify-content: center;
           background-color: #FFFFFF;
-          border-top: 1px solid #EBEBEB;
           border-bottom: 1px solid #EBEBEB;
           padding: 10px 24px;
           width: 100%;
           box-sizing: border-box;
+          position: fixed;
+          top: 69px;
+          left: 0;
+          right: 0;
+          z-index: 9998;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.03);
         }
 
         .sub-nav-list {
@@ -86,8 +90,20 @@ export default function AdminSubNav() {
           list-style: none;
           padding: 0;
           margin: 0;
-          gap: 12px;
+          width: 100%;
           align-items: center;
+          /* Mobile: Distribute items evenly across the full width */
+          justify-content: space-between;
+        }
+
+        /* Desktop: Switch layout to left-aligned with a clean gap */
+        @media (min-width: 768px) {
+          .sub-nav-list {
+            justify-content: flex-start;
+            gap: 16px;
+            max-width: 1400px;
+            margin: 0 auto;
+          }
         }
 
         .sub-nav-item {
