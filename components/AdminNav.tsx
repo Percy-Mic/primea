@@ -85,13 +85,13 @@ function AdminSubNav() {
           align-items: center;
           justify-content: center;
           background-color: #FFFFFF;
-          border-top: 1px solid #EBEBEB;
           border-bottom: 1px solid #EBEBEB;
           padding: 8px 24px;
           width: 100%;
           box-sizing: border-box;
           position: fixed;
-          top: 61px; /* Positions directly beneath the main header */
+          /* Sits below the main header plus extra padding space and an accent separator line */
+          top: 69px; 
           left: 0;
           right: 0;
           z-index: 9998;
@@ -405,9 +405,12 @@ export default function UserNav({
             </div>
           </div>
         )}
+
+        {/* Separator Accent Line between Main Header and SubNav */}
+        <div style={styles.headerSeparatorLine} />
       </header>
 
-      {/* Embedded Fixed Admin Sub Navigation Bar */}
+      {/* Fixed Admin Sub Navigation Bar */}
       <AdminSubNav />
     </>
   )
@@ -425,6 +428,11 @@ const styles: { [key: string]: React.CSSProperties } = {
     right: 0,
     zIndex: 9999,
     backdropFilter: 'blur(12px)',
+  },
+  headerSeparatorLine: {
+    height: '4px',
+    width: '100%',
+    background: 'linear-gradient(90deg, rgba(212, 175, 55, 0) 0%, rgba(212, 175, 55, 0.4) 50%, rgba(212, 175, 55, 0) 100%)',
   },
   navContainer: {
     display: 'flex',
