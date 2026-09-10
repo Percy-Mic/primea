@@ -1,6 +1,6 @@
 // app/api/orders/[id]/track/route.ts
 import { NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabaseClient' // Ensure your supabase client path is correct
+import { supabase } from '@/lib/supabase/server' // Updated to match your folder structure
 
 export async function GET(
   request: Request,
@@ -9,7 +9,6 @@ export async function GET(
   try {
     const orderId = params.id
 
-    // Query your actual database table for real tracking info
     const { data, error } = await supabase
       .from('orders')
       .select('status, current_lat, current_lng, tracking_logs')
