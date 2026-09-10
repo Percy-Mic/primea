@@ -211,7 +211,7 @@ export default function AdminDashboardPage() {
 
   if (authLoading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontFamily: 'GeistSans, system-ui, sans-serif', color: '#666666', background: '#FAFAFA' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontFamily: 'system-ui, sans-serif', color: '#666666', background: '#FAFAFA' }}>
         Verifying administrator credentials...
       </div>
     )
@@ -252,7 +252,7 @@ export default function AdminDashboardPage() {
           margin: 0;
           padding: 0;
         }
-        body {
+        body, html {
           background-color: #FAFAFA;
           background-image: 
             linear-gradient(to right, #EBEBEB 1px, transparent 1px),
@@ -262,13 +262,14 @@ export default function AdminDashboardPage() {
           color: #171717;
           overflow-x: hidden;
           width: 100%;
+          min-height: 100vh;
         }
 
         .admin-layout-wrapper {
           display: flex;
           flex-direction: column;
           min-height: 100vh;
-          padding-top: 100px;
+          padding-top: 110px;
           width: 100%;
           max-width: 100vw;
           position: relative;
@@ -290,16 +291,16 @@ export default function AdminDashboardPage() {
           justify-content: space-between;
           background-color: #FFFFFF;
           border-bottom: 1px solid #EBEBEB;
-          padding: 12px 32px;
+          padding: 12px 24px;
           width: 100%;
           flex-wrap: wrap;
-          gap: 16px;
+          gap: 12px;
         }
 
         .nav-links-group {
           display: flex;
           list-style: none;
-          gap: 8px;
+          gap: 6px;
           align-items: center;
           flex-wrap: wrap;
         }
@@ -350,23 +351,28 @@ export default function AdminDashboardPage() {
             margin-top: 8px;
             padding-top: 8px;
           }
+          .admin-layout-wrapper { padding-top: 130px; }
         }
 
         .admin-main-content {
           flex: 1;
           display: flex;
           flex-direction: column;
-          padding: 32px;
+          padding: 24px;
           width: 100%;
           max-width: 1400px;
           margin: 0 auto;
+        }
+
+        @media (min-width: 768px) {
+          .admin-main-content { padding: 32px; }
         }
 
         .dashboard-actions-bar {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 32px;
+          margin-bottom: 24px;
           flex-wrap: wrap;
           gap: 16px;
         }
@@ -374,7 +380,7 @@ export default function AdminDashboardPage() {
         .filter-bar {
           display: flex;
           align-items: center;
-          gap: 12px;
+          gap: 8px;
           background: #FFFFFF;
           border: 1px solid #EBEBEB;
           padding: 8px 16px;
@@ -404,8 +410,9 @@ export default function AdminDashboardPage() {
 
         .action-buttons-group {
           display: flex;
-          gap: 12px;
+          gap: 10px;
           align-items: center;
+          flex-wrap: wrap;
         }
 
         .btn-action {
@@ -431,7 +438,7 @@ export default function AdminDashboardPage() {
         }
 
         .btn-action-secondary {
-          background: transparent;
+          background: #FFFFFF;
           color: #171717;
           border: 1px solid #EBEBEB;
         }
@@ -444,8 +451,8 @@ export default function AdminDashboardPage() {
         .metrics-grid {
           display: grid;
           grid-template-columns: 1fr;
-          gap: 20px;
-          margin-bottom: 32px;
+          gap: 16px;
+          margin-bottom: 24px;
         }
 
         @media (min-width: 480px) { .metrics-grid { grid-template-columns: repeat(2, 1fr); } }
@@ -467,18 +474,22 @@ export default function AdminDashboardPage() {
         }
 
         .metric-value {
-          font-size: 32px;
+          font-size: 28px;
           font-weight: 400;
           color: #171717;
           margin-top: 8px;
           letter-spacing: -1px;
         }
 
+        @media (min-width: 768px) {
+          .metric-value { font-size: 32px; }
+        }
+
         .analytics-grid {
           display: grid;
           grid-template-columns: 1fr;
           gap: 20px;
-          margin-bottom: 32px;
+          margin-bottom: 24px;
         }
 
         @media (min-width: 1024px) { .analytics-grid { grid-template-columns: 2fr 1fr; } }
@@ -487,8 +498,12 @@ export default function AdminDashboardPage() {
           background: #FFFFFF;
           border: 1px solid #EBEBEB;
           border-radius: 6px;
-          padding: 24px;
+          padding: 20px;
           overflow: hidden;
+        }
+
+        @media (min-width: 768px) {
+          .dashboard-section { padding: 24px; }
         }
 
         .section-title-wrap {
@@ -503,10 +518,14 @@ export default function AdminDashboardPage() {
         }
 
         .section-title {
-          font-size: 20px;
+          font-size: 18px;
           font-weight: 400;
           color: #171717;
           letter-spacing: -0.5px;
+        }
+
+        @media (min-width: 768px) {
+          .section-title { font-size: 20px; }
         }
 
         .analysis-badge {
@@ -533,6 +552,7 @@ export default function AdminDashboardPage() {
           display: grid;
           grid-template-columns: 1fr;
           gap: 20px;
+          margin-bottom: 40px;
         }
 
         @media (min-width: 1024px) { .content-grid { grid-template-columns: 2fr 1fr; } }
@@ -541,22 +561,22 @@ export default function AdminDashboardPage() {
           width: 100%;
           border-collapse: collapse;
           font-size: 14px;
-          min-width: 450px;
+          min-width: 400px;
         }
 
         .orders-table th {
           text-align: left;
-          padding: 12px;
+          padding: 10px 8px;
           color: #666666;
           font-weight: 500;
           border-bottom: 1px solid #EBEBEB;
-          font-size: 12px;
+          font-size: 11px;
           text-transform: uppercase;
           letter-spacing: 0.05em;
         }
 
         .orders-table td {
-          padding: 14px 12px;
+          padding: 12px 8px;
           border-bottom: 1px solid #EBEBEB;
           color: #171717;
         }
@@ -573,13 +593,13 @@ export default function AdminDashboardPage() {
         .status-processing { background-color: #FAFAFA; border: 1px solid #EBEBEB; color: #666666; }
 
         @media print {
-          body { background: #FFFFFF !important; color: #000000 !important; }
+          body, html { background: #FFFFFF !important; color: #000000 !important; }
           .header-fixed-container, .dashboard-actions-bar, .action-buttons-group, .mobile-menu-btn, .top-nav-bar, button { display: none !important; }
           .admin-layout-wrapper { padding-top: 0 !important; }
           .admin-main-content { max-width: 100% !important; padding: 0 !important; }
           .dashboard-section, .metric-card { border: 1px solid #000000 !important; box-shadow: none !important; background: #FFFFFF !important; }
           .admin-main-content::before {
-            content: "PRYMEA FASHION — EXECUTIVE PERFORMANCE REPORT (" attr(data-print-month) ")";
+            content: "PRIMEA FASHION — EXECUTIVE PERFORMANCE REPORT (" attr(data-print-month) ")";
             display: block;
             font-size: 24px;
             font-weight: 400;
@@ -609,7 +629,7 @@ export default function AdminDashboardPage() {
             <li><Link href="/admin/products" className={`nav-link ${pathname === '/admin/products' ? 'active' : ''}`}>Inventory</Link></li>
             <li><Link href="/admin/products/new" className={`nav-link ${pathname === '/admin/products/new' ? 'active' : ''}`}>Add Product</Link></li>
           </ul>
-          <Link href="/" target="_blank" className="nav-link" style={{ color: '#171717', fontWeight: 500 }}>View Storefront →</Link>
+          <Link href="/" target="_blank" className="nav-link" style={{ color: '#171717', fontWeight: 500 }}>Storefront →</Link>
         </nav>
       </div>
 
@@ -662,7 +682,7 @@ export default function AdminDashboardPage() {
           <div className="dashboard-section">
             <div className="section-title-wrap">
               <h2 className="section-title">
-                {chartMode === 'daily' ? 'Daily' : 'Weekly'} Revenue Progress ({MONTH_NAMES[selectedMonth]} {selectedYear})
+                {chartMode === 'daily' ? 'Daily' : 'Weekly'} Revenue ({MONTH_NAMES[selectedMonth]} {selectedYear})
               </h2>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <div style={{ display: 'flex', background: '#FAFAFA', padding: '2px', borderRadius: '9999px', border: '1px solid #EBEBEB' }}>
@@ -673,7 +693,7 @@ export default function AdminDashboardPage() {
                       background: chartMode === 'daily' ? '#171717' : 'transparent',
                       color: chartMode === 'daily' ? '#FFFFFF' : '#666666',
                       border: 'none',
-                      padding: '4px 12px',
+                      padding: '4px 10px',
                       borderRadius: '9999px',
                       fontSize: '12px',
                       fontWeight: 500,
@@ -690,7 +710,7 @@ export default function AdminDashboardPage() {
                       background: chartMode === 'weekly' ? '#171717' : 'transparent',
                       color: chartMode === 'weekly' ? '#FFFFFF' : '#666666',
                       border: 'none',
-                      padding: '4px 12px',
+                      padding: '4px 10px',
                       borderRadius: '9999px',
                       fontSize: '12px',
                       fontWeight: 500,
@@ -705,7 +725,7 @@ export default function AdminDashboardPage() {
               </div>
             </div>
             <p style={{ fontSize: '14px', color: '#666666', margin: '0 0 12px 0' }}>
-              {chartMode === 'daily' ? 'Daily sales with value identifiers:' : 'Weekly aggregated sales:'}
+              {chartMode === 'daily' ? 'Daily sales figures:' : 'Weekly aggregated sales:'}
             </p>
             
             <div className="scrollable-graph-container">
