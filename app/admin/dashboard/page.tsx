@@ -255,10 +255,6 @@ export default function AdminDashboardPage() {
 
         html, body {
           background-color: #FAFAFA !important;
-          background-image: 
-            linear-gradient(to right, rgba(0, 0, 0, 0.07) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(0, 0, 0, 0.07) 1px, transparent 1px) !important;
-          background-size: 32px 32px !important;
           font-family: system-ui, -apple-system, sans-serif;
           color: #171717;
           overflow-x: hidden;
@@ -275,7 +271,7 @@ export default function AdminDashboardPage() {
           max-width: 100vw;
           position: relative;
           z-index: 1;
-          background: transparent !important;
+          background: #FAFAFA !important;
         }
 
         .header-fixed-container {
@@ -291,6 +287,7 @@ export default function AdminDashboardPage() {
           .admin-layout-wrapper { padding-top: 135px; }
         }
 
+        /* Stylish and Elegant Grid Pattern Background on Main Content */
         .admin-main-content {
           flex: 1;
           display: flex;
@@ -299,10 +296,31 @@ export default function AdminDashboardPage() {
           width: 100%;
           max-width: 1350px;
           margin: 0 auto;
+          position: relative;
+          background-color: #FAFAFA;
+          background-image: 
+            linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+          background-size: 24px 24px;
+        }
+
+        .admin-main-content::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.8) 0%, rgba(250, 250, 250, 0) 70%);
+          pointer-events: none;
+          z-index: 0;
+        }
+
+        /* Ensure cards/sections stay cleanly layered above the background grid */
+        .admin-main-content > * {
+          position: relative;
+          z-index: 1;
         }
 
         @media (min-width: 768px) {
-          .admin-main-content { padding: 20px 24px; }
+          .admin-main-content { padding: 24px 32px; }
         }
 
         .dashboard-actions-bar {
@@ -322,6 +340,7 @@ export default function AdminDashboardPage() {
           border: 1px solid #EBEBEB;
           padding: 6px 12px;
           border-radius: 9999px;
+          box-shadow: 0 1px 2px rgba(0,0,0,0.02);
         }
 
         .filter-label {
@@ -367,6 +386,7 @@ export default function AdminDashboardPage() {
           transition: all 0.2s ease;
           text-decoration: none;
           height: 34px;
+          box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
 
         .btn-action:hover {
@@ -400,8 +420,9 @@ export default function AdminDashboardPage() {
         .metric-card {
           background: #FFFFFF;
           border: 1px solid #EBEBEB;
-          border-radius: 6px;
+          border-radius: 8px;
           padding: 14px 16px;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.02);
         }
 
         @media (min-width: 768px) {
@@ -444,9 +465,10 @@ export default function AdminDashboardPage() {
         .dashboard-section {
           background: #FFFFFF;
           border: 1px solid #EBEBEB;
-          border-radius: 6px;
+          border-radius: 8px;
           padding: 18px 20px;
           overflow: hidden;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.02);
         }
 
         @media (min-width: 768px) {
@@ -543,7 +565,7 @@ export default function AdminDashboardPage() {
           body, html { background: #FFFFFF !important; background-image: none !important; color: #000000 !important; }
           .header-fixed-container, .dashboard-actions-bar, .action-buttons-group, button { display: none !important; }
           .admin-layout-wrapper { padding-top: 0 !important; }
-          .admin-main-content { max-width: 100% !important; padding: 0 !important; }
+          .admin-main-content { max-width: 100% !important; padding: 0 !important; background: #FFFFFF !important; background-image: none !important; }
           .dashboard-section, .metric-card { border: 1px solid #000000 !important; box-shadow: none !important; background: #FFFFFF !important; }
         }
       `}</style>
@@ -559,7 +581,7 @@ export default function AdminDashboardPage() {
         <AdminSubNav />
       </div>
 
-      {/* Main Content Area */}
+      {/* Main Content Area with Stylish Grid Background */}
       <div className="admin-main-content" data-print-month={`${MONTH_NAMES[selectedMonth]} ${selectedYear}`}>
         {/* Actions Bar */}
         <div className="dashboard-actions-bar">
