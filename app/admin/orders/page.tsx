@@ -242,6 +242,7 @@ export default function AdminOrdersPage() {
           background-size: 40px 40px;
         }
 
+        /* Permanently fixed header stack at the top of the viewport */
         .header-fixed-container {
           position: fixed;
           top: 0;
@@ -258,10 +259,9 @@ export default function AdminOrdersPage() {
           display: flex;
           flex-direction: column;
           box-sizing: border-box;
-          padding: 160px 40px 40px 40px; /* Top padding clears the fixed header cleanly */
+          padding: 155px 40px 40px 40px; /* Leaves exact top clearance so content doesn't hide under the fixed header */
           width: 100%;
-          max-width: 1400px;
-          margin: 0 auto;
+          margin: 0;
           position: relative;
           z-index: 1;
           animation: fadeInScale 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
