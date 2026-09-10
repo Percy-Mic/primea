@@ -72,7 +72,7 @@ export default function AdminOrdersPage() {
 
       if (previousOrderCount.current > 0 && fetchedOrders.length > previousOrderCount.current) {
         const latest = fetchedOrders[0]
-        setNotification(`New Order #${String(latest.id).slice(0, 8)} received successfully!`)
+        setNotification(`🚨 New Order #${String(latest.id).slice(0, 8)} received!`)
         setTimeout(() => setNotification(null), 5000)
       }
 
@@ -141,7 +141,7 @@ export default function AdminOrdersPage() {
         style={{
           marginTop: '0.75rem',
           paddingTop: '0.6rem',
-          borderTop: '1px dashed rgba(212, 175, 55, 0.25)',
+          borderTop: '1px dashed #e2dad0',
           display: 'flex',
           flexDirection: 'column',
           gap: '0.5rem',
@@ -157,16 +157,14 @@ export default function AdminOrdersPage() {
           return (
             <div
               key={item.id || idx}
-              className="product-preview-row"
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.6rem',
-                background: 'rgba(255, 255, 255, 0.7)',
-                padding: '0.4rem 0.6rem',
-                borderRadius: '8px',
-                border: '1px solid rgba(212, 175, 55, 0.15)',
-                transition: 'all 0.2s ease',
+                background: '#faf8f5',
+                padding: '0.35rem 0.5rem',
+                borderRadius: '6px',
+                border: '1px solid #f0eae1',
               }}
             >
               {imageSrc ? (
@@ -177,8 +175,8 @@ export default function AdminOrdersPage() {
                     width: '38px',
                     height: '38px',
                     objectFit: 'cover',
-                    borderRadius: '6px',
-                    border: '1px solid rgba(212, 175, 55, 0.2)',
+                    borderRadius: '4px',
+                    border: '1px solid #e2dad0',
                     flexShrink: 0,
                   }}
                 />
@@ -187,26 +185,25 @@ export default function AdminOrdersPage() {
                   style={{
                     width: '38px',
                     height: '38px',
-                    borderRadius: '6px',
-                    background: 'linear-gradient(135deg, #f3efe6 0%, #e6dec9 100%)',
+                    borderRadius: '4px',
+                    background: '#e8e2d9',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '0.6rem',
+                    fontSize: '0.65rem',
                     color: '#786e65',
-                    fontWeight: 600,
                     flexShrink: 0,
                   }}
                 >
-                  IMG
+                  No Img
                 </div>
               )}
               <div style={{ display: 'flex', flexDirection: 'column', lineHeight: '1.2' }}>
                 <span style={{ fontWeight: '600', fontSize: '0.8rem', color: '#1f1815' }}>
                   {title}
                 </span>
-                <span style={{ fontSize: '0.73rem', color: '#8c7d73', marginTop: '2px' }}>
-                  Qty: {quantity} &times; ${Number(price).toFixed(2)}
+                <span style={{ fontSize: '0.73rem', color: '#786e65', marginTop: '2px' }}>
+                  Qty: {quantity} × ${Number(price).toFixed(2)}
                 </span>
               </div>
             </div>
@@ -218,90 +215,186 @@ export default function AdminOrdersPage() {
 
   if (authLoading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontFamily: 'sans-serif', color: '#666', background: '#fcfbfa' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontFamily: 'sans-serif', color: '#666' }}>
         Verifying administrator credentials...
       </div>
     )
   }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#fbf9f6', paddingBottom: '3rem', position: 'relative', overflow: 'hidden', background: 'linear-gradient(135deg, #fcfbfa 0%, #f4eee3 50%, #f7f3eb 100%)' }}>
+    <div className="admin-layout-wrapper">
       <style>{`
-        @keyframes ambientGlow1 {
-          0% { transform: translate(0px, 0px) scale(1); }
-          50% { transform: translate(30px, -50px) scale(1.1); }
-          100% { transform: translate(0px, 0px) scale(1); }
-        }
-        @keyframes ambientGlow2 {
-          0% { transform: translate(0px, 0px) scale(1); }
-          50% { transform: translate(-40px, 40px) scale(1.15); }
-          100% { transform: translate(0px, 0px) scale(1); }
-        }
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(12px); }
-          to { opacity: 1; transform: translateY(0); }
+        body {
+          margin: 0;
+          padding: 0;
+          background-color: #fcfbfa;
+          font-family: system-ui, -apple-system, sans-serif;
+          overflow-x: hidden;
         }
 
-        /* Background Self-Sustaining Ambient Orbs */
-        body::before,
-        body::after {
-          content: '';
-          position: absolute;
-          width: 450px;
-          height: 450px;
-          border-radius: 50%;
-          filter: blur(80px);
-          z-index: 0;
-          pointer-events: none;
-          opacity: 0.45;
-        }
-        body::before {
-          top: -100px;
-          right: -100px;
-          background: radial-gradient(circle, rgba(212, 175, 55, 0.22) 0%, rgba(181, 89, 51, 0.05) 70%);
-          animation: ambientGlow1 12s ease-in-out infinite;
-        }
-        body::after {
-          bottom: 10%;
-          left: -120px;
-          background: radial-gradient(circle, rgba(165, 124, 76, 0.18) 0%, rgba(212, 175, 55, 0.03) 70%);
-          animation: ambientGlow2 15s ease-in-out infinite;
+        .admin-layout-wrapper {
+          display: flex;
+          flex-direction: column;
+          min-height: 100vh;
+          padding-top: 115px;
+          width: 100%;
         }
 
-        .luxury-card {
-          background: rgba(255, 255, 255, 0.85);
-          backdrop-filter: blur(10px);
-          border: 1px solid rgba(232, 226, 217, 0.9);
-          border-radius: 12px;
-          box-shadow: 0 10px 30px rgba(31, 24, 21, 0.04), 0 1px 3px rgba(31, 24, 21, 0.02);
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        @media (max-width: 768px) {
+          .admin-layout-wrapper {
+            padding-top: 135px;
+          }
         }
 
-        .luxury-card:hover {
-          box-shadow: 0 14px 35px rgba(212, 175, 55, 0.12), 0 4px 10px rgba(31, 24, 21, 0.03);
-          border-color: rgba(212, 175, 55, 0.35);
-          transform: translateY(-2px);
+        .header-fixed-container {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          margin: 0;
+          padding: 0;
+          z-index: 9999;
+          background-color: #ffffff;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+          box-sizing: border-box;
         }
 
-        .product-preview-row:hover {
-          background: rgba(255, 255, 255, 0.95) !important;
-          border-color: rgba(212, 175, 55, 0.4) !important;
-          box-shadow: 0 2px 8px rgba(212, 175, 55, 0.1);
+        .fixed-top-header {
+          padding: 0;
+          width: 100%;
+          box-sizing: border-box;
+        }
+
+        .top-nav-bar {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          background-color: #ffffff;
+          border-top: 1px solid #e8e2d9;
+          border-bottom: 1px solid #e8e2d9;
+          padding: 0.4rem 1.5rem;
+          width: 100%;
+          box-sizing: border-box;
+          flex-wrap: wrap;
+          gap: 0.75rem;
+        }
+
+        .nav-links-group {
+          display: flex;
+          list-style: none;
+          padding: 0;
+          margin: 0;
+          gap: 0.4rem;
+          align-items: center;
+          flex-wrap: wrap;
+        }
+
+        .nav-link {
+          display: inline-flex;
+          align-items: center;
+          padding: 0.35rem 0.65rem;
+          border-radius: 6px;
+          font-size: 0.85rem;
+          font-weight: 500;
+          color: #3b332e;
+          text-decoration: none;
+          transition: all 0.15s ease;
+        }
+
+        .nav-link:hover {
+          background-color: #f7f4ef;
+          color: #b55933;
+        }
+
+        .nav-link.active {
+          background-color: #1f1815;
+          color: #ffffff;
+          font-weight: 600;
+        }
+
+        .mobile-menu-btn {
+          display: none;
+          background: none;
+          border: 1px solid #ded7cc;
+          padding: 0.3rem 0.6rem;
+          border-radius: 6px;
+          font-size: 0.9rem;
+          font-weight: 600;
+          cursor: pointer;
+          color: #1f1815;
+        }
+
+        @media (max-width: 768px) {
+          .mobile-menu-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+          }
+          .nav-links-group {
+            display: ${mobileMenuOpen ? 'flex' : 'none'};
+            width: 100%;
+            flex-direction: column;
+            align-items: stretch;
+            padding-bottom: 0.5rem;
+            border-top: 1px solid #f2ede4;
+            margin-top: 0.4rem;
+            padding-top: 0.4rem;
+          }
+        }
+
+        .admin-main-content {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          box-sizing: border-box;
+          padding: 1rem;
+          width: 100%;
+          max-width: 1200px;
+          margin: 0 auto;
+        }
+
+        @media (min-width: 640px) {
+          .admin-main-content {
+            padding: 1.25rem 1.5rem 3rem 1.5rem;
+          }
         }
       `}</style>
 
-      {/* UNTOUCHED ORIGINAL HEADER */}
-      <AdminHeader 
-        userEmail={userEmail}
-        onLogout={async () => {
-          const supabase = createClient()
-          await supabase.auth.signOut()
-          router.push('/login')
-        }}
-      />
+      {/* Fixed Header & Navigation Group */}
+      <div className="header-fixed-container">
+        <div className="fixed-top-header">
+          <AdminHeader
+            title="Storefront Monitor"
+            description="Real-time store progress and order management dashboard"
+            userEmail={userEmail}
+            onLogout={async () => {
+              const supabase = createClient()
+              await supabase.auth.signOut()
+              window.location.href = '/login'
+            }}
+          />
+        </div>
 
-      {/* Main Content with Luxury White-and-Brown Theme */}
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem 1.5rem', position: 'relative', zIndex: 1, animation: 'fadeInUp 0.5s ease-out forwards' }}>
+        <nav className="top-nav-bar">
+          <button 
+            type="button" 
+            className="mobile-menu-btn" 
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            ☰ Menu
+          </button>
+          <ul className="nav-links-group">
+            <li><Link href="/admin/dashboard" className={`nav-link ${pathname === '/admin/dashboard' ? 'active' : ''}`}>Dashboard</Link></li>
+            <li><Link href="/admin/orders" className={`nav-link ${pathname === '/admin/orders' ? 'active' : ''}`}>Orders</Link></li>
+            <li><Link href="/admin/products" className={`nav-link ${pathname === '/admin/products' ? 'active' : ''}`}>Inventory</Link></li>
+            <li><Link href="/admin/products/new" className={`nav-link ${pathname === '/admin/products/new' ? 'active' : ''}`}>Add Product</Link></li>
+          </ul>
+          <Link href="/" target="_blank" className="nav-link" style={{ color: '#b55933', fontWeight: 600 }}>View Storefront →</Link>
+        </nav>
+      </div>
+
+      {/* Main Content */}
+      <div className="admin-main-content">
         <div
           style={{
             display: 'flex',
@@ -313,29 +406,27 @@ export default function AdminOrdersPage() {
           }}
         >
           <div>
-            <h1 style={{ fontSize: isMobile ? '1.35rem' : '1.8rem', margin: 0, fontWeight: 700, color: '#1f1815', letterSpacing: '-0.02em' }}>
+            <h1 style={{ fontSize: isMobile ? '1.35rem' : '1.75rem', margin: 0, fontWeight: 700, color: '#1f1815' }}>
               Admin Order Dashboard
             </h1>
-            <p style={{ fontFamily: 'sans-serif', fontSize: '0.85rem', color: '#786e65', marginTop: '0.25rem' }}>
-              Manage active storefront orders in real-time with automated tracking
+            <p style={{ fontFamily: 'sans-serif', fontSize: '0.82rem', color: '#786e65', marginTop: '0.2rem' }}>
+              Manage active storefront orders in real-time
             </p>
           </div>
           <div
             style={{
-              background: 'linear-gradient(135deg, #1f1815 0%, #3a2e2a 100%)',
+              background: '#1f1815',
               color: '#fff',
-              padding: '0.5rem 1.15rem',
-              borderRadius: '8px',
+              padding: '0.4rem 1rem',
+              borderRadius: '6px',
               fontFamily: 'sans-serif',
               fontSize: '0.82rem',
               fontWeight: 600,
               alignSelf: isMobile ? 'stretch' : 'auto',
               textAlign: 'center',
-              boxShadow: '0 4px 15px rgba(31, 24, 21, 0.2)',
-              border: '1px solid rgba(212, 175, 55, 0.3)',
             }}
           >
-            Active Orders: <span style={{ color: '#e8d5b5', fontWeight: 700 }}>{activeOrders.length}</span>
+            Active Orders: {activeOrders.length}
           </div>
         </div>
 
@@ -343,23 +434,16 @@ export default function AdminOrdersPage() {
         {notification && (
           <div
             style={{
-              background: 'linear-gradient(135deg, #1f1815 0%, #3a2e2a 100%)',
+              background: '#1f1815',
               color: '#fff',
-              padding: '0.85rem 1.2rem',
-              borderRadius: '8px',
+              padding: '0.85rem 1rem',
+              borderRadius: '6px',
               marginBottom: '1.25rem',
               fontFamily: 'sans-serif',
               fontSize: '0.85rem',
-              fontWeight: '600',
-              boxShadow: '0 6px 20px rgba(31, 24, 21, 0.25)',
-              border: '1px solid rgba(212, 175, 55, 0.4)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.6rem',
-              animation: 'fadeInUp 0.3s ease-out',
+              fontWeight: 'bold',
             }}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4af37" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
             {notification}
           </div>
         )}
@@ -367,17 +451,17 @@ export default function AdminOrdersPage() {
         {/* Empty State / Content View */}
         {activeOrders.length === 0 ? (
           <div
-            className="luxury-card"
             style={{
-              padding: '3.5rem',
+              padding: '3rem',
               textAlign: 'center',
               color: '#786e65',
               fontFamily: 'sans-serif',
+              background: '#fff',
+              border: '1px solid #e8e2d9',
+              borderRadius: '8px',
             }}
           >
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#b55933" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: '0.75rem', opacity: 0.8 }}><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-            <div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#1f1815' }}>No active pending orders</div>
-            <div style={{ fontSize: '0.8rem', color: '#8c7d73', marginTop: '0.25rem' }}>Incoming store transactions will populate here automatically.</div>
+            No active pending orders.
           </div>
         ) : isMobile ? (
           /* MOBILE CARDS VIEW */
@@ -394,30 +478,31 @@ export default function AdminOrdersPage() {
               return (
                 <div
                   key={order.id}
-                  className="luxury-card"
                   style={{
-                    padding: '1.15rem',
+                    background: '#fff',
+                    border: '1px solid #e8e2d9',
+                    borderRadius: '8px',
+                    padding: '1rem',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '0.85rem',
+                    gap: '0.75rem',
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid rgba(232, 226, 217, 0.8)', paddingBottom: '0.6rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid #f2ede4', paddingBottom: '0.5rem' }}>
                     <div>
-                      <div style={{ fontWeight: 'bold', fontSize: '0.95rem', color: '#1f1815' }}>#{String(order.id).slice(0, 8)}</div>
-                      <div style={{ fontSize: '0.75rem', color: '#8c7d73', marginTop: '2px' }}>
+                      <div style={{ fontWeight: 'bold', fontSize: '0.95rem' }}>#{String(order.id).slice(0, 8)}</div>
+                      <div style={{ fontSize: '0.75rem', color: '#786e65', marginTop: '2px' }}>
                         {order.created_at ? new Date(order.created_at).toLocaleString() : 'N/A'}
                       </div>
                     </div>
                     <span
                       style={{
-                        padding: '0.25rem 0.6rem',
-                        borderRadius: '6px',
+                        padding: '0.2rem 0.5rem',
+                        borderRadius: '4px',
                         fontSize: '0.72rem',
                         fontWeight: 'bold',
-                        background: currentStatus === 'Shipped' ? 'rgba(224, 242, 254, 0.9)' : currentStatus === 'Processing' ? 'rgba(254, 240, 138, 0.8)' : 'rgba(254, 243, 199, 0.9)',
+                        background: currentStatus === 'Shipped' ? '#e0f2fe' : currentStatus === 'Processing' ? '#fef08a' : '#fef3c7',
                         color: currentStatus === 'Shipped' ? '#0369a1' : currentStatus === 'Processing' ? '#854d0e' : '#b45309',
-                        border: '1px solid rgba(0,0,0,0.04)',
                       }}
                     >
                       {currentStatus}
@@ -427,14 +512,14 @@ export default function AdminOrdersPage() {
                   {renderProductItems(items)}
 
                   <div style={{ fontSize: '0.85rem' }}>
-                    <div style={{ fontWeight: '600', color: '#1f1815' }}>{customerName}</div>
-                    <div style={{ color: '#8c7d73', fontSize: '0.8rem', wordBreak: 'break-all' }}>{email}</div>
-                    <div style={{ color: '#8c7d73', fontSize: '0.75rem', marginTop: '2px' }}>{address}</div>
+                    <div style={{ fontWeight: '600' }}>{customerName}</div>
+                    <div style={{ color: '#786e65', fontSize: '0.8rem', wordBreak: 'break-all' }}>{email}</div>
+                    <div style={{ color: '#786e65', fontSize: '0.75rem', marginTop: '2px' }}>{address}</div>
                   </div>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem', borderTop: '1px solid rgba(232, 226, 217, 0.8)', paddingTop: '0.6rem' }}>
-                    <span style={{ textTransform: 'uppercase', color: '#8c7d73', fontWeight: 600, fontSize: '0.75rem' }}>{paymentMethod}</span>
-                    <span style={{ fontWeight: 'bold', fontSize: '1.1rem', color: '#1f1815' }}>${Number(total).toFixed(2)}</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem', borderTop: '1px solid #f2ede4', paddingTop: '0.5rem' }}>
+                    <span style={{ textTransform: 'uppercase', color: '#786e65' }}>{paymentMethod}</span>
+                    <span style={{ fontWeight: 'bold', fontSize: '1.05rem' }}>${Number(total).toFixed(2)}</span>
                   </div>
 
                   <div>
@@ -443,14 +528,13 @@ export default function AdminOrdersPage() {
                       onChange={(e) => handleStatusChange(order.id, e.target.value)}
                       style={{
                         width: '100%',
-                        padding: '0.55rem',
-                        borderRadius: '8px',
-                        border: '1px solid rgba(212, 175, 55, 0.3)',
+                        padding: '0.5rem',
+                        borderRadius: '6px',
+                        border: '1px solid #ded7cc',
                         fontSize: '0.85rem',
-                        background: 'rgba(255, 255, 255, 0.9)',
+                        background: '#f7f4ef',
                         color: '#1f1815',
                         cursor: 'pointer',
-                        outline: 'none',
                       }}
                     >
                       <option value="Pending">Pending</option>
@@ -466,7 +550,7 @@ export default function AdminOrdersPage() {
           </div>
         ) : (
           /* DESKTOP TABLE VIEW */
-          <div className="luxury-card" style={{ overflow: 'hidden' }}>
+          <div style={{ background: '#fff', border: '1px solid #e8e2d9', borderRadius: '8px', overflow: 'hidden' }}>
             <table
               style={{
                 width: '100%',
@@ -475,13 +559,13 @@ export default function AdminOrdersPage() {
               }}
             >
               <thead>
-                <tr style={{ background: 'linear-gradient(135deg, #1f1815 0%, #3a2e2a 100%)', color: '#fff', textAlign: 'left', fontSize: '0.75rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-                  <th style={{ padding: '14px 18px', width: '35%' }}>Order Details & Time</th>
-                  <th style={{ padding: '14px 18px', width: '25%' }}>Customer</th>
-                  <th style={{ padding: '14px 18px', width: '15%' }}>Payment</th>
-                  <th style={{ padding: '14px 18px', width: '10%' }}>Total</th>
-                  <th style={{ padding: '14px 18px', width: '8%' }}>Status</th>
-                  <th style={{ padding: '14px 18px', width: '7%' }}>Action</th>
+                <tr style={{ background: '#1f1815', color: '#fff', textAlign: 'left', fontSize: '0.75rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                  <th style={{ padding: '12px 16px', width: '35%' }}>Order Details & Time</th>
+                  <th style={{ padding: '12px 16px', width: '25%' }}>Customer</th>
+                  <th style={{ padding: '12px 16px', width: '15%' }}>Payment</th>
+                  <th style={{ padding: '12px 16px', width: '10%' }}>Total</th>
+                  <th style={{ padding: '12px 16px', width: '8%' }}>Status</th>
+                  <th style={{ padding: '12px 16px', width: '7%' }}>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -495,55 +579,44 @@ export default function AdminOrdersPage() {
                   const items = order.order_items || order.items || []
 
                   return (
-                    <tr key={order.id} style={{ borderBottom: '1px solid rgba(232, 226, 217, 0.6)', verticalAlign: 'top', transition: 'background 0.2s ease' }} onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.5)'} onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
-                      <td style={{ padding: '16px 18px' }}>
-                        <div style={{ fontWeight: 'bold', fontSize: '0.9rem', color: '#1f1815' }}>#{String(order.id).slice(0, 8)}</div>
-                        <div style={{ fontSize: '0.75rem', color: '#8c7d73', marginTop: '4px' }}>
+                    <tr key={order.id} style={{ borderBottom: '1px solid #f2ede4', verticalAlign: 'top' }}>
+                      <td style={{ padding: '14px 16px' }}>
+                        <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>#{String(order.id).slice(0, 8)}</div>
+                        <div style={{ fontSize: '0.75rem', color: '#786e65', marginTop: '4px' }}>
                           {order.created_at ? new Date(order.created_at).toLocaleString() : 'N/A'}
                         </div>
                         {renderProductItems(items)}
                       </td>
-                      <td style={{ padding: '16px 18px' }}>
-                        <div style={{ fontWeight: '600', fontSize: '0.85rem', color: '#1f1815' }}>{customerName}</div>
-                        <div style={{ fontSize: '0.8rem', color: '#8c7d73' }}>{email}</div>
-                        <div style={{ fontSize: '0.75rem', color: '#8c7d73', marginTop: '2px' }}>{address}</div>
+                      <td style={{ padding: '14px 16px' }}>
+                        <div style={{ fontWeight: '600', fontSize: '0.85rem' }}>{customerName}</div>
+                        <div style={{ fontSize: '0.8rem', color: '#786e65' }}>{email}</div>
+                        <div style={{ fontSize: '0.75rem', color: '#786e65' }}>{address}</div>
                       </td>
-                      <td style={{ padding: '16px 18px', textTransform: 'uppercase', fontSize: '0.8rem', color: '#594d45', fontWeight: 600 }}>
+                      <td style={{ padding: '14px 16px', textTransform: 'uppercase', fontSize: '0.8rem' }}>
                         {paymentMethod}
                       </td>
-                      <td style={{ padding: '16px 18px', fontWeight: 'bold', fontSize: '0.95rem', color: '#1f1815' }}>
+                      <td style={{ padding: '14px 16px', fontWeight: 'bold', fontSize: '0.9rem' }}>
                         ${Number(total).toFixed(2)}
                       </td>
-                      <td style={{ padding: '16px 18px' }}>
+                      <td style={{ padding: '14px 16px' }}>
                         <span
                           style={{
-                            padding: '0.25rem 0.6rem',
-                            borderRadius: '6px',
+                            padding: '0.2rem 0.5rem',
+                            borderRadius: '4px',
                             fontSize: '0.72rem',
                             fontWeight: 'bold',
-                            background: currentStatus === 'Shipped' ? 'rgba(224, 242, 254, 0.9)' : currentStatus === 'Processing' ? 'rgba(254, 240, 138, 0.8)' : 'rgba(254, 243, 199, 0.9)',
+                            background: currentStatus === 'Shipped' ? '#e0f2fe' : currentStatus === 'Processing' ? '#fef08a' : '#fef3c7',
                             color: currentStatus === 'Shipped' ? '#0369a1' : currentStatus === 'Processing' ? '#854d0e' : '#b45309',
-                            border: '1px solid rgba(0,0,0,0.04)',
                           }}
                         >
                           {currentStatus}
                         </span>
                       </td>
-                      <td style={{ padding: '16px 18px' }}>
+                      <td style={{ padding: '14px 16px' }}>
                         <select
                           value={currentStatus}
                           onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                          style={{ 
-                            padding: '0.45rem', 
-                            borderRadius: '6px', 
-                            border: '1px solid rgba(212, 175, 55, 0.3)', 
-                            fontSize: '0.82rem', 
-                            background: 'rgba(255, 255, 255, 0.9)', 
-                            color: '#1f1815',
-                            cursor: 'pointer',
-                            outline: 'none',
-                            transition: 'all 0.2s ease',
-                          }}
+                          style={{ padding: '0.4rem', borderRadius: '6px', border: '1px solid #ded7cc', fontSize: '0.82rem', background: '#f7f4ef', cursor: 'pointer' }}
                         >
                           <option value="Pending">Pending</option>
                           <option value="Processing">Processing</option>
