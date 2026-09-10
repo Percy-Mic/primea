@@ -222,7 +222,7 @@ export default function AdminOrdersPage() {
           to { opacity: 1; transform: scale(1); }
         }
 
-        body {
+        html, body {
           margin: 0;
           padding: 0;
           background-color: #FAFAFA;
@@ -242,25 +242,25 @@ export default function AdminOrdersPage() {
           background-size: 40px 40px;
         }
 
-        /* Enforced fixed header with position: fixed, top: 0, left: 0, right: 0 */
+        /* Permanently fixed header layer pinned strictly to viewport top */
         .header-fixed-container {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          z-index: 9999;
+          position: fixed !important;
+          top: 0 !important;
+          left: 0 !important;
+          right: 0 !important;
+          z-index: 99999 !important;
           background-color: #171717;
           border-bottom: 1px solid #2A2A2A;
           width: 100%;
         }
 
-        /* Reduced padding matching the exact header clearance height */
+        /* Main content padding-top ensures content starts safely underneath the fixed header without overlap */
         .admin-main-content {
           flex: 1;
           display: flex;
           flex-direction: column;
           box-sizing: border-box;
-          padding: 72px 10px 16px 10px;
+          padding: 76px 12px 20px 12px;
           width: 100%;
           max-width: 1400px;
           margin: 0 auto;
@@ -271,7 +271,7 @@ export default function AdminOrdersPage() {
 
         @media (min-width: 768px) {
           .admin-main-content {
-            padding: 82px 20px 20px 20px;
+            padding: 90px 24px 24px 24px;
           }
         }
 
