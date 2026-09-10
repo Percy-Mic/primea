@@ -1,19 +1,17 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import AdminHeader from '@/components/AdminNav'
+import AdminSubNav from '@/components/AdminSubNav'
 
 export default function AdminOrdersPage() {
   const router = useRouter()
-  const pathname = usePathname()
 
   const [orders, setOrders] = useState<any[]>([])
   const [notification, setNotification] = useState<string | null>(null)
   const [isMobile, setIsMobile] = useState<boolean>(false)
-  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false)
   const [userEmail, setUserEmail] = useState<string>('percymicnono@gmail.com')
   const [authLoading, setAuthLoading] = useState<boolean>(true)
 
@@ -67,7 +65,6 @@ export default function AdminOrdersPage() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
 
       const data = await res.json()
-      
       const fetchedOrders = data.success && Array.isArray(data.orders) ? data.orders : []
 
       if (previousOrderCount.current > 0 && fetchedOrders.length > previousOrderCount.current) {
@@ -130,9 +127,7 @@ export default function AdminOrdersPage() {
   })
 
   const renderProductItems = (items: any[]) => {
-    if (!items || !Array.isArray(items) || items.length === 0) {
-      return null
-    }
+    if (!items || !Array.isArray(items) || items.length === 0) return null
 
     return (
       <div
@@ -163,7 +158,6 @@ export default function AdminOrdersPage() {
                 padding: '8px 12px',
                 borderRadius: '6px',
                 border: '1px solid #EBEBEB',
-                transition: 'border-color 0.2s ease',
               }}
             >
               {imageSrc ? (
@@ -223,19 +217,9 @@ export default function AdminOrdersPage() {
   return (
     <div className="admin-layout-wrapper">
       <style>{`
-        @keyframes floatSubtle {
-          0% { transform: translateY(0px); }
-          50% { transform: translateY(-4px); }
-          100% { transform: translateY(0px); }
-        }
         @keyframes fadeInScale {
           from { opacity: 0; transform: scale(0.98); }
           to { opacity: 1; transform: scale(1); }
-        }
-        @keyframes scanGlow {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
         }
 
         body {
@@ -251,7 +235,7 @@ export default function AdminOrdersPage() {
           display: flex;
           flex-direction: column;
           min-height: 100vh;
-          padding-top: 115px;
+          padding-top: 135px;
           width: 100%;
           position: relative;
           background: radial-gradient(circle at top right, rgba(235, 235, 235, 0.4), transparent 40%),
@@ -259,7 +243,6 @@ export default function AdminOrdersPage() {
                       #FAFAFA;
         }
 
-        /* Ambient subtle background grid lines for Vercel Minimal technical feel */
         .admin-layout-wrapper::before {
           content: "";
           position: absolute;
@@ -271,79 +254,15 @@ export default function AdminOrdersPage() {
           pointer-events: none;
         }
 
-        @media (max-width: 768px) {
-          .admin-layout-wrapper {
-            padding-top: 135px;
-          }
-        }
-
         .header-fixed-container {
           position: fixed;
           top: 0;
           left: 0;
           right: 0;
-          margin: 0;
-          padding: 0;
           z-index: 9999;
           background-color: rgba(255, 255, 255, 0.85);
           backdrop-filter: blur(12px);
           border-bottom: 1px solid #EBEBEB;
-          box-sizing: border-box;
-        }
-
-        .fixed-top-header {
-          padding: 0;
-          width: 100%;
-          box-sizing: border-box;
-        }
-
-        .top-nav-bar {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          background-color: #FFFFFF;
-          border-top: 1px solid #EBEBEB;
-          border-bottom: 1px solid #EBEBEB;
-          padding: 12px 32px;
-          width: 100%;
-          box-sizing: border-box;
-          flex-wrap: wrap;
-          gap: 20px;
-        }
-
-        .nav-links-group {
-          display: flex;
-          list-style: none;
-          padding: 0;
-          margin: 0;
-          gap: 8px;
-          align-items: center;
-          flex-wrap: wrap;
-        }
-
-        .nav-link {
-          display: inline-flex;
-          align-items: center;
-          padding: 8px 16px;
-          border-radius: 9999px;
-          font-size: 14px;
-          font-weight: 500;
-          color: #666666;
-          text-decoration: none;
-          transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .nav-link:hover {
-          background-color: #FAFAFA;
-          color: #171717;
-          transform: translateY(-1px);
-        }
-
-        .nav-link.active {
-          background-color: #171717;
-          color: #FFFFFF;
-          font-weight: 500;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
 
         .admin-main-content {
@@ -401,33 +320,22 @@ export default function AdminOrdersPage() {
         }
       `}</style>
 
-      {/* Fixed Header & Navigation Group */}
+      {/* Fixed Header & Icon Sub-Navigation */}
       <div className="header-fixed-container">
-        <div className="fixed-top-header">
-          <AdminHeader
-            title="Storefront Monitor"
-            description="Real-time store progress and order management dashboard"
-            userEmail={userEmail}
-            onLogout={async () => {
-              const supabase = createClient()
-              await supabase.auth.signOut()
-              window.location.href = '/login'
-            }}
-          />
-        </div>
-
-        <nav className="top-nav-bar">
-          <ul className="nav-links-group">
-            <li><Link href="/admin/dashboard" className={`nav-link ${pathname === '/admin/dashboard' ? 'active' : ''}`}>Dashboard</Link></li>
-            <li><Link href="/admin/orders" className={`nav-link ${pathname === '/admin/orders' ? 'active' : ''}`}>Orders</Link></li>
-            <li><Link href="/admin/products" className={`nav-link ${pathname === '/admin/products' ? 'active' : ''}`}>Inventory</Link></li>
-            <li><Link href="/admin/products/new" className={`nav-link ${pathname === '/admin/products/new' ? 'active' : ''}`}>Add Product</Link></li>
-          </ul>
-          <Link href="/" target="_blank" className="nav-link" style={{ color: '#171717', fontWeight: 500, border: '1px solid #EBEBEB' }}>View Storefront →</Link>
-        </nav>
+        <AdminHeader
+          title="Storefront Monitor"
+          description="Real-time store progress and order management dashboard"
+          userEmail={userEmail}
+          onLogout={async () => {
+            const supabase = createClient()
+            await supabase.auth.signOut()
+            window.location.href = '/login'
+          }}
+        />
+        <AdminSubNav />
       </div>
 
-      {/* Main Content */}
+      {/* Main Content Area */}
       <div className="admin-main-content">
         <div
           style={{
@@ -618,7 +526,7 @@ export default function AdminOrdersPage() {
                   const items = order.order_items || order.items || []
 
                   return (
-                    <tr key={order.id} style={{ borderBottom: '1px solid #EBEBEB', verticalAlign: 'top', transition: 'background-color 0.15s ease' }} className="order-card-hover">
+                    <tr key={order.id} style={{ borderBottom: '1px solid #EBEBEB', verticalAlign: 'top' }} className="order-card-hover">
                       <td style={{ padding: '20px' }}>
                         <div style={{ fontWeight: 600, fontSize: '15px', color: '#171717' }}>#{String(order.id).slice(0, 8)}</div>
                         <div style={{ fontSize: '13px', color: '#666666', marginTop: '6px' }}>
