@@ -76,14 +76,15 @@ export default function UserNav({
           from { opacity: 0; transform: translateY(-10px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        .luxury-btn-hover {
+        .luxury-icon-hover {
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .luxury-btn-hover:hover {
+        .luxury-icon-hover:hover {
           border-color: #d4af37 !important;
           color: #ffffff !important;
-          background-color: rgba(212, 175, 55, 0.08) !important;
-          transform: translateY(-1px);
+          background-color: rgba(212, 175, 55, 0.12) !important;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(212, 175, 55, 0.15);
         }
         .mobile-hamburger {
           display: none;
@@ -115,26 +116,22 @@ export default function UserNav({
           )}
         </div>
         
-        {/* Desktop Nav Links */}
+        {/* Desktop Nav Icons (Icon-Only Design) */}
         <div className="desktop-nav-links" style={styles.desktopNav}>
-          <Link href="/attendance" style={styles.pillButton} className="luxury-btn-hover">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-            <span>ATTENDANCE</span>
+          <Link href="/attendance" style={styles.iconButton} className="luxury-icon-hover" title="Attendance">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           </Link>
-          <Link href="/profile" style={styles.pillButton} className="luxury-btn-hover">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-            <span>PROFILE</span>
+          <Link href="/profile" style={styles.iconButton} className="luxury-icon-hover" title="Profile">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
           </Link>
-          <Link href="/admin_list" style={styles.pillButton} className="luxury-btn-hover">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-            <span>ADMIN LIST</span>
+          <Link href="/admin_list" style={styles.iconButton} className="luxury-icon-hover" title="Admin List">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
           </Link>
 
           {isAuthed && (
-            <Link href="/logged_action" style={styles.pillButton} className="luxury-btn-hover">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-              <span style={styles.activeDot} /> 
-              <span>CHATS</span>
+            <Link href="/logged_action" style={{ ...styles.iconButton, position: 'relative' }} className="luxury-icon-hover" title="Chats">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+              <span style={styles.activeDotAbsolute} /> 
             </Link>
           )}
         </div>
@@ -149,15 +146,18 @@ export default function UserNav({
                 <span style={styles.badge}>VERIFIED</span>
                 <span style={styles.email} title={displayEmail}>{displayEmail}</span>
               </div>
-              <button onClick={handleSignOut} style={styles.signOutButton} className="luxury-btn-hover">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '4px' }}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                Sign Out
+              <button onClick={handleSignOut} style={styles.iconButtonAction} className="luxury-icon-hover" title="Sign Out">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
               </button>
             </div>
           ) : (
             <div style={styles.guestContainer}>
-              <Link href="/login" style={styles.loginLink}>Sign In</Link>
-              <Link href="/register" style={styles.registerLink}>Register</Link>
+              <Link href="/login" style={styles.iconButton} className="luxury-icon-hover" title="Sign In">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+              </Link>
+              <Link href="/register" style={styles.registerIconButton} className="luxury-icon-hover" title="Register">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+              </Link>
             </div>
           )}
         </div>
@@ -178,20 +178,20 @@ export default function UserNav({
         <div style={styles.mobileDrawer} className="mobile-drawer-animate">
           <div style={styles.mobileLinks}>
             <Link href="/attendance" style={styles.mobilePillButton} onClick={() => setMobileMenuOpen(false)}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
               ATTENDANCE
             </Link>
             <Link href="/profile" style={styles.mobilePillButton} onClick={() => setMobileMenuOpen(false)}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
               PROFILE
             </Link>
             <Link href="/admin_list" style={styles.mobilePillButton} onClick={() => setMobileMenuOpen(false)}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
               ADMIN LIST
             </Link>
             {isAuthed && (
               <Link href="/logged_action" style={styles.mobilePillButton} onClick={() => setMobileMenuOpen(false)}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
                 <span style={styles.activeDot} /> CHATS
               </Link>
             )}
@@ -204,14 +204,15 @@ export default function UserNav({
                   <span style={styles.badge}>VERIFIED</span>
                   <span style={styles.email}>{displayEmail}</span>
                 </div>
-                <button onClick={handleSignOut} style={styles.signOutButton}>
+                <button onClick={handleSignOut} style={styles.mobileSignOutButton}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '6px' }}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
                   Sign Out
                 </button>
               </div>
             ) : (
               <div style={styles.guestContainer}>
-                <Link href="/login" style={styles.loginLink} onClick={() => setMobileMenuOpen(false)}>Sign In</Link>
-                <Link href="/register" style={styles.registerLink} onClick={() => setMobileMenuOpen(false)}>Register</Link>
+                <Link href="/login" style={styles.mobileAuthLink} onClick={() => setMobileMenuOpen(false)}>Sign In</Link>
+                <Link href="/register" style={styles.mobileRegisterLink} onClick={() => setMobileMenuOpen(false)}>Register</Link>
               </div>
             )}
           </div>
@@ -227,16 +228,18 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderBottom: '1px solid rgba(212, 175, 55, 0.15)',
     boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)',
     width: '100%',
-    position: 'sticky',
+    position: 'fixed',
     top: 0,
-    zIndex: 1000,
+    left: 0,
+    right: 0,
+    zIndex: 99999,
     backdropFilter: 'blur(12px)',
   },
   navContainer: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: '0.85rem 2rem',
+    padding: '0.75rem 2rem',
     maxWidth: '1400px',
     margin: '0 auto',
   },
@@ -252,7 +255,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   pageTitle: {
     color: '#f5efe6',
-    fontSize: '0.9rem',
+    fontSize: '0.95rem',
     fontWeight: 700,
     letterSpacing: '0.08em',
     display: 'block',
@@ -268,21 +271,54 @@ const styles: { [key: string]: React.CSSProperties } = {
     alignItems: 'center',
     gap: '0.75rem',
   },
-  pillButton: {
+  iconButton: {
     display: 'inline-flex',
     alignItems: 'center',
-    gap: '0.45rem',
+    justifyContent: 'center',
+    width: '38px',
+    height: '38px',
     border: '1px solid rgba(255, 255, 255, 0.12)',
-    borderRadius: '20px',
-    padding: '0.35rem 0.85rem',
+    borderRadius: '50%',
     color: '#d4cec5',
     textDecoration: 'none',
-    fontSize: '0.75rem',
-    letterSpacing: '0.08em',
-    fontWeight: 600,
     backgroundColor: 'rgba(255, 255, 255, 0.02)',
   },
+  iconButtonAction: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '38px',
+    height: '38px',
+    border: '1px solid rgba(127, 29, 29, 0.5)',
+    borderRadius: '50%',
+    color: '#fca5a5',
+    backgroundColor: 'transparent',
+    cursor: 'pointer',
+  },
+  registerIconButton: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '38px',
+    height: '38px',
+    background: 'linear-gradient(135deg, #d4af37 0%, #aa7c11 100%)',
+    border: '1px solid rgba(212, 175, 55, 0.3)',
+    borderRadius: '50%',
+    color: '#110e0c',
+    boxShadow: '0 2px 10px rgba(212, 175, 55, 0.25)',
+  },
   activeDot: {
+    width: '6px',
+    height: '6px',
+    backgroundColor: '#22c55e',
+    borderRadius: '50%',
+    display: 'inline-block',
+    animation: 'pulseGlow 2s infinite',
+  },
+  activeDotAbsolute: {
+    position: 'absolute',
+    top: '8px',
+    right: '8px',
     width: '6px',
     height: '6px',
     backgroundColor: '#22c55e',
@@ -327,43 +363,11 @@ const styles: { [key: string]: React.CSSProperties } = {
   guestContainer: {
     display: 'flex',
     alignItems: 'center',
-    gap: '1rem',
+    gap: '0.75rem',
   },
   guestText: {
     color: '#a89f91',
     fontSize: '0.85rem',
-  },
-  loginLink: {
-    color: '#f5efe6',
-    textDecoration: 'none',
-    fontWeight: 600,
-    fontSize: '0.8rem',
-    letterSpacing: '0.08em',
-    padding: '0.4rem 0.6rem',
-  },
-  registerLink: {
-    background: 'linear-gradient(135deg, #d4af37 0%, #aa7c11 100%)',
-    color: '#110e0c',
-    padding: '0.45rem 1.1rem',
-    borderRadius: '6px',
-    textDecoration: 'none',
-    fontWeight: 700,
-    fontSize: '0.8rem',
-    letterSpacing: '0.08em',
-    boxShadow: '0 2px 10px rgba(212, 175, 55, 0.25)',
-  },
-  signOutButton: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    background: 'transparent',
-    border: '1px solid rgba(127, 29, 29, 0.5)',
-    borderRadius: '20px',
-    padding: '0.35rem 0.9rem',
-    color: '#fca5a5',
-    cursor: 'pointer',
-    fontWeight: 600,
-    fontSize: '0.75rem',
-    letterSpacing: '0.05em',
   },
   hamburgerButton: {
     background: 'none',
@@ -391,7 +395,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   mobilePillButton: {
     display: 'inline-flex',
     alignItems: 'center',
-    gap: '0.6rem',
+    gap: '0.75rem',
     border: '1px solid rgba(255, 255, 255, 0.12)',
     borderRadius: '12px',
     padding: '0.5rem 1rem',
@@ -411,5 +415,37 @@ const styles: { [key: string]: React.CSSProperties } = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  mobileSignOutButton: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    background: 'transparent',
+    border: '1px solid rgba(127, 29, 29, 0.5)',
+    borderRadius: '20px',
+    padding: '0.35rem 0.9rem',
+    color: '#fca5a5',
+    cursor: 'pointer',
+    fontWeight: 600,
+    fontSize: '0.75rem',
+    letterSpacing: '0.05em',
+  },
+  mobileAuthLink: {
+    color: '#f5efe6',
+    textDecoration: 'none',
+    fontWeight: 600,
+    fontSize: '0.8rem',
+    letterSpacing: '0.08em',
+    padding: '0.4rem 0.6rem',
+  },
+  mobileRegisterLink: {
+    background: 'linear-gradient(135deg, #d4af37 0%, #aa7c11 100%)',
+    color: '#110e0c',
+    padding: '0.45rem 1.1rem',
+    borderRadius: '6px',
+    textDecoration: 'none',
+    fontWeight: 700,
+    fontSize: '0.8rem',
+    letterSpacing: '0.08em',
+    boxShadow: '0 2px 10px rgba(212, 175, 55, 0.25)',
   },
 }
