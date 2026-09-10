@@ -461,45 +461,53 @@ export default function AdminDashboardPage() {
           border-color: #171717;
         }
 
-        /* Exactly 2 cards per row for the first 4 metric cards */
+        /* Exactly 2 cards per row everywhere including mobile */
         .metrics-grid {
           display: grid;
-          grid-template-columns: 1fr;
-          gap: 16px;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 12px;
           margin-bottom: 20px;
         }
 
-        @media (min-width: 640px) { 
-          .metrics-grid { 
-            grid-template-columns: repeat(2, 1fr); 
-          } 
+        @media (min-width: 768px) {
+          .metrics-grid {
+            gap: 16px;
+          }
         }
 
         .metric-card {
           background: #FFFFFF;
           border: 1px solid #EBEBEB;
           border-radius: 6px;
-          padding: 18px 20px;
+          padding: 14px 16px;
+        }
+
+        @media (min-width: 768px) {
+          .metric-card { padding: 18px 20px; }
         }
 
         .metric-label {
-          font-size: 11px;
+          font-size: 10px;
           font-weight: 500;
           text-transform: uppercase;
           letter-spacing: 0.05em;
           color: #666666;
         }
 
+        @media (min-width: 768px) {
+          .metric-label { font-size: 11px; }
+        }
+
         .metric-value {
-          font-size: 26px;
+          font-size: 20px;
           font-weight: 400;
           color: #171717;
-          margin-top: 6px;
+          margin-top: 4px;
           letter-spacing: -1px;
         }
 
         @media (min-width: 768px) {
-          .metric-value { font-size: 30px; }
+          .metric-value { font-size: 30px; margin-top: 6px; }
         }
 
         .analytics-grid {
@@ -670,7 +678,17 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* 4 Metric Cards Displayed 2 per Row */}
+        {/* Store Data Summary Title Header */}
+        <div style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <h2 style={{ fontSize: '15px', fontWeight: 500, color: '#171717', letterSpacing: '-0.3px' }}>
+            Store Data Summary
+          </h2>
+          <span style={{ fontSize: '12px', color: '#666666' }}>
+            {MONTH_NAMES[selectedMonth]} {selectedYear}
+          </span>
+        </div>
+
+        {/* 4 Metric Cards Displayed 2 per Row (including mobile) */}
         <div className="metrics-grid">
           <div className="metric-card">
             <div className="metric-label">Lifetime Revenue</div>
