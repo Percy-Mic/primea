@@ -214,7 +214,7 @@ export default function InventoryManagementPage() {
           background-color: #f8fafc;
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
           color: #0f172a;
-          padding-top: 105px;
+          padding-top: 155px;
           display: flex;
           flex-direction: column;
         }
@@ -631,7 +631,7 @@ export default function InventoryManagementPage() {
 
         @media (max-width: 768px) {
           .page-wrapper {
-            padding-top: 110px;
+            padding-top: 160px;
           }
 
           .inventory-table, 
