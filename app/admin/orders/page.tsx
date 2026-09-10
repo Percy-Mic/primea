@@ -235,23 +235,11 @@ export default function AdminOrdersPage() {
           display: flex;
           flex-direction: column;
           min-height: 100vh;
-          padding-top: 135px;
+          /* Leaves enough offset space so content doesn't slip under the fixed top headers */
+          padding-top: 140px; 
           width: 100%;
           position: relative;
-          background: radial-gradient(circle at top right, rgba(235, 235, 235, 0.4), transparent 40%),
-                      radial-gradient(circle at bottom left, rgba(217, 45, 32, 0.02), transparent 30%),
-                      #FAFAFA;
-        }
-
-        .admin-layout-wrapper::before {
-          content: "";
-          position: absolute;
-          top: 0; left: 0; right: 0; bottom: 0;
-          background-image: linear-gradient(to right, rgba(235, 235, 235, 0.5) 1px, transparent 1px),
-                            linear-gradient(to bottom, rgba(235, 235, 235, 0.5) 1px, transparent 1px);
-          background-size: 64px 64px;
-          z-index: 0;
-          pointer-events: none;
+          background: #FAFAFA;
         }
 
         .header-fixed-container {
@@ -260,9 +248,9 @@ export default function AdminOrdersPage() {
           left: 0;
           right: 0;
           z-index: 9999;
-          background-color: rgba(255, 255, 255, 0.85);
-          backdrop-filter: blur(12px);
-          border-bottom: 1px solid #EBEBEB;
+          background-color: #171717;
+          border-bottom: 1px solid #2A2A2A;
+          width: 100%;
         }
 
         .admin-main-content {
@@ -270,10 +258,9 @@ export default function AdminOrdersPage() {
           display: flex;
           flex-direction: column;
           box-sizing: border-box;
-          padding: 32px;
+          padding: 40px;
           width: 100%;
-          max-width: 1200px;
-          margin: 0 auto;
+          margin: 0;
           position: relative;
           z-index: 1;
           animation: fadeInScale 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -320,7 +307,7 @@ export default function AdminOrdersPage() {
         }
       `}</style>
 
-      {/* Fixed Header & Icon Sub-Navigation */}
+      {/* Permanently Fixed Top Header and Sub-Navigation */}
       <div className="header-fixed-container">
         <AdminHeader
           title="Storefront Monitor"
