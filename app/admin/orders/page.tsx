@@ -258,26 +258,34 @@ export default function AdminOrdersPage() {
           flex-shrink: 0;
         }
 
-        /* Main content area with 100px+ bottom padding */
+        /* Scrollable container */
         .admin-main-content {
           flex: 1;
           display: flex;
           flex-direction: column;
           box-sizing: border-box;
-          padding: 85px 12px 100px 12px;
+          padding: 85px 12px 20px 12px;
           width: 100%;
           max-width: 1400px;
           margin: 0 auto;
           position: relative;
           z-index: 1;
-          overflow-y: auto; /* ONLY this section scrolls */
+          overflow-y: auto;
           animation: fadeInScale 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
         @media (min-width: 768px) {
           .admin-main-content {
-            padding: 95px 24px 120px 24px;
+            padding: 95px 24px 20px 24px;
           }
+        }
+
+        /* Dedicated inner wrapper to guarantee robust scroll bottom padding */
+        .admin-content-inner {
+          display: flex;
+          flex-direction: column;
+          width: 100%;
+          padding-bottom: 140px;
         }
 
         .order-card-hover {
@@ -338,251 +346,253 @@ export default function AdminOrdersPage() {
 
       {/* Scrollable Main Content Area */}
       <div className="admin-main-content">
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: isMobile ? 'column' : 'row',
-            justifyContent: 'space-between',
-            alignItems: isMobile ? 'flex-start' : 'center',
-            gap: isMobile ? '8px' : '0',
-            marginBottom: '16px',
-          }}
-        >
-          <div>
-            <h1 style={{ fontSize: isMobile ? '20px' : '28px', margin: 0, fontWeight: 400, letterSpacing: '-1px', color: '#171717' }}>
-              Orders Monitor
-            </h1>
-            <p style={{ fontSize: isMobile ? '11px' : '13px', color: '#666666', marginTop: '2px', letterSpacing: '-0.2px' }}>
-              Manage active storefront orders in real-time with zero-latency synchronization.
-            </p>
-          </div>
+        <div className="admin-content-inner">
           <div
             style={{
-              background: '#171717',
-              color: '#FFFFFF',
-              padding: '4px 12px',
-              borderRadius: '9999px',
-              fontSize: '11px',
-              fontWeight: 500,
-              boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
-              alignSelf: isMobile ? 'flex-start' : 'auto',
-              textAlign: 'center',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '5px',
-            }}
-          >
-            <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#22C55e', display: 'inline-block' }}></span>
-            Active Orders: {activeOrders.length}
-          </div>
-        </div>
-
-        {/* Live Notification */}
-        {notification && (
-          <div
-            style={{
-              background: '#171717',
-              color: '#FFFFFF',
-              padding: '8px 12px',
-              borderRadius: '6px',
-              marginBottom: '14px',
-              fontSize: '11px',
-              fontWeight: 500,
               display: 'flex',
-              alignItems: 'center',
+              flexDirection: isMobile ? 'column' : 'row',
               justifyContent: 'space-between',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-              animation: 'fadeInScale 0.3s ease-out forwards',
+              alignItems: isMobile ? 'flex-start' : 'center',
+              gap: isMobile ? '8px' : '0',
+              marginBottom: '16px',
             }}
           >
-            <span>{notification}</span>
-            <span style={{ fontSize: '9px', color: '#A3A3A3', textTransform: 'uppercase', letterSpacing: '1px' }}>Live Stream</span>
-          </div>
-        )}
-
-        {/* Empty State / Content View */}
-        {activeOrders.length === 0 ? (
-          <div
-            style={{
-              padding: '30px 12px',
-              textAlign: 'center',
-              color: '#666666',
-              background: '#FFFFFF',
-              border: '1px solid #EBEBEB',
-              borderRadius: '8px',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
-              marginBottom: '20px',
-            }}
-          >
-            <p style={{ fontSize: '14px', fontWeight: 400, color: '#171717', marginBottom: '3px' }}>No active pending orders.</p>
-            <p style={{ fontSize: '11px', color: '#A3A3A3' }}>Incoming requests will automatically appear here.</p>
-          </div>
-        ) : isMobile ? (
-          /* MOBILE CARDS VIEW */
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
-            {activeOrders.map((order) => {
-              const customerName = order.customer_name || order.shipping?.fullName || 'Guest'
-              const email = order.email || order.shipping?.email || 'N/A'
-              const address = order.address || order.shipping?.address || 'N/A'
-              const paymentMethod = order.payment_method || order.shipping?.paymentMethod || 'COD'
-              const total = order.total_amount ?? order.total ?? 0
-              const currentStatus = order.status || 'Pending'
-              const items = order.order_items || order.items || []
-
-              return (
-                <div
-                  key={order.id}
-                  className="order-card-hover"
-                  style={{
-                    background: '#FFFFFF',
-                    border: '1px solid #EBEBEB',
-                    borderRadius: '6px',
-                    padding: '10px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '8px',
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid #EBEBEB', paddingBottom: '6px' }}>
-                    <div>
-                      <div style={{ fontWeight: 600, fontSize: '13px', color: '#171717' }}>#{String(order.id).slice(0, 8)}</div>
-                      <div style={{ fontSize: '9px', color: '#666666', marginTop: '1px' }}>
-                        {order.created_at ? new Date(order.created_at).toLocaleString() : 'N/A'}
-                      </div>
-                    </div>
-                    <span
-                      style={{
-                        padding: '2px 6px',
-                        borderRadius: '9999px',
-                        fontSize: '9px',
-                        fontWeight: 500,
-                      }}
-                      className={
-                        currentStatus === 'Shipped' ? 'pill-status-shipped' : currentStatus === 'Processing' ? 'pill-status-processing' : 'pill-status-pending'
-                      }
-                    >
-                      {currentStatus}
-                    </span>
-                  </div>
-
-                  {renderProductItems(items)}
-
-                  <div style={{ fontSize: '11px' }}>
-                    <div style={{ fontWeight: 600, color: '#171717' }}>{customerName}</div>
-                    <div style={{ color: '#666666', fontSize: '10px', wordBreak: 'break-all', marginTop: '1px' }}>{email}</div>
-                    <div style={{ color: '#A3A3A3', fontSize: '9px', marginTop: '1px' }}>{address}</div>
-                  </div>
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', borderTop: '1px solid #EBEBEB', paddingTop: '6px' }}>
-                    <span style={{ textTransform: 'uppercase', color: '#666666', fontSize: '9px', fontWeight: 500, letterSpacing: '0.5px' }}>{paymentMethod}</span>
-                    <span style={{ fontWeight: 600, fontSize: '14px', color: '#171717' }}>${Number(total).toFixed(2)}</span>
-                  </div>
-
-                  <div>
-                    <select
-                      value={currentStatus}
-                      onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                      className="admin-select-input"
-                      style={{ width: '100%' }}
-                    >
-                      <option value="Pending">Pending</option>
-                      <option value="Processing">Processing</option>
-                      <option value="Shipped">Shipped</option>
-                      <option value="Completed">Mark Completed</option>
-                      <option value="Cancelled">Mark Cancelled</option>
-                    </select>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        ) : (
-          /* DESKTOP TABLE VIEW */
-          <div style={{ background: '#FFFFFF', border: '1px solid #EBEBEB', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 2px 6px rgba(0,0,0,0.02)', marginBottom: '20px' }}>
-            <table
+            <div>
+              <h1 style={{ fontSize: isMobile ? '20px' : '28px', margin: 0, fontWeight: 400, letterSpacing: '-1px', color: '#171717' }}>
+                Orders Monitor
+              </h1>
+              <p style={{ fontSize: isMobile ? '11px' : '13px', color: '#666666', marginTop: '2px', letterSpacing: '-0.2px' }}>
+                Manage active storefront orders in real-time with zero-latency synchronization.
+              </p>
+            </div>
+            <div
               style={{
-                width: '100%',
-                borderCollapse: 'collapse',
-                textAlign: 'left',
+                background: '#171717',
+                color: '#FFFFFF',
+                padding: '4px 12px',
+                borderRadius: '9999px',
+                fontSize: '11px',
+                fontWeight: 500,
+                boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+                alignSelf: isMobile ? 'flex-start' : 'auto',
+                textAlign: 'center',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '5px',
               }}
             >
-              <thead>
-                <tr style={{ background: '#171717', color: '#FFFFFF', fontSize: '9px', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
-                  <th style={{ padding: '10px 14px', width: '35%', fontWeight: 500 }}>Order Details & Time</th>
-                  <th style={{ padding: '10px 14px', width: '25%', fontWeight: 500 }}>Customer</th>
-                  <th style={{ padding: '10px 14px', width: '15%', fontWeight: 500 }}>Payment</th>
-                  <th style={{ padding: '10px 14px', width: '10%', fontWeight: 500 }}>Total</th>
-                  <th style={{ padding: '10px 14px', width: '8%', fontWeight: 500 }}>Status</th>
-                  <th style={{ padding: '10px 14px', width: '7%', fontWeight: 500 }}>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {activeOrders.map((order) => {
-                  const customerName = order.customer_name || order.shipping?.fullName || 'Guest'
-                  const email = order.email || order.shipping?.email || 'N/A'
-                  const address = order.address || order.shipping?.address || 'N/A'
-                  const paymentMethod = order.payment_method || order.shipping?.paymentMethod || 'COD'
-                  const total = order.total_amount ?? order.total ?? 0
-                  const currentStatus = order.status || 'Pending'
-                  const items = order.order_items || order.items || []
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#22C55e', display: 'inline-block' }}></span>
+              Active Orders: {activeOrders.length}
+            </div>
+          </div>
 
-                  return (
-                    <tr key={order.id} style={{ borderBottom: '1px solid #EBEBEB', verticalAlign: 'top' }} className="order-card-hover">
-                      <td style={{ padding: '12px 14px' }}>
-                        <div style={{ fontWeight: 600, fontSize: '12px', color: '#171717' }}>#{String(order.id).slice(0, 8)}</div>
-                        <div style={{ fontSize: '10px', color: '#666666', marginTop: '2px' }}>
+          {/* Live Notification */}
+          {notification && (
+            <div
+              style={{
+                background: '#171717',
+                color: '#FFFFFF',
+                padding: '8px 12px',
+                borderRadius: '6px',
+                marginBottom: '14px',
+                fontSize: '11px',
+                fontWeight: 500,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                animation: 'fadeInScale 0.3s ease-out forwards',
+              }}
+            >
+              <span>{notification}</span>
+              <span style={{ fontSize: '9px', color: '#A3A3A3', textTransform: 'uppercase', letterSpacing: '1px' }}>Live Stream</span>
+            </div>
+          )}
+
+          {/* Empty State / Content View */}
+          {activeOrders.length === 0 ? (
+            <div
+              style={{
+                padding: '30px 12px',
+                textAlign: 'center',
+                color: '#666666',
+                background: '#FFFFFF',
+                border: '1px solid #EBEBEB',
+                borderRadius: '8px',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
+                marginBottom: '20px',
+              }}
+            >
+              <p style={{ fontSize: '14px', fontWeight: 400, color: '#171717', marginBottom: '3px' }}>No active pending orders.</p>
+              <p style={{ fontSize: '11px', color: '#A3A3A3' }}>Incoming requests will automatically appear here.</p>
+            </div>
+          ) : isMobile ? (
+            /* MOBILE CARDS VIEW */
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
+              {activeOrders.map((order) => {
+                const customerName = order.customer_name || order.shipping?.fullName || 'Guest'
+                const email = order.email || order.shipping?.email || 'N/A'
+                const address = order.address || order.shipping?.address || 'N/A'
+                const paymentMethod = order.payment_method || order.shipping?.paymentMethod || 'COD'
+                const total = order.total_amount ?? order.total ?? 0
+                const currentStatus = order.status || 'Pending'
+                const items = order.order_items || order.items || []
+
+                return (
+                  <div
+                    key={order.id}
+                    className="order-card-hover"
+                    style={{
+                      background: '#FFFFFF',
+                      border: '1px solid #EBEBEB',
+                      borderRadius: '6px',
+                      padding: '10px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '8px',
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid #EBEBEB', paddingBottom: '6px' }}>
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: '13px', color: '#171717' }}>#{String(order.id).slice(0, 8)}</div>
+                        <div style={{ fontSize: '9px', color: '#666666', marginTop: '1px' }}>
                           {order.created_at ? new Date(order.created_at).toLocaleString() : 'N/A'}
                         </div>
-                        {renderProductItems(items)}
-                      </td>
-                      <td style={{ padding: '12px 14px' }}>
-                        <div style={{ fontWeight: 600, fontSize: '11px', color: '#171717' }}>{customerName}</div>
-                        <div style={{ fontSize: '10px', color: '#666666', marginTop: '1px' }}>{email}</div>
-                        <div style={{ fontSize: '9px', color: '#A3A3A3', marginTop: '1px' }}>{address}</div>
-                      </td>
-                      <td style={{ padding: '12px 14px', textTransform: 'uppercase', fontSize: '10px', color: '#666666', fontWeight: 500 }}>
-                        {paymentMethod}
-                      </td>
-                      <td style={{ padding: '12px 14px', fontWeight: 600, fontSize: '12px', color: '#171717' }}>
-                        ${Number(total).toFixed(2)}
-                      </td>
-                      <td style={{ padding: '12px 14px' }}>
-                        <span
-                          style={{
-                            padding: '2px 6px',
-                            borderRadius: '9999px',
-                            fontSize: '9px',
-                            fontWeight: 500,
-                            display: 'inline-block',
-                          }}
-                          className={
-                            currentStatus === 'Shipped' ? 'pill-status-shipped' : currentStatus === 'Processing' ? 'pill-status-processing' : 'pill-status-pending'
-                          }
-                        >
-                          {currentStatus}
-                        </span>
-                      </td>
-                      <td style={{ padding: '12px 14px' }}>
-                        <select
-                          value={currentStatus}
-                          onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                          className="admin-select-input"
-                        >
-                          <option value="Pending">Pending</option>
-                          <option value="Processing">Processing</option>
-                          <option value="Shipped">Shipped</option>
-                          <option value="Completed">Mark Completed</option>
-                          <option value="Cancelled">Mark Cancelled</option>
-                        </select>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
+                      </div>
+                      <span
+                        style={{
+                          padding: '2px 6px',
+                          borderRadius: '9999px',
+                          fontSize: '9px',
+                          fontWeight: 500,
+                        }}
+                        className={
+                          currentStatus === 'Shipped' ? 'pill-status-shipped' : currentStatus === 'Processing' ? 'pill-status-processing' : 'pill-status-pending'
+                        }
+                      >
+                        {currentStatus}
+                      </span>
+                    </div>
+
+                    {renderProductItems(items)}
+
+                    <div style={{ fontSize: '11px' }}>
+                      <div style={{ fontWeight: 600, color: '#171717' }}>{customerName}</div>
+                      <div style={{ color: '#666666', fontSize: '10px', wordBreak: 'break-all', marginTop: '1px' }}>{email}</div>
+                      <div style={{ color: '#A3A3A3', fontSize: '9px', marginTop: '1px' }}>{address}</div>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', borderTop: '1px solid #EBEBEB', paddingTop: '6px' }}>
+                      <span style={{ textTransform: 'uppercase', color: '#666666', fontSize: '9px', fontWeight: 500, letterSpacing: '0.5px' }}>{paymentMethod}</span>
+                      <span style={{ fontWeight: 600, fontSize: '14px', color: '#171717' }}>${Number(total).toFixed(2)}</span>
+                    </div>
+
+                    <div>
+                      <select
+                        value={currentStatus}
+                        onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                        className="admin-select-input"
+                        style={{ width: '100%' }}
+                      >
+                        <option value="Pending">Pending</option>
+                        <option value="Processing">Processing</option>
+                        <option value="Shipped">Shipped</option>
+                        <option value="Completed">Mark Completed</option>
+                        <option value="Cancelled">Mark Cancelled</option>
+                      </select>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          ) : (
+            /* DESKTOP TABLE VIEW */
+            <div style={{ background: '#FFFFFF', border: '1px solid #EBEBEB', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 2px 6px rgba(0,0,0,0.02)', marginBottom: '20px' }}>
+              <table
+                style={{
+                  width: '100%',
+                  borderCollapse: 'collapse',
+                  textAlign: 'left',
+                }}
+              >
+                <thead>
+                  <tr style={{ background: '#171717', color: '#FFFFFF', fontSize: '9px', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+                    <th style={{ padding: '10px 14px', width: '35%', fontWeight: 500 }}>Order Details & Time</th>
+                    <th style={{ padding: '10px 14px', width: '25%', fontWeight: 500 }}>Customer</th>
+                    <th style={{ padding: '10px 14px', width: '15%', fontWeight: 500 }}>Payment</th>
+                    <th style={{ padding: '10px 14px', width: '10%', fontWeight: 500 }}>Total</th>
+                    <th style={{ padding: '10px 14px', width: '8%', fontWeight: 500 }}>Status</th>
+                    <th style={{ padding: '10px 14px', width: '7%', fontWeight: 500 }}>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {activeOrders.map((order) => {
+                    const customerName = order.customer_name || order.shipping?.fullName || 'Guest'
+                    const email = order.email || order.shipping?.email || 'N/A'
+                    const address = order.address || order.shipping?.address || 'N/A'
+                    const paymentMethod = order.payment_method || order.shipping?.paymentMethod || 'COD'
+                    const total = order.total_amount ?? order.total ?? 0
+                    const currentStatus = order.status || 'Pending'
+                    const items = order.order_items || order.items || []
+
+                    return (
+                      <tr key={order.id} style={{ borderBottom: '1px solid #EBEBEB', verticalAlign: 'top' }} className="order-card-hover">
+                        <td style={{ padding: '12px 14px' }}>
+                          <div style={{ fontWeight: 600, fontSize: '12px', color: '#171717' }}>#{String(order.id).slice(0, 8)}</div>
+                          <div style={{ fontSize: '10px', color: '#666666', marginTop: '2px' }}>
+                            {order.created_at ? new Date(order.created_at).toLocaleString() : 'N/A'}
+                          </div>
+                          {renderProductItems(items)}
+                        </td>
+                        <td style={{ padding: '12px 14px' }}>
+                          <div style={{ fontWeight: 600, fontSize: '11px', color: '#171717' }}>{customerName}</div>
+                          <div style={{ fontSize: '10px', color: '#666666', marginTop: '1px' }}>{email}</div>
+                          <div style={{ fontSize: '9px', color: '#A3A3A3', marginTop: '1px' }}>{address}</div>
+                        </td>
+                        <td style={{ padding: '12px 14px', textTransform: 'uppercase', fontSize: '10px', color: '#666666', fontWeight: 500 }}>
+                          {paymentMethod}
+                        </td>
+                        <td style={{ padding: '12px 14px', fontWeight: 600, fontSize: '12px', color: '#171717' }}>
+                          ${Number(total).toFixed(2)}
+                        </td>
+                        <td style={{ padding: '12px 14px' }}>
+                          <span
+                            style={{
+                              padding: '2px 6px',
+                              borderRadius: '9999px',
+                              fontSize: '9px',
+                              fontWeight: 500,
+                              display: 'inline-block',
+                            }}
+                            className={
+                              currentStatus === 'Shipped' ? 'pill-status-shipped' : currentStatus === 'Processing' ? 'pill-status-processing' : 'pill-status-pending'
+                            }
+                          >
+                            {currentStatus}
+                          </span>
+                        </td>
+                        <td style={{ padding: '12px 14px' }}>
+                          <select
+                            value={currentStatus}
+                            onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                            className="admin-select-input"
+                          >
+                            <option value="Pending">Pending</option>
+                            <option value="Processing">Processing</option>
+                            <option value="Shipped">Shipped</option>
+                            <option value="Completed">Mark Completed</option>
+                            <option value="Cancelled">Mark Cancelled</option>
+                          </select>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
