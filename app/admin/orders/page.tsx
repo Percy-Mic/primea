@@ -231,25 +231,26 @@ export default function AdminOrdersPage() {
           overflow-x: hidden;
         }
 
+        /* Full-width dotted grid background pattern */
         .admin-layout-wrapper {
           display: flex;
           flex-direction: column;
           min-height: 100vh;
-          padding-top: 145px; /* Offset to prevent content from going underneath fixed headers */
           width: 100%;
           position: relative;
-          background: #FAFAFA;
+          background-color: #FAFAFA;
+          background-image: linear-gradient(to right, #EBEBEB 1px, transparent 1px),
+                            linear-gradient(to bottom, #EBEBEB 1px, transparent 1px);
+          background-size: 40px 40px;
         }
 
-        .header-fixed-container {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          z-index: 9999;
+        /* Normal document flow container so headers scroll naturally with the window */
+        .header-flow-container {
+          width: 100%;
           background-color: #171717;
           border-bottom: 1px solid #2A2A2A;
-          width: 100%;
+          position: relative;
+          z-index: 10;
         }
 
         .admin-main-content {
@@ -306,8 +307,8 @@ export default function AdminOrdersPage() {
         }
       `}</style>
 
-      {/* Permanently Fixed Top Header and Sub-Navigation */}
-      <div className="header-fixed-container">
+      {/* Header and Sub-Navigation rendered at the top and scrolling along with the window */}
+      <div className="header-flow-container">
         <AdminHeader
           title="Storefront Monitor"
           description="Real-time store progress and order management dashboard"
