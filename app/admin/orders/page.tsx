@@ -225,7 +225,7 @@ export default function AdminOrdersPage() {
   }
 
   return (
-    <div className="admin-layout-wrapper">
+    <div style={{ minHeight: '100vh', backgroundColor: '#fbf9f6', paddingBottom: '3rem', position: 'relative', overflow: 'hidden', background: 'linear-gradient(135deg, #fcfbfa 0%, #f4eee3 50%, #f7f3eb 100%)' }}>
       <style>{`
         @keyframes ambientGlow1 {
           0% { transform: translate(0px, 0px) scale(1); }
@@ -237,37 +237,14 @@ export default function AdminOrdersPage() {
           50% { transform: translate(-40px, 40px) scale(1.15); }
           100% { transform: translate(0px, 0px) scale(1); }
         }
-        @keyframes shimmerBadge {
-          0% { background-position: -200% 0; }
-          100% { background-position: 200% 0; }
-        }
         @keyframes fadeInUp {
           from { opacity: 0; transform: translateY(12px); }
           to { opacity: 1; transform: translateY(0); }
         }
 
-        body {
-          margin: 0;
-          padding: 0;
-          background-color: #fbf9f6;
-          font-family: system-ui, -apple-system, sans-serif;
-          overflow-x: hidden;
-        }
-
-        .admin-layout-wrapper {
-          display: flex;
-          flex-direction: column;
-          min-height: 100vh;
-          padding-top: 115px;
-          width: 100%;
-          position: relative;
-          background: linear-gradient(135deg, #fcfbfa 0%, #f4eee3 50%, #f7f3eb 100%);
-          overflow: hidden;
-        }
-
         /* Background Self-Sustaining Ambient Orbs */
-        .admin-layout-wrapper::before,
-        .admin-layout-wrapper::after {
+        body::before,
+        body::after {
           content: '';
           position: absolute;
           width: 450px;
@@ -278,148 +255,17 @@ export default function AdminOrdersPage() {
           pointer-events: none;
           opacity: 0.45;
         }
-        .admin-layout-wrapper::before {
+        body::before {
           top: -100px;
           right: -100px;
           background: radial-gradient(circle, rgba(212, 175, 55, 0.22) 0%, rgba(181, 89, 51, 0.05) 70%);
           animation: ambientGlow1 12s ease-in-out infinite;
         }
-        .admin-layout-wrapper::after {
+        body::after {
           bottom: 10%;
           left: -120px;
           background: radial-gradient(circle, rgba(165, 124, 76, 0.18) 0%, rgba(212, 175, 55, 0.03) 70%);
           animation: ambientGlow2 15s ease-in-out infinite;
-        }
-
-        @media (max-width: 768px) {
-          .admin-layout-wrapper {
-            padding-top: 135px;
-          }
-        }
-
-        .header-fixed-container {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          margin: 0;
-          padding: 0;
-          z-index: 9999;
-          background-color: #ffffff;
-          box-shadow: 0 4px 20px rgba(31, 24, 21, 0.06);
-          box-sizing: border-box;
-        }
-
-        .fixed-top-header {
-          padding: 0;
-          width: 100%;
-          box-sizing: border-box;
-        }
-
-        .top-nav-bar {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          background: linear-gradient(to right, #ffffff, #fcfbfa);
-          border-top: 1px solid rgba(232, 226, 217, 0.8);
-          border-bottom: 1px solid rgba(232, 226, 217, 0.8);
-          padding: 0.4rem 1.5rem;
-          width: 100%;
-          box-sizing: border-box;
-          flex-wrap: wrap;
-          gap: 0.75rem;
-        }
-
-        .nav-links-group {
-          display: flex;
-          list-style: none;
-          padding: 0;
-          margin: 0;
-          gap: 0.4rem;
-          align-items: center;
-          flex-wrap: wrap;
-        }
-
-        .nav-link {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.45rem;
-          padding: 0.35rem 0.75rem;
-          border-radius: 8px;
-          font-size: 0.85rem;
-          font-weight: 500;
-          color: #3b332e;
-          text-decoration: none;
-          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-          border: 1px solid transparent;
-        }
-
-        .nav-link:hover {
-          background-color: rgba(247, 244, 239, 0.8);
-          color: #b55933;
-          border-color: rgba(181, 89, 51, 0.2);
-          transform: translateY(-1px);
-        }
-
-        .nav-link.active {
-          background: linear-gradient(135deg, #1f1815 0%, #3a2e2a 100%);
-          color: #ffffff;
-          font-weight: 600;
-          box-shadow: 0 4px 12px rgba(31, 24, 21, 0.2);
-        }
-
-        .mobile-menu-btn {
-          display: none;
-          background: none;
-          border: 1px solid #ded7cc;
-          padding: 0.3rem 0.6rem;
-          border-radius: 6px;
-          font-size: 0.9rem;
-          font-weight: 600;
-          cursor: pointer;
-          color: #1f1815;
-          transition: all 0.2s ease;
-        }
-        .mobile-menu-btn:hover {
-          background: #f7f4ef;
-        }
-
-        @media (max-width: 768px) {
-          .mobile-menu-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-          }
-          .nav-links-group {
-            display: ${mobileMenuOpen ? 'flex' : 'none'};
-            width: 100%;
-            flex-direction: column;
-            align-items: stretch;
-            padding-bottom: 0.5rem;
-            border-top: 1px solid #f2ede4;
-            margin-top: 0.4rem;
-            padding-top: 0.4rem;
-          }
-        }
-
-        .admin-main-content {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          box-sizing: border-box;
-          padding: 1rem;
-          width: 100%;
-          max-width: 1200px;
-          margin: 0 auto;
-          position: relative;
-          z-index: 1;
-          animation: fadeInUp 0.5s ease-out forwards;
-        }
-
-        @media (min-width: 640px) {
-          .admin-main-content {
-            padding: 1.25rem 1.5rem 3rem 1.5rem;
-          }
         }
 
         .luxury-card {
@@ -444,66 +290,18 @@ export default function AdminOrdersPage() {
         }
       `}</style>
 
-      {/* Fixed Header & Navigation Group */}
-      <div className="header-fixed-container">
-        <div className="fixed-top-header">
-          <AdminHeader
-            title="Storefront Monitor"
-            description="Real-time store progress and order management dashboard"
-            userEmail={userEmail}
-            onLogout={async () => {
-              const supabase = createClient()
-              await supabase.auth.signOut()
-              window.location.href = '/login'
-            }}
-          />
-        </div>
+      {/* UNTOUCHED ORIGINAL HEADER */}
+      <AdminHeader 
+        userEmail={userEmail}
+        onLogout={async () => {
+          const supabase = createClient()
+          await supabase.auth.signOut()
+          router.push('/login')
+        }}
+      />
 
-        <nav className="top-nav-bar">
-          <button 
-            type="button" 
-            className="mobile-menu-btn" 
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {/* SVG Menu Icon */}
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-            Menu
-          </button>
-          <ul className="nav-links-group">
-            <li>
-              <Link href="/admin/dashboard" className={`nav-link ${pathname === '/admin/dashboard' ? 'active' : ''}`}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
-                Dashboard
-              </Link>
-            </li>
-            <li>
-              <Link href="/admin/orders" className={`nav-link ${pathname === '/admin/orders' ? 'active' : ''}`}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
-                Orders
-              </Link>
-            </li>
-            <li>
-              <Link href="/admin/products" className={`nav-link ${pathname === '/admin/products' ? 'active' : ''}`}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-                Inventory
-              </Link>
-            </li>
-            <li>
-              <Link href="/admin/products/new" className={`nav-link ${pathname === '/admin/products/new' ? 'active' : ''}`}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
-                Add Product
-              </Link>
-            </li>
-          </ul>
-          <Link href="/" target="_blank" className="nav-link" style={{ color: '#b55933', fontWeight: 600 }}>
-            View Storefront
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-          </Link>
-        </nav>
-      </div>
-
-      {/* Main Content */}
-      <div className="admin-main-content">
+      {/* Main Content with Luxury White-and-Brown Theme */}
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem 1.5rem', position: 'relative', zIndex: 1, animation: 'fadeInUp 0.5s ease-out forwards' }}>
         <div
           style={{
             display: 'flex',
