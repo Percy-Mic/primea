@@ -258,13 +258,13 @@ export default function AdminOrdersPage() {
           flex-shrink: 0;
         }
 
-        /* Main content area takes remaining height and handles standalone scrolling */
+        /* Main content area takes remaining height and handles standalone scrolling with top & bottom padding */
         .admin-main-content {
           flex: 1;
           display: flex;
           flex-direction: column;
           box-sizing: border-box;
-          padding: 130px 12px 20px 12px; /* Top padding clears the fixed header height */
+          padding: 100px 12px 32px 12px; /* Reduced top padding, added bottom padding */
           width: 100%;
           max-width: 1400px;
           margin: 0 auto;
@@ -276,7 +276,7 @@ export default function AdminOrdersPage() {
 
         @media (min-width: 768px) {
           .admin-main-content {
-            padding: 140px 24px 24px 24px;
+            padding: 110px 24px 36px 24px;
           }
         }
 
