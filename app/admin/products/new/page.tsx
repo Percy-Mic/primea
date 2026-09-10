@@ -1,11 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import Header from '@/components/AdminNav'
-import { usePathname } from 'next/navigation'
+import AdminSubNav from '@/components/AdminSubNav'
 
 export default function CreateProductPage() {
   const router = useRouter()
@@ -19,7 +19,6 @@ export default function CreateProductPage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null
@@ -112,116 +111,6 @@ export default function CreateProductPage() {
           z-index: 1100;
           background: #ffffff;
           box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-        }
-
-        /* Top Sub-Navigation Bar for Desktop */
-        .sub-nav-bar {
-          background: #ffffff;
-          border-top: 1px solid #f1f5f9;
-          border-bottom: 1px solid #e2e8f0;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 0.35rem 1.5rem;
-          width: 100%;
-          box-sizing: border-box;
-          flex-wrap: wrap;
-          gap: 0.75rem;
-        }
-
-        .sub-nav-links {
-          display: flex;
-          gap: 0.3rem;
-          align-items: center;
-          list-style: none;
-          padding: 0;
-          margin: 0;
-          flex-wrap: wrap;
-        }
-
-        .sub-nav-link {
-          text-decoration: none;
-          color: #475569;
-          font-weight: 500;
-          font-size: 0.83rem;
-          padding: 0.3rem 0.65rem;
-          border-radius: 6px;
-          transition: all 0.15s ease;
-        }
-
-        .sub-nav-link:hover {
-          background-color: #f1f5f9;
-          color: #0f172a;
-        }
-
-        .sub-nav-link.active {
-          background-color: #0f172a;
-          color: #ffffff;
-          font-weight: 600;
-        }
-
-        .storefront-external-link {
-          color: #2563eb;
-          text-decoration: none;
-          font-weight: 600;
-          font-size: 0.83rem;
-        }
-
-        .storefront-external-link:hover {
-          text-decoration: underline;
-        }
-
-        /* Mobile Hamburger Toggle Bar */
-        .mobile-menu-toggle-bar {
-          display: none;
-          align-items: center;
-          justify-content: space-between;
-          padding: 0.4rem 1.5rem;
-          background: #ffffff;
-          border-top: 1px solid #f1f5f9;
-          border-bottom: 1px solid #e2e8f0;
-        }
-
-        .hamburger-btn {
-          background: none;
-          border: 1px solid #cbd5e1;
-          padding: 0.3rem 0.6rem;
-          border-radius: 6px;
-          font-size: 0.85rem;
-          font-weight: 600;
-          cursor: pointer;
-          color: #0f172a;
-          display: inline-flex;
-          align-items: center;
-          gap: 0.4rem;
-        }
-
-        .mobile-dropdown-menu {
-          display: none;
-          flex-direction: column;
-          background: #ffffff;
-          border-bottom: 1px solid #e2e8f0;
-          padding: 0.5rem 1.5rem;
-          gap: 0.4rem;
-        }
-
-        .mobile-dropdown-menu.open {
-          display: flex;
-        }
-
-        .mobile-nav-link {
-          text-decoration: none;
-          color: #475569;
-          font-weight: 500;
-          font-size: 0.85rem;
-          padding: 0.35rem 0.65rem;
-          border-radius: 6px;
-        }
-
-        .mobile-nav-link.active {
-          background-color: #0f172a;
-          color: #ffffff;
-          font-weight: 600;
         }
 
         .main-content {
@@ -431,12 +320,6 @@ export default function CreateProductPage() {
         }
 
         @media (max-width: 768px) {
-          .sub-nav-bar {
-            display: none;
-          }
-          .mobile-menu-toggle-bar {
-            display: flex;
-          }
           .page-wrapper {
             padding-top: 110px;
           }
@@ -457,64 +340,9 @@ export default function CreateProductPage() {
           userEmail="percymicnono@gmail.com" 
           onLogout={() => {}} 
         />
-
-        {/* Desktop Sub-Navigation Bar */}
-        <nav className="sub-nav-bar">
-          <ul className="sub-nav-links">
-            <li><Link href="/admin/dashboard" className={`sub-nav-link ${pathname === '/admin/dashboard' ? 'active' : ''}`}>Dashboard</Link></li>
-            <li><Link href="/admin/orders" className={`sub-nav-link ${pathname === '/admin/orders' ? 'active' : ''}`}>Orders</Link></li>
-            <li><Link href="/admin/products" className={`sub-nav-link ${pathname === '/admin/products' ? 'active' : ''}`}>Inventory</Link></li>
-            <li><Link href="/admin/products/new" className={`sub-nav-link ${pathname === '/admin/products/new' ? 'active' : ''}`}>Add Product</Link></li>
-          </ul>
-          <Link href="/" target="_blank" className="storefront-external-link">
-            View Storefront →
-          </Link>
-        </nav>
-
-        {/* Mobile Hamburger Menu Toggle Bar */}
-        <div className="mobile-menu-toggle-bar">
-          <button 
-            className="hamburger-btn" 
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            ☰ Menu
-          </button>
-          <Link href="/" target="_blank" className="storefront-external-link">
-            View Storefront →
-          </Link>
-        </div>
-
-        {/* Mobile Dropdown Navigation Menu */}
-        <div className={`mobile-dropdown-menu ${mobileMenuOpen ? 'open' : ''}`}>
-          <Link 
-            href="/admin/dashboard" 
-            className={`mobile-nav-link ${pathname === '/admin/dashboard' ? 'active' : ''}`}
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            Dashboard
-          </Link>
-          <Link 
-            href="/admin/orders" 
-            className={`mobile-nav-link ${pathname === '/admin/orders' ? 'active' : ''}`}
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            Orders
-          </Link>
-          <Link 
-            href="/admin/products" 
-            className={`mobile-nav-link ${pathname === '/admin/products' ? 'active' : ''}`}
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            Inventory
-          </Link>
-          <Link 
-            href="/admin/products/new" 
-            className={`mobile-nav-link ${pathname === '/admin/products/new' ? 'active' : ''}`}
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            Add Product
-          </Link>
-        </div>
+        
+        {/* Imported Sub-Navigation and Mobile Menu */}
+        <AdminSubNav />
       </div>
 
       {/* Main Content Form Container */}
