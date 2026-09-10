@@ -258,13 +258,13 @@ export default function AdminOrdersPage() {
           flex-shrink: 0;
         }
 
-        /* Main content area with increased bottom padding */
+        /* Main content area with 100px+ bottom padding */
         .admin-main-content {
           flex: 1;
           display: flex;
           flex-direction: column;
           box-sizing: border-box;
-          padding: 85px 12px 70px 12px;
+          padding: 85px 12px 100px 12px;
           width: 100%;
           max-width: 1400px;
           margin: 0 auto;
@@ -276,7 +276,7 @@ export default function AdminOrdersPage() {
 
         @media (min-width: 768px) {
           .admin-main-content {
-            padding: 95px 24px 90px 24px;
+            padding: 95px 24px 120px 24px;
           }
         }
 
