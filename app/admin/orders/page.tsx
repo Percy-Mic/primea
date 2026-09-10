@@ -231,26 +231,26 @@ export default function AdminOrdersPage() {
           overflow-x: hidden;
         }
 
-        /* Full-width dotted grid background pattern */
         .admin-layout-wrapper {
           display: flex;
           flex-direction: column;
           min-height: 100vh;
           width: 100%;
-          position: relative;
           background-color: #FAFAFA;
           background-image: linear-gradient(to right, #EBEBEB 1px, transparent 1px),
                             linear-gradient(to bottom, #EBEBEB 1px, transparent 1px);
           background-size: 40px 40px;
         }
 
-        /* Normal document flow container so headers scroll naturally with the window */
-        .header-flow-container {
-          width: 100%;
+        .header-fixed-container {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          z-index: 9999;
           background-color: #171717;
           border-bottom: 1px solid #2A2A2A;
-          position: relative;
-          z-index: 10;
+          width: 100%;
         }
 
         .admin-main-content {
@@ -258,9 +258,10 @@ export default function AdminOrdersPage() {
           display: flex;
           flex-direction: column;
           box-sizing: border-box;
-          padding: 40px;
+          padding: 160px 40px 40px 40px; /* Top padding clears the fixed header cleanly */
           width: 100%;
-          margin: 0;
+          max-width: 1400px;
+          margin: 0 auto;
           position: relative;
           z-index: 1;
           animation: fadeInScale 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -307,8 +308,8 @@ export default function AdminOrdersPage() {
         }
       `}</style>
 
-      {/* Header and Sub-Navigation rendered at the top and scrolling along with the window */}
-      <div className="header-flow-container">
+      {/* Fixed Header Stack */}
+      <div className="header-fixed-container">
         <AdminHeader
           title="Storefront Monitor"
           description="Real-time store progress and order management dashboard"
