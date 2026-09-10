@@ -1,6 +1,6 @@
 // app/api/orders/[id]/track/route.ts
 import { NextResponse } from 'next/server'
-// import { supabase } from '@/lib/supabaseClient' // Make sure your Supabase client is configured here
+import { supabase } from '@/lib/supabaseClient' // Ensure your supabase client path is correct
 
 export async function GET(
   request: Request,
@@ -9,8 +9,7 @@ export async function GET(
   try {
     const orderId = params.id
 
-    // Fetch live tracking data, coordinates, and logs directly from your database
-    /*
+    // Query your actual database table for real tracking info
     const { data, error } = await supabase
       .from('orders')
       .select('status, current_lat, current_lng, tracking_logs')
@@ -19,29 +18,25 @@ export async function GET(
 
     if (error || !data) {
       return NextResponse.json(
-        { error: 'Order tracking details not found in database' }, 
+        { error: 'Order tracking details not found' }, 
         { status: 404 }
       )
     }
 
     return NextResponse.json({
       success: true,
-      status: data.status,
+      status: data.status || 'Processing',
       currentLocation: { 
         lat: Number(data.current_lat) || 0, 
         lng: Number(data.current_lng) || 0 
       },
       logs: data.tracking_logs || []
     })
-    */
-
-    // Placeholder to remind you to hook up your database table query above
-    throw new Error('Database query connection required for dynamic tracking.')
 
   } catch (err: any) {
-    console.error('Tracking API Error:', err)
+    console.error('Tracking API Exception:', err)
     return NextResponse.json(
-      { error: err.message || 'Failed to fetch live tracking records from database' }, 
+      { error: 'Internal Server Error' }, 
       { status: 500 }
     )
   }
