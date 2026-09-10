@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import AdminHeader from '@/components/AdminNav'
+import AdminSubNav from '@/components/AdminSubNav'
 
 interface Order {
   id: string
@@ -69,7 +70,6 @@ export default function AdminDashboardPage() {
   const [userEmail, setUserEmail] = useState<string>('Loading...')
   const [isAuthorized, setIsAuthorized] = useState<boolean>(false)
   const [authLoading, setAuthLoading] = useState<boolean>(true)
-  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false)
 
   const [stats, setStats] = useState<DashboardStats>({
     revenue: 0,
@@ -253,7 +253,6 @@ export default function AdminDashboardPage() {
           padding: 0;
         }
 
-        /* Explicit Grid Pattern Background applied globally */
         html, body {
           background-color: #FAFAFA !important;
           background-image: 
@@ -288,86 +287,10 @@ export default function AdminDashboardPage() {
           width: 100%;
         }
 
-        /* Left-aligned Sub Nav bar */
-        .top-nav-bar {
-          display: flex;
-          align-items: center;
-          justify-content: flex-start;
-          gap: 16px;
-          background-color: #FFFFFF;
-          border-bottom: 1px solid #EBEBEB;
-          padding: 8px 20px;
-          width: 100%;
-        }
-
-        .nav-links-group {
-          display: flex;
-          list-style: none;
-          gap: 6px;
-          align-items: center;
-        }
-
-        .nav-link {
-          display: inline-flex;
-          align-items: center;
-          padding: 5px 12px;
-          border-radius: 9999px;
-          font-size: 13px;
-          font-weight: 500;
-          color: #666666;
-          text-decoration: none;
-          border: 1px solid transparent;
-          transition: all 0.2s ease;
-        }
-
-        .nav-link:hover {
-          background-color: #FAFAFA;
-          border-color: #EBEBEB;
-          color: #171717;
-        }
-
-        .nav-link.active {
-          background-color: #171717;
-          color: #FFFFFF;
-          font-weight: 500;
-        }
-
-        .storefront-link {
-          margin-left: auto;
-        }
-
-        .mobile-menu-btn {
-          display: none;
-          background: none;
-          border: 1px solid #EBEBEB;
-          padding: 5px 10px;
-          border-radius: 9999px;
-          font-size: 13px;
-          font-weight: 500;
-          cursor: pointer;
-          color: #171717;
-        }
-
         @media (max-width: 768px) {
-          .top-nav-bar {
-            flex-wrap: wrap;
-            justify-content: space-between;
-          }
-          .mobile-menu-btn { display: inline-flex; align-items: center; }
-          .storefront-link { margin-left: 0; }
-          .nav-links-group {
-            display: ${mobileMenuOpen ? 'flex' : 'none'};
-            width: 100%;
-            flex-direction: column;
-            align-items: stretch;
-            border-top: 1px solid #EBEBEB;
-            margin-top: 6px;
-            padding-top: 6px;
-          }
           .admin-layout-wrapper { padding-top: 135px; }
         }
 
-        /* Reduced Paddings around main content */
         .admin-main-content {
           flex: 1;
           display: flex;
@@ -461,7 +384,6 @@ export default function AdminDashboardPage() {
           border-color: #171717;
         }
 
-        /* Exactly 2 cards per row everywhere including mobile */
         .metrics-grid {
           display: grid;
           grid-template-columns: repeat(2, 1fr);
@@ -619,39 +541,22 @@ export default function AdminDashboardPage() {
 
         @media print {
           body, html { background: #FFFFFF !important; background-image: none !important; color: #000000 !important; }
-          .header-fixed-container, .dashboard-actions-bar, .action-buttons-group, .mobile-menu-btn, .top-nav-bar, button { display: none !important; }
+          .header-fixed-container, .dashboard-actions-bar, .action-buttons-group, button { display: none !important; }
           .admin-layout-wrapper { padding-top: 0 !important; }
           .admin-main-content { max-width: 100% !important; padding: 0 !important; }
           .dashboard-section, .metric-card { border: 1px solid #000000 !important; box-shadow: none !important; background: #FFFFFF !important; }
         }
       `}</style>
 
-      {/* Fixed Header */}
+      {/* Fixed Header & Sub Navigation Components */}
       <div className="header-fixed-container">
-        <div className="fixed-top-header">
-          <AdminHeader
-            title="Admin Dashboard"
-            description="Real-time store progress and inventory management dashboard"
-            userEmail={userEmail}
-            onLogout={handleLogout}
-          />
-        </div>
-
-        {/* Top Sub Nav Bar - Left Aligned */}
-        <nav className="top-nav-bar">
-          <button type="button" className="mobile-menu-btn" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-            Menu
-          </button>
-          <ul className="nav-links-group">
-            <li><Link href="/admin/dashboard" className={`nav-link ${pathname === '/admin/dashboard' ? 'active' : ''}`}>Dashboard</Link></li>
-            <li><Link href="/admin/orders" className={`nav-link ${pathname === '/admin/orders' ? 'active' : ''}`}>Orders</Link></li>
-            <li><Link href="/admin/products" className={`nav-link ${pathname === '/admin/products' ? 'active' : ''}`}>Inventory</Link></li>
-            <li><Link href="/admin/products/new" className={`nav-link ${pathname === '/admin/products/new' ? 'active' : ''}`}>Add Product</Link></li>
-          </ul>
-          <Link href="/" target="_blank" className="nav-link storefront-link" style={{ color: '#171717', fontWeight: 500 }}>
-            Storefront →
-          </Link>
-        </nav>
+        <AdminHeader
+          title="Admin Dashboard"
+          description="Real-time store progress and inventory management dashboard"
+          userEmail={userEmail}
+          onLogout={handleLogout}
+        />
+        <AdminSubNav />
       </div>
 
       {/* Main Content Area */}
