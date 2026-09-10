@@ -1,6 +1,6 @@
 // app/api/orders/[id]/track/route.ts
 import { NextResponse } from 'next/server'
-// import { supabase } from '@/lib/supabaseClient' // Uncomment when connected to your database
+// import { supabase } from '@/lib/supabaseClient' // Make sure your Supabase client is configured here
 
 export async function GET(
   request: Request,
@@ -9,7 +9,7 @@ export async function GET(
   try {
     const orderId = params.id
 
-    // If using Supabase, fetch real live tracking rows from your orders table:
+    // Fetch live tracking data, coordinates, and logs directly from your database
     /*
     const { data, error } = await supabase
       .from('orders')
@@ -17,52 +17,31 @@ export async function GET(
       .eq('id', orderId)
       .single()
 
-    if (error) {
-      return NextResponse.json({ error: 'Order not found' }, { status: 404 })
+    if (error || !data) {
+      return NextResponse.json(
+        { error: 'Order tracking details not found in database' }, 
+        { status: 404 }
+      )
     }
 
     return NextResponse.json({
       success: true,
       status: data.status,
       currentLocation: { 
-        lat: Number(data.current_lat) || 14.5995, 
-        lng: Number(data.current_lng) || 120.9842 
+        lat: Number(data.current_lat) || 0, 
+        lng: Number(data.current_lng) || 0 
       },
       logs: data.tracking_logs || []
     })
     */
 
-    // Fallback response simulating real-time rider GPS movement and activity logs
-    return NextResponse.json({
-      success: true,
-      status: 'Out for Delivery',
-      currentLocation: { 
-        lat: 14.5995 + (Math.random() - 0.5) * 0.01, 
-        lng: 120.9842 + (Math.random() - 0.5) * 0.01 
-      },
-      logs: [
-        { 
-          title: 'Courier rider picked up order from fulfillment hub', 
-          timestamp: 'Just now', 
-          type: 'transit' 
-        },
-        { 
-          title: 'Package arrived at local sorting sorting facility', 
-          timestamp: '45 mins ago', 
-          type: 'hub' 
-        },
-        { 
-          title: 'Order successfully verified and placed', 
-          timestamp: 'Yesterday', 
-          type: 'created' 
-        }
-      ]
-    })
+    // Placeholder to remind you to hook up your database table query above
+    throw new Error('Database query connection required for dynamic tracking.')
 
-  } catch (err) {
+  } catch (err: any) {
     console.error('Tracking API Error:', err)
     return NextResponse.json(
-      { error: 'Internal Server Error while fetching live tracking' }, 
+      { error: err.message || 'Failed to fetch live tracking records from database' }, 
       { status: 500 }
     )
   }
