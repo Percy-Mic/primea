@@ -69,6 +69,7 @@ export default function AdminDashboardPage() {
   const [userEmail, setUserEmail] = useState<string>('Loading...')
   const [isAuthorized, setIsAuthorized] = useState<boolean>(false)
   const [authLoading, setAuthLoading] = useState<boolean>(true)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false)
 
   const [stats, setStats] = useState<DashboardStats>({
     revenue: 0,
@@ -176,11 +177,26 @@ export default function AdminDashboardPage() {
 
   const renderGrowthBadge = (value: number) => {
     const isPositive = value >= 0
+    const color = isPositive ? '#171717' : '#D92D20'
     const arrow = isPositive ? '↑' : '↓'
 
     return (
-      <span className={`growth-badge ${isPositive ? 'positive' : 'negative'}`}>
-        {arrow} {Math.abs(value).toFixed(1)}% <span className="growth-sub">vs last mo</span>
+      <span
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '2px',
+          fontSize: '12px',
+          fontWeight: 500,
+          color: color,
+          backgroundColor: '#FAFAFA',
+          border: '1px solid #EBEBEB',
+          padding: '2px 8px',
+          borderRadius: '9999px',
+          marginTop: '8px',
+        }}
+      >
+        {arrow} {Math.abs(value).toFixed(1)}% <span style={{ color: '#666666', fontWeight: 400 }}>vs last mo</span>
       </span>
     )
   }
@@ -195,7 +211,7 @@ export default function AdminDashboardPage() {
 
   if (authLoading) {
     return (
-      <div className="auth-loading-screen">
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontFamily: 'GeistSans, system-ui, sans-serif', color: '#666666', background: '#FAFAFA' }}>
         Verifying administrator credentials...
       </div>
     )
@@ -212,7 +228,7 @@ export default function AdminDashboardPage() {
       currentWeekRevenue += p.revenue
       if ((idx + 1) % 7 === 0 || idx === dailyTrend.length - 1) {
         weeks.push({
-          label: `W${weekCount}`,
+          label: `Week ${weekCount}`,
           revenue: currentWeekRevenue
         })
         currentWeekRevenue = 0
@@ -225,7 +241,7 @@ export default function AdminDashboardPage() {
   const activeTrend = chartMode === 'daily' ? dailyTrend : getWeeklyTrend()
   const rawMaxVal = Math.max(...activeTrend.map(p => p.revenue), 10)
   const maxVal = Math.ceil(rawMaxVal / 50) * 50 || 100
-  const chartWidth = Math.max(activeTrend.length * 60, 500)
+  const chartWidth = Math.max(activeTrend.length * 70, 650)
   const chartHeight = 180
 
   return (
@@ -236,46 +252,27 @@ export default function AdminDashboardPage() {
           margin: 0;
           padding: 0;
         }
-
         body {
           background-color: #FAFAFA;
-          color: #171717;
-          font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
-          overflow-x: hidden;
-          width: 100%;
-          
-          /* Grid background pattern matching monitor page */
           background-image: 
             linear-gradient(to right, #EBEBEB 1px, transparent 1px),
             linear-gradient(to bottom, #EBEBEB 1px, transparent 1px);
-          background-size: 40px 40px;
-        }
-
-        .auth-loading-screen {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          height: 100vh;
+          background-size: 32px 32px;
           font-family: system-ui, -apple-system, sans-serif;
-          color: #666666;
-          background: #FAFAFA;
-          font-size: 14px;
+          color: #171717;
+          overflow-x: hidden;
+          width: 100%;
         }
 
         .admin-layout-wrapper {
           display: flex;
           flex-direction: column;
           min-height: 100vh;
-          padding-top: 130px;
+          padding-top: 100px;
           width: 100%;
-          max-width: 1400px;
-          margin: 0 auto;
+          max-width: 100vw;
           position: relative;
           z-index: 1;
-        }
-
-        @media (max-width: 768px) {
-          .admin-layout-wrapper { padding-top: 145px; }
         }
 
         .header-fixed-container {
@@ -287,112 +284,71 @@ export default function AdminDashboardPage() {
           width: 100%;
         }
 
-        /* Top Navigation Bar matching monitor icon buttons layout */
         .top-nav-bar {
           display: flex;
           align-items: center;
-          justify-content: flex-start;
+          justify-content: space-between;
           background-color: #FFFFFF;
-          border-top: 1px solid #EBEBEB;
-          padding: 12px 24px;
+          border-bottom: 1px solid #EBEBEB;
+          padding: 12px 32px;
           width: 100%;
-          gap: 12px;
-          overflow-x: auto;
-        }
-
-        @media (min-width: 640px) {
-          .top-nav-bar { padding: 12px 32px; gap: 16px; }
+          flex-wrap: wrap;
+          gap: 16px;
         }
 
         .nav-links-group {
           display: flex;
           list-style: none;
-          gap: 12px;
+          gap: 8px;
           align-items: center;
-          width: 100%;
-          justify-content: space-between;
-        }
-
-        @media (min-width: 640px) {
-          .nav-links-group {
-            width: auto;
-            justify-content: flex-start;
-            gap: 8px;
-          }
+          flex-wrap: wrap;
         }
 
         .nav-link {
           display: inline-flex;
           align-items: center;
-          justify-content: center;
-          width: 40px;
-          height: 40px;
+          padding: 6px 12px;
           border-radius: 9999px;
           font-size: 14px;
           font-weight: 500;
-          color: #171717;
-          background-color: #FFFFFF;
-          border: 1px solid #EBEBEB;
+          color: #666666;
           text-decoration: none;
           transition: all 0.2s ease;
-          flex: 1;
-        }
-
-        @media (min-width: 640px) {
-          .nav-link {
-            width: auto;
-            height: auto;
-            padding: 8px 16px;
-            border: none;
-            background-color: transparent;
-            color: #666666;
-            flex: unset;
-          }
         }
 
         .nav-link:hover {
           background-color: #FAFAFA;
           color: #171717;
-          border-color: #171717;
-        }
-
-        @media (min-width: 640px) {
-          .nav-link:hover {
-            border-color: #EBEBEB;
-          }
         }
 
         .nav-link.active {
           background-color: #171717;
           color: #FFFFFF;
-          border-color: #171717;
           font-weight: 500;
         }
 
-        .nav-text-label {
+        .mobile-menu-btn {
           display: none;
+          background: none;
+          border: 1px solid #EBEBEB;
+          padding: 6px 12px;
+          border-radius: 9999px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          color: #171717;
         }
 
-        @media (min-width: 640px) {
-          .nav-text-label {
-            display: inline;
-          }
-        }
-
-        /* SVG icons inside mobile nav buttons */
-        .nav-icon {
-          width: 18px;
-          height: 18px;
-          stroke: currentColor;
-          stroke-width: 2;
-          stroke-linecap: round;
-          stroke-linejoin: round;
-          fill: none;
-        }
-
-        @media (min-width: 640px) {
-          .nav-icon {
-            display: none;
+        @media (max-width: 768px) {
+          .mobile-menu-btn { display: inline-flex; align-items: center; gap: 6px; }
+          .nav-links-group {
+            display: ${mobileMenuOpen ? 'flex' : 'none'};
+            width: 100%;
+            flex-direction: column;
+            align-items: stretch;
+            border-top: 1px solid #EBEBEB;
+            margin-top: 8px;
+            padding-top: 8px;
           }
         }
 
@@ -400,14 +356,10 @@ export default function AdminDashboardPage() {
           flex: 1;
           display: flex;
           flex-direction: column;
-          padding: 20px 24px 80px 24px;
+          padding: 32px;
           width: 100%;
           max-width: 1400px;
           margin: 0 auto;
-        }
-
-        @media (min-width: 640px) {
-          .admin-main-content { padding: 32px 32px 80px 32px; }
         }
 
         .dashboard-actions-bar {
@@ -416,7 +368,7 @@ export default function AdminDashboardPage() {
           align-items: center;
           margin-bottom: 32px;
           flex-wrap: wrap;
-          gap: 20px;
+          gap: 16px;
         }
 
         .filter-bar {
@@ -427,13 +379,7 @@ export default function AdminDashboardPage() {
           border: 1px solid #EBEBEB;
           padding: 8px 16px;
           border-radius: 9999px;
-          box-shadow: none;
           flex-wrap: wrap;
-          width: 100%;
-        }
-
-        @media (min-width: 640px) {
-          .filter-bar { width: auto; }
         }
 
         .filter-label {
@@ -445,12 +391,12 @@ export default function AdminDashboardPage() {
         }
 
         .filter-select {
-          padding: 6px 12px;
+          padding: 4px 10px;
           background-color: #FAFAFA;
           border: 1px solid #EBEBEB;
           border-radius: 9999px;
           font-size: 14px;
-          font-weight: 400;
+          font-weight: 500;
           color: #171717;
           cursor: pointer;
           outline: none;
@@ -460,67 +406,39 @@ export default function AdminDashboardPage() {
           display: flex;
           gap: 12px;
           align-items: center;
-          width: 100%;
         }
 
-        @media (min-width: 640px) {
-          .action-buttons-group { width: auto; }
-        }
-
-        .btn-primary-custom {
-          flex: 1;
+        .btn-action {
           display: inline-flex;
           align-items: center;
           justify-content: center;
           gap: 6px;
-          padding: 12px 16px;
-          background-color: #171717;
+          padding: 10px 16px;
+          background: #171717;
           color: #FFFFFF;
           border: 1px solid #171717;
           border-radius: 9999px;
           font-size: 14px;
           font-weight: 500;
           cursor: pointer;
-          transition: background-color 0.2s ease, border-color 0.2s ease;
+          transition: all 0.2s ease;
           text-decoration: none;
           height: 40px;
         }
 
-        @media (min-width: 640px) {
-          .btn-primary-custom { flex: unset; }
+        .btn-action:hover {
+          background: #000000;
         }
 
-        .btn-primary-custom:hover {
-          background-color: #000000;
-          border-color: #000000;
-        }
-
-        .btn-secondary-custom {
-          flex: 1;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: 6px;
-          padding: 12px 16px;
-          background-color: #FFFFFF;
+        .btn-action-secondary {
+          background: transparent;
           color: #171717;
           border: 1px solid #EBEBEB;
-          border-radius: 9999px;
-          font-size: 14px;
-          font-weight: 500;
-          cursor: pointer;
-          transition: border-color 0.2s ease, background-color 0.2s ease;
-          text-decoration: none;
-          height: 40px;
         }
 
-        @media (min-width: 640px) {
-          .btn-secondary-custom { flex: unset; }
-        }
-
-        .btn-secondary-custom:hover {
+        .btn-action-secondary:hover {
+          background: #FAFAFA;
           border-color: #171717;
-          background-color: #FAFAFA;
         }
 
         .metrics-grid {
@@ -537,8 +455,7 @@ export default function AdminDashboardPage() {
           background: #FFFFFF;
           border: 1px solid #EBEBEB;
           border-radius: 6px;
-          padding: 16px;
-          box-shadow: none;
+          padding: 20px;
         }
 
         .metric-label {
@@ -550,19 +467,17 @@ export default function AdminDashboardPage() {
         }
 
         .metric-value {
-          font-size: 36px;
+          font-size: 32px;
           font-weight: 400;
-          letter-spacing: -1.44px;
           color: #171717;
           margin-top: 8px;
-          word-break: break-word;
-          line-height: 40px;
+          letter-spacing: -1px;
         }
 
         .analytics-grid {
           display: grid;
           grid-template-columns: 1fr;
-          gap: 32px;
+          gap: 20px;
           margin-bottom: 32px;
         }
 
@@ -572,8 +487,7 @@ export default function AdminDashboardPage() {
           background: #FFFFFF;
           border: 1px solid #EBEBEB;
           border-radius: 6px;
-          padding: 16px;
-          box-shadow: none;
+          padding: 24px;
           overflow: hidden;
         }
 
@@ -591,16 +505,15 @@ export default function AdminDashboardPage() {
         .section-title {
           font-size: 20px;
           font-weight: 400;
-          line-height: 24px;
-          letter-spacing: 0px;
           color: #171717;
+          letter-spacing: -0.5px;
         }
 
         .analysis-badge {
           background: #FAFAFA;
-          color: #171717;
           border: 1px solid #EBEBEB;
-          padding: 6px 10px;
+          color: #171717;
+          padding: 4px 10px;
           border-radius: 9999px;
           font-weight: 500;
           font-size: 12px;
@@ -619,7 +532,7 @@ export default function AdminDashboardPage() {
         .content-grid {
           display: grid;
           grid-template-columns: 1fr;
-          gap: 32px;
+          gap: 20px;
         }
 
         @media (min-width: 1024px) { .content-grid { grid-template-columns: 2fr 1fr; } }
@@ -637,67 +550,41 @@ export default function AdminDashboardPage() {
           color: #666666;
           font-weight: 500;
           border-bottom: 1px solid #EBEBEB;
+          font-size: 12px;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
         }
 
         .orders-table td {
-          padding: 12px;
+          padding: 14px 12px;
           border-bottom: 1px solid #EBEBEB;
           color: #171717;
         }
 
         .status-badge {
           display: inline-block;
-          padding: 6px 10px;
+          padding: 4px 10px;
           border-radius: 9999px;
           font-size: 12px;
           font-weight: 500;
         }
 
-        .status-completed { background-color: #FAFAFA; color: #171717; border: 1px solid #EBEBEB; }
-        .status-processing { background-color: #FAFAFA; color: #666666; border: 1px solid #EBEBEB; }
+        .status-completed { background-color: #FAFAFA; border: 1px solid #EBEBEB; color: #171717; }
+        .status-processing { background-color: #FAFAFA; border: 1px solid #EBEBEB; color: #666666; }
 
-        .growth-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-          font-size: 12px;
-          font-weight: 500;
-          padding: 6px 10px;
-          border-radius: 9999px;
-          margin-top: 12px;
-          border: 1px solid #EBEBEB;
-        }
-
-        .growth-badge.positive {
-          background-color: #FAFAFA;
-          color: #171717;
-        }
-
-        .growth-badge.negative {
-          background-color: #FAFAFA;
-          color: #D92D20;
-          border-color: #D92D20;
-        }
-
-        .growth-sub {
-          font-weight: 400;
-          color: #666666;
-        }
-
-        /* Clean Print Formatting */
         @media print {
-          body { background: #FFFFFF !important; color: #000000 !important; background-image: none !important; }
-          .header-fixed-container, .dashboard-actions-bar, .action-buttons-group, .top-nav-bar, button { display: none !important; }
-          .admin-layout-wrapper { padding-top: 0 !important; max-width: 100% !important; }
+          body { background: #FFFFFF !important; color: #000000 !important; }
+          .header-fixed-container, .dashboard-actions-bar, .action-buttons-group, .mobile-menu-btn, .top-nav-bar, button { display: none !important; }
+          .admin-layout-wrapper { padding-top: 0 !important; }
           .admin-main-content { max-width: 100% !important; padding: 0 !important; }
           .dashboard-section, .metric-card { border: 1px solid #000000 !important; box-shadow: none !important; background: #FFFFFF !important; }
           .admin-main-content::before {
-            content: "PRIMEA FASHION — EXECUTIVE PERFORMANCE REPORT (" attr(data-print-month) ")";
+            content: "PRYMEA FASHION — EXECUTIVE PERFORMANCE REPORT (" attr(data-print-month) ")";
             display: block;
             font-size: 24px;
             font-weight: 400;
             margin-bottom: 24px;
-            border-bottom: 2px solid #000000;
+            border-bottom: 1px solid #000000;
             padding-bottom: 12px;
           }
         }
@@ -715,38 +602,14 @@ export default function AdminDashboardPage() {
         </div>
 
         <nav className="top-nav-bar">
+          <button type="button" className="mobile-menu-btn" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>Menu</button>
           <ul className="nav-links-group">
-            <li>
-              <Link href="/admin/dashboard" className={`nav-link ${pathname === '/admin/dashboard' ? 'active' : ''}`} title="Dashboard">
-                <svg className="nav-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-                <span className="nav-text-label">Dashboard</span>
-              </Link>
-            </li>
-            <li>
-              <Link href="/admin/orders" className={`nav-link ${pathname === '/admin/orders' ? 'active' : ''}`} title="Orders">
-                <svg className="nav-icon" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-                <span className="nav-text-label">Orders</span>
-              </Link>
-            </li>
-            <li>
-              <Link href="/admin/products" className={`nav-link ${pathname === '/admin/products' ? 'active' : ''}`} title="Inventory">
-                <svg className="nav-icon" viewBox="0 0 24 24"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-                <span className="nav-text-label">Inventory</span>
-              </Link>
-            </li>
-            <li>
-              <Link href="/admin/products/new" className={`nav-link ${pathname === '/admin/products/new' ? 'active' : ''}`} title="Add Product">
-                <svg className="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-                <span className="nav-text-label">Add Product</span>
-              </Link>
-            </li>
-            <li>
-              <Link href="/" target="_blank" className="nav-link" title="Storefront">
-                <svg className="nav-icon" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                <span className="nav-text-label">View Storefront →</span>
-              </Link>
-            </li>
+            <li><Link href="/admin/dashboard" className={`nav-link ${pathname === '/admin/dashboard' ? 'active' : ''}`}>Dashboard</Link></li>
+            <li><Link href="/admin/orders" className={`nav-link ${pathname === '/admin/orders' ? 'active' : ''}`}>Orders</Link></li>
+            <li><Link href="/admin/products" className={`nav-link ${pathname === '/admin/products' ? 'active' : ''}`}>Inventory</Link></li>
+            <li><Link href="/admin/products/new" className={`nav-link ${pathname === '/admin/products/new' ? 'active' : ''}`}>Add Product</Link></li>
           </ul>
+          <Link href="/" target="_blank" className="nav-link" style={{ color: '#171717', fontWeight: 500 }}>View Storefront →</Link>
         </nav>
       </div>
 
@@ -754,7 +617,7 @@ export default function AdminDashboardPage() {
       <div className="admin-main-content" data-print-month={`${MONTH_NAMES[selectedMonth]} ${selectedYear}`}>
         <div className="dashboard-actions-bar">
           <div className="filter-bar">
-            <span className="filter-label">Statistics Period:</span>
+            <span className="filter-label">Period:</span>
             <select value={selectedMonth} onChange={(e) => setSelectedMonth(Number(e.target.value))} className="filter-select">
               {MONTH_NAMES.map((name, index) => (<option key={index} value={index}>{name}</option>))}
             </select>
@@ -764,10 +627,10 @@ export default function AdminDashboardPage() {
           </div>
 
           <div className="action-buttons-group">
-            <button type="button" onClick={fetchDashboardData} disabled={isRefreshing} className="btn-secondary-custom">
+            <button type="button" onClick={fetchDashboardData} disabled={isRefreshing} className="btn-action btn-action-secondary">
               <span>{isRefreshing ? 'Syncing...' : 'Force Sync'}</span>
             </button>
-            <button type="button" onClick={handlePrint} className="btn-primary-custom">
+            <button type="button" onClick={handlePrint} className="btn-action">
               <span>Print Report</span>
             </button>
           </div>
@@ -794,14 +657,14 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* Store Progress Graph with Grid lines and Value Identifiers */}
+        {/* Store Progress Graph */}
         <div className="analytics-grid">
           <div className="dashboard-section">
             <div className="section-title-wrap">
               <h2 className="section-title">
                 {chartMode === 'daily' ? 'Daily' : 'Weekly'} Revenue Progress ({MONTH_NAMES[selectedMonth]} {selectedYear})
               </h2>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <div style={{ display: 'flex', background: '#FAFAFA', padding: '2px', borderRadius: '9999px', border: '1px solid #EBEBEB' }}>
                   <button
                     type="button"
@@ -810,7 +673,7 @@ export default function AdminDashboardPage() {
                       background: chartMode === 'daily' ? '#171717' : 'transparent',
                       color: chartMode === 'daily' ? '#FFFFFF' : '#666666',
                       border: 'none',
-                      padding: '6px 12px',
+                      padding: '4px 12px',
                       borderRadius: '9999px',
                       fontSize: '12px',
                       fontWeight: 500,
@@ -827,7 +690,7 @@ export default function AdminDashboardPage() {
                       background: chartMode === 'weekly' ? '#171717' : 'transparent',
                       color: chartMode === 'weekly' ? '#FFFFFF' : '#666666',
                       border: 'none',
-                      padding: '6px 12px',
+                      padding: '4px 12px',
                       borderRadius: '9999px',
                       fontSize: '12px',
                       fontWeight: 500,
@@ -838,11 +701,11 @@ export default function AdminDashboardPage() {
                     Weekly
                   </button>
                 </div>
-                <span className="analysis-badge">Live Stream</span>
+                <span className="analysis-badge">Live</span>
               </div>
             </div>
             <p style={{ fontSize: '14px', color: '#666666', margin: '0 0 12px 0' }}>
-              {chartMode === 'daily' ? 'Daily sales with value identifiers (smaller dots):' : 'Weekly aggregated sales (larger dots):'}
+              {chartMode === 'daily' ? 'Daily sales with value identifiers:' : 'Weekly aggregated sales:'}
             </p>
             
             <div className="scrollable-graph-container">
@@ -860,7 +723,7 @@ export default function AdminDashboardPage() {
                       return (
                         <g key={index}>
                           <line x1="45" y1={yPos} x2={chartWidth - 10} y2={yPos} stroke="#EBEBEB" strokeWidth="1" strokeDasharray={index === 4 ? 'none' : '3,3'} />
-                          <text x="38" y={yPos + 4} textAnchor="end" fontSize="10" fill="#666666" fontWeight="400">
+                          <text x="38" y={yPos + 4} textAnchor="end" fontSize="10" fill="#666666" fontWeight="500">
                             ${labelVal}
                           </text>
                         </g>
@@ -868,7 +731,7 @@ export default function AdminDashboardPage() {
                     })}
 
                     {/* Vertical Axis Line */}
-                    <line x1="45" y1="25" x2="45" y2="145" stroke="#EBEBEB" strokeWidth="1" />
+                    <line x1="45" y1="25" x2="45" y2="145" stroke="#EBEBEB" strokeWidth="1.5" />
 
                     {/* Polyline Path */}
                     <polyline
@@ -876,7 +739,7 @@ export default function AdminDashboardPage() {
                       stroke="#171717"
                       strokeWidth="2"
                       points={activeTrend.map((p, idx) => {
-                        const cx = 60 + idx * 60
+                        const cx = 70 + idx * 70
                         const cy = 145 - (p.revenue / maxVal) * 120
                         return `${cx},${cy}`
                       }).join(' ')}
@@ -884,17 +747,15 @@ export default function AdminDashboardPage() {
 
                     {/* Data Points and Identifiers */}
                     {activeTrend.map((p, idx) => {
-                      const cx = 60 + idx * 60
+                      const cx = 70 + idx * 70
                       const cy = 145 - (p.revenue / maxVal) * 120
                       const dotRadius = chartMode === 'daily' ? 3 : 5
                       return (
                         <g key={idx}>
-                          {/* Value Identifier / Label above dot */}
                           <text x={cx} y={cy - 9} textAnchor="middle" fontSize="10" fill="#171717" fontWeight="500">
                             {p.revenue > 0 ? `$${p.revenue}` : '$0'}
                           </text>
 
-                          {/* Data Point Dot */}
                           <circle
                             cx={cx}
                             cy={cy}
@@ -904,14 +765,13 @@ export default function AdminDashboardPage() {
                             strokeWidth="2"
                           />
 
-                          {/* X-Axis Label */}
                           <text 
                             x={cx} 
                             y="165" 
                             textAnchor="middle" 
-                            fontSize="10" 
+                            fontSize="11" 
                             fill="#666666"
-                            fontWeight="400"
+                            fontWeight="500"
                           >
                             {p.label}
                           </text>
@@ -926,10 +786,10 @@ export default function AdminDashboardPage() {
 
           <div className="dashboard-section">
             <div className="section-title-wrap">
-              <h2 className="section-title">Live Performance Analysis</h2>
+              <h2 className="section-title">Performance Analysis</h2>
             </div>
-            <p style={{ fontSize: '14px', color: '#171717', lineHeight: '20px', margin: '0 0 16px 0' }}>
-              The graph incorporates horizontal axis thresholds and individual monetary identifiers directly over each data point for instant auditing.
+            <p style={{ fontSize: '14px', color: '#666666', lineHeight: '1.5', margin: '0 0 16px 0' }}>
+              Real-time store tracking metrics and automated inventory audits synchronized securely via Supabase.
             </p>
             <div style={{ background: '#FAFAFA', padding: '12px 16px', borderRadius: '6px', border: '1px solid #EBEBEB' }}>
               <span style={{ fontSize: '12px', fontWeight: 500, color: '#666666', textTransform: 'uppercase' }}>Stream Status</span>
@@ -944,8 +804,8 @@ export default function AdminDashboardPage() {
         <div className="content-grid">
           <div className="dashboard-section">
             <div className="section-title-wrap">
-              <h2 className="section-title">Recent Orders (Live)</h2>
-              <Link href="/admin/orders" style={{ fontSize: '14px', color: '#171717', textDecoration: 'none', fontWeight: 500 }}>View All →</Link>
+              <h2 className="section-title">Recent Orders</h2>
+              <Link href="/admin/orders" style={{ fontSize: '14px', color: '#171717', textDecoration: 'underline', fontWeight: 500 }}>View All →</Link>
             </div>
             {loading ? (
               <p style={{ fontSize: '14px', color: '#666666' }}>Loading...</p>
@@ -984,18 +844,18 @@ export default function AdminDashboardPage() {
           <div className="dashboard-section">
             <div className="section-title-wrap">
               <h2 className="section-title">Inventory Health</h2>
-              <Link href="/admin/products" style={{ fontSize: '14px', color: '#171717', textDecoration: 'none', fontWeight: 500 }}>Manage →</Link>
+              <Link href="/admin/products" style={{ fontSize: '14px', color: '#171717', textDecoration: 'underline', fontWeight: 500 }}>Manage →</Link>
             </div>
             {lowStockCount === 0 ? (
-              <div style={{ color: '#171717', fontSize: '14px', background: '#FAFAFA', padding: '16px', borderRadius: '6px', border: '1px solid #EBEBEB' }}>
+              <div style={{ color: '#171717', fontSize: '14px', background: '#FAFAFA', border: '1px solid #EBEBEB', padding: '16px', borderRadius: '6px' }}>
                 Inventory levels are optimal. All items are in stock.
               </div>
             ) : (
-              <div style={{ color: '#D92D20', fontSize: '14px', background: '#FAFAFA', padding: '16px', borderRadius: '6px', border: '1px solid #D92D20' }}>
-                <strong>Low Stock Alerts ({lowStockCount})</strong>
+              <div style={{ color: '#171717', fontSize: '14px', background: '#FAFAFA', border: '1px solid #EBEBEB', padding: '16px', borderRadius: '6px' }}>
+                <strong style={{ color: '#D92D20' }}>Low Stock Alerts ({lowStockCount})</strong>
                 <ul style={{ margin: '8px 0 0 0', paddingLeft: '16px' }}>
                   {stats.lowStockItems.map((item) => (
-                    <li key={item.id}>{item.title} — {item.stock} left</li>
+                    <li key={item.id} style={{ marginBottom: '4px' }}>{item.title} — {item.stock} left</li>
                   ))}
                 </ul>
               </div>
