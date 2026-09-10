@@ -69,7 +69,6 @@ export default function AdminDashboardPage() {
   const [userEmail, setUserEmail] = useState<string>('Loading...')
   const [isAuthorized, setIsAuthorized] = useState<boolean>(false)
   const [authLoading, setAuthLoading] = useState<boolean>(true)
-  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false)
 
   const [stats, setStats] = useState<DashboardStats>({
     revenue: 0,
@@ -213,7 +212,7 @@ export default function AdminDashboardPage() {
       currentWeekRevenue += p.revenue
       if ((idx + 1) % 7 === 0 || idx === dailyTrend.length - 1) {
         weeks.push({
-          label: `Week ${weekCount}`,
+          label: `W${weekCount}`,
           revenue: currentWeekRevenue
         })
         currentWeekRevenue = 0
@@ -226,7 +225,7 @@ export default function AdminDashboardPage() {
   const activeTrend = chartMode === 'daily' ? dailyTrend : getWeeklyTrend()
   const rawMaxVal = Math.max(...activeTrend.map(p => p.revenue), 10)
   const maxVal = Math.ceil(rawMaxVal / 50) * 50 || 100
-  const chartWidth = Math.max(activeTrend.length * 70, 650)
+  const chartWidth = Math.max(activeTrend.length * 60, 500)
   const chartHeight = 180
 
   return (
@@ -239,11 +238,17 @@ export default function AdminDashboardPage() {
         }
 
         body {
-          background: #FAFAFA;
+          background-color: #FAFAFA;
           color: #171717;
           font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
           overflow-x: hidden;
           width: 100%;
+          
+          /* Grid background pattern matching monitor page */
+          background-image: 
+            linear-gradient(to right, #EBEBEB 1px, transparent 1px),
+            linear-gradient(to bottom, #EBEBEB 1px, transparent 1px);
+          background-size: 40px 40px;
         }
 
         .auth-loading-screen {
@@ -261,7 +266,7 @@ export default function AdminDashboardPage() {
           display: flex;
           flex-direction: column;
           min-height: 100vh;
-          padding-top: 115px;
+          padding-top: 130px;
           width: 100%;
           max-width: 1400px;
           margin: 0 auto;
@@ -270,7 +275,7 @@ export default function AdminDashboardPage() {
         }
 
         @media (max-width: 768px) {
-          .admin-layout-wrapper { padding-top: 135px; }
+          .admin-layout-wrapper { padding-top: 145px; }
         }
 
         .header-fixed-container {
@@ -282,75 +287,112 @@ export default function AdminDashboardPage() {
           width: 100%;
         }
 
+        /* Top Navigation Bar matching monitor icon buttons layout */
         .top-nav-bar {
           display: flex;
           align-items: center;
-          justify-content: space-between;
+          justify-content: flex-start;
           background-color: #FFFFFF;
           border-top: 1px solid #EBEBEB;
           padding: 12px 24px;
           width: 100%;
-          flex-wrap: wrap;
           gap: 12px;
+          overflow-x: auto;
         }
 
         @media (min-width: 640px) {
-          .top-nav-bar { padding: 12px 32px; }
+          .top-nav-bar { padding: 12px 32px; gap: 16px; }
         }
 
         .nav-links-group {
           display: flex;
           list-style: none;
-          gap: 4px;
+          gap: 12px;
           align-items: center;
-          flex-wrap: wrap;
+          width: 100%;
+          justify-content: space-between;
+        }
+
+        @media (min-width: 640px) {
+          .nav-links-group {
+            width: auto;
+            justify-content: flex-start;
+            gap: 8px;
+          }
         }
 
         .nav-link {
           display: inline-flex;
           align-items: center;
-          padding: 6px 12px;
+          justify-content: center;
+          width: 40px;
+          height: 40px;
           border-radius: 9999px;
           font-size: 14px;
           font-weight: 500;
-          color: #666666;
+          color: #171717;
+          background-color: #FFFFFF;
+          border: 1px solid #EBEBEB;
           text-decoration: none;
           transition: all 0.2s ease;
+          flex: 1;
+        }
+
+        @media (min-width: 640px) {
+          .nav-link {
+            width: auto;
+            height: auto;
+            padding: 8px 16px;
+            border: none;
+            background-color: transparent;
+            color: #666666;
+            flex: unset;
+          }
         }
 
         .nav-link:hover {
           background-color: #FAFAFA;
           color: #171717;
+          border-color: #171717;
+        }
+
+        @media (min-width: 640px) {
+          .nav-link:hover {
+            border-color: #EBEBEB;
+          }
         }
 
         .nav-link.active {
           background-color: #171717;
           color: #FFFFFF;
+          border-color: #171717;
           font-weight: 500;
         }
 
-        .mobile-menu-btn {
+        .nav-text-label {
           display: none;
-          background: none;
-          border: 1px solid #EBEBEB;
-          padding: 6px 12px;
-          border-radius: 9999px;
-          font-size: 14px;
-          font-weight: 500;
-          cursor: pointer;
-          color: #171717;
         }
 
-        @media (max-width: 768px) {
-          .mobile-menu-btn { display: inline-flex; align-items: center; gap: 4px; }
-          .nav-links-group {
-            display: ${mobileMenuOpen ? 'flex' : 'none'};
-            width: 100%;
-            flex-direction: column;
-            align-items: stretch;
-            border-top: 1px solid #EBEBEB;
-            margin-top: 8px;
-            padding-top: 8px;
+        @media (min-width: 640px) {
+          .nav-text-label {
+            display: inline;
+          }
+        }
+
+        /* SVG icons inside mobile nav buttons */
+        .nav-icon {
+          width: 18px;
+          height: 18px;
+          stroke: currentColor;
+          stroke-width: 2;
+          stroke-linecap: round;
+          stroke-linejoin: round;
+          fill: none;
+        }
+
+        @media (min-width: 640px) {
+          .nav-icon {
+            display: none;
           }
         }
 
@@ -460,7 +502,7 @@ export default function AdminDashboardPage() {
           justify-content: center;
           gap: 6px;
           padding: 12px 16px;
-          background-color: transparent;
+          background-color: #FFFFFF;
           color: #171717;
           border: 1px solid #EBEBEB;
           border-radius: 9999px;
@@ -644,13 +686,13 @@ export default function AdminDashboardPage() {
 
         /* Clean Print Formatting */
         @media print {
-          body { background: #FFFFFF !important; color: #000000 !important; }
-          .header-fixed-container, .dashboard-actions-bar, .action-buttons-group, .mobile-menu-btn, .top-nav-bar, button { display: none !important; }
+          body { background: #FFFFFF !important; color: #000000 !important; background-image: none !important; }
+          .header-fixed-container, .dashboard-actions-bar, .action-buttons-group, .top-nav-bar, button { display: none !important; }
           .admin-layout-wrapper { padding-top: 0 !important; max-width: 100% !important; }
           .admin-main-content { max-width: 100% !important; padding: 0 !important; }
           .dashboard-section, .metric-card { border: 1px solid #000000 !important; box-shadow: none !important; background: #FFFFFF !important; }
           .admin-main-content::before {
-            content: "PRYMEA FASHION — EXECUTIVE PERFORMANCE REPORT (" attr(data-print-month) ")";
+            content: "PRIMEA FASHION — EXECUTIVE PERFORMANCE REPORT (" attr(data-print-month) ")";
             display: block;
             font-size: 24px;
             font-weight: 400;
@@ -673,14 +715,38 @@ export default function AdminDashboardPage() {
         </div>
 
         <nav className="top-nav-bar">
-          <button type="button" className="mobile-menu-btn" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>Menu</button>
           <ul className="nav-links-group">
-            <li><Link href="/admin/dashboard" className={`nav-link ${pathname === '/admin/dashboard' ? 'active' : ''}`}>Dashboard</Link></li>
-            <li><Link href="/admin/orders" className={`nav-link ${pathname === '/admin/orders' ? 'active' : ''}`}>Orders</Link></li>
-            <li><Link href="/admin/products" className={`nav-link ${pathname === '/admin/products' ? 'active' : ''}`}>Inventory</Link></li>
-            <li><Link href="/admin/products/new" className={`nav-link ${pathname === '/admin/products/new' ? 'active' : ''}`}>Add Product</Link></li>
+            <li>
+              <Link href="/admin/dashboard" className={`nav-link ${pathname === '/admin/dashboard' ? 'active' : ''}`} title="Dashboard">
+                <svg className="nav-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                <span className="nav-text-label">Dashboard</span>
+              </Link>
+            </li>
+            <li>
+              <Link href="/admin/orders" className={`nav-link ${pathname === '/admin/orders' ? 'active' : ''}`} title="Orders">
+                <svg className="nav-icon" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                <span className="nav-text-label">Orders</span>
+              </Link>
+            </li>
+            <li>
+              <Link href="/admin/products" className={`nav-link ${pathname === '/admin/products' ? 'active' : ''}`} title="Inventory">
+                <svg className="nav-icon" viewBox="0 0 24 24"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                <span className="nav-text-label">Inventory</span>
+              </Link>
+            </li>
+            <li>
+              <Link href="/admin/products/new" className={`nav-link ${pathname === '/admin/products/new' ? 'active' : ''}`} title="Add Product">
+                <svg className="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                <span className="nav-text-label">Add Product</span>
+              </Link>
+            </li>
+            <li>
+              <Link href="/" target="_blank" className="nav-link" title="Storefront">
+                <svg className="nav-icon" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                <span className="nav-text-label">View Storefront →</span>
+              </Link>
+            </li>
           </ul>
-          <Link href="/" target="_blank" className="nav-link" style={{ color: '#171717', fontWeight: 500 }}>View Storefront →</Link>
         </nav>
       </div>
 
@@ -810,7 +876,7 @@ export default function AdminDashboardPage() {
                       stroke="#171717"
                       strokeWidth="2"
                       points={activeTrend.map((p, idx) => {
-                        const cx = 70 + idx * 70
+                        const cx = 60 + idx * 60
                         const cy = 145 - (p.revenue / maxVal) * 120
                         return `${cx},${cy}`
                       }).join(' ')}
@@ -818,7 +884,7 @@ export default function AdminDashboardPage() {
 
                     {/* Data Points and Identifiers */}
                     {activeTrend.map((p, idx) => {
-                      const cx = 70 + idx * 70
+                      const cx = 60 + idx * 60
                       const cy = 145 - (p.revenue / maxVal) * 120
                       const dotRadius = chartMode === 'daily' ? 3 : 5
                       return (
