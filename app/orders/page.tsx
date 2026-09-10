@@ -1072,7 +1072,7 @@ export default function CustomerOrdersPage() {
                       Cancel Order
                     </button>
                   )}
-                  {isDelivered && statusRaw !== 'refund requested' && (
+                  {isDelivered && (statusRaw as string) !== 'refund requested' && (
                     <button
                       className="btn-refund-order"
                       onClick={() => handleRefundOrder(orderId)}
