@@ -32,7 +32,7 @@ export default function CheckoutSuccessPage() {
           Thank You
         </h1>
         <p style={{ fontFamily: 'sans-serif', color: '#666', fontSize: '0.95rem', marginBottom: '2rem' }}>
-          Your ELARA order has been placed successfully. A confirmation email has been sent.
+          Your PRIMEA order has been placed successfully. A confirmation email has been sent.
         </p>
         <Link
           href="/"
