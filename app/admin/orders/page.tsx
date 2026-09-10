@@ -16,7 +16,7 @@ export default function AdminOrdersPage() {
   const [authLoading, setAuthLoading] = useState<boolean>(true)
 
   const previousOrderCount = useRef<number>(0)
-  const isUpdating = useRef<boolean>(false) // Fixed type from number to boolean
+  const isUpdating = useRef<boolean>(false)
 
   // Verify Admin Access
   useEffect(() => {
@@ -258,13 +258,13 @@ export default function AdminOrdersPage() {
           flex-shrink: 0;
         }
 
-        /* Main content area takes remaining height with tight top padding and large bottom padding/margin */
+        /* Main content area with increased bottom padding */
         .admin-main-content {
           flex: 1;
           display: flex;
           flex-direction: column;
           box-sizing: border-box;
-          padding: 85px 12px 48px 12px;
+          padding: 85px 12px 70px 12px;
           width: 100%;
           max-width: 1400px;
           margin: 0 auto;
@@ -276,7 +276,7 @@ export default function AdminOrdersPage() {
 
         @media (min-width: 768px) {
           .admin-main-content {
-            padding: 95px 24px 60px 24px;
+            padding: 95px 24px 90px 24px;
           }
         }
 
