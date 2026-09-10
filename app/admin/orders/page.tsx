@@ -16,7 +16,7 @@ export default function AdminOrdersPage() {
   const [authLoading, setAuthLoading] = useState<boolean>(true)
 
   const previousOrderCount = useRef<number>(0)
-  const isUpdating = useRef<boolean>(false)
+  const isUpdating = useRef<number>(false)
 
   // Verify Admin Access
   useEffect(() => {
@@ -258,13 +258,13 @@ export default function AdminOrdersPage() {
           flex-shrink: 0;
         }
 
-        /* Main content area takes remaining height and handles standalone scrolling with top & bottom padding */
+        /* Main content area takes remaining height with tight top padding and large bottom padding/margin */
         .admin-main-content {
           flex: 1;
           display: flex;
           flex-direction: column;
           box-sizing: border-box;
-          padding: 100px 12px 32px 12px; /* Reduced top padding, added bottom padding */
+          padding: 85px 12px 48px 12px; /* Reduced top padding, expanded bottom padding */
           width: 100%;
           max-width: 1400px;
           margin: 0 auto;
@@ -276,7 +276,7 @@ export default function AdminOrdersPage() {
 
         @media (min-width: 768px) {
           .admin-main-content {
-            padding: 110px 24px 36px 24px;
+            padding: 95px 24px 60px 24px;
           }
         }
 
@@ -345,7 +345,7 @@ export default function AdminOrdersPage() {
             justifyContent: 'space-between',
             alignItems: isMobile ? 'flex-start' : 'center',
             gap: isMobile ? '8px' : '0',
-            marginBottom: '12px',
+            marginBottom: '16px',
           }}
         >
           <div>
@@ -386,7 +386,7 @@ export default function AdminOrdersPage() {
               color: '#FFFFFF',
               padding: '8px 12px',
               borderRadius: '6px',
-              marginBottom: '10px',
+              marginBottom: '14px',
               fontSize: '11px',
               fontWeight: 500,
               display: 'flex',
@@ -412,6 +412,7 @@ export default function AdminOrdersPage() {
               border: '1px solid #EBEBEB',
               borderRadius: '8px',
               boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
+              marginBottom: '20px',
             }}
           >
             <p style={{ fontSize: '14px', fontWeight: 400, color: '#171717', marginBottom: '3px' }}>No active pending orders.</p>
@@ -419,7 +420,7 @@ export default function AdminOrdersPage() {
           </div>
         ) : isMobile ? (
           /* MOBILE CARDS VIEW */
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
             {activeOrders.map((order) => {
               const customerName = order.customer_name || order.shipping?.fullName || 'Guest'
               const email = order.email || order.shipping?.email || 'N/A'
@@ -498,7 +499,7 @@ export default function AdminOrdersPage() {
           </div>
         ) : (
           /* DESKTOP TABLE VIEW */
-          <div style={{ background: '#FFFFFF', border: '1px solid #EBEBEB', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 2px 6px rgba(0,0,0,0.02)' }}>
+          <div style={{ background: '#FFFFFF', border: '1px solid #EBEBEB', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 2px 6px rgba(0,0,0,0.02)', marginBottom: '20px' }}>
             <table
               style={{
                 width: '100%',
