@@ -33,6 +33,12 @@ interface Order {
   }
 }
 
+interface TrackingData {
+  status?: string
+  currentLocation?: { lat: number; lng: number }
+  logs?: Array<{ title: string; timestamp: string; type: string }>
+}
+
 export default function CustomerOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState<boolean>(true)
@@ -50,8 +56,10 @@ export default function CustomerOrdersPage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [fileType, setFileType] = useState<'image' | 'video' | null>(null)
 
-  // Tracking Map Modal State
+  // Tracking Map Modal State & Dynamic Tracking Data
   const [trackingOrder, setTrackingOrder] = useState<Order | null>(null)
+  const [liveTracking, setLiveTracking] = useState<TrackingData | null>(null)
+  const [trackingLoading, setTrackingLoading] = useState<boolean>(false)
 
   useEffect(() => {
     async function fetchUserOrders() {
@@ -70,6 +78,35 @@ export default function CustomerOrdersPage() {
 
     fetchUserOrders()
   }, [])
+
+  // Dynamic Tracking Fetch & Polling Effect
+  useEffect(() => {
+    if (!trackingOrder?.id) {
+      setLiveTracking(null)
+      return
+    }
+
+    const fetchLiveTracking = async () => {
+      setTrackingLoading(true)
+      try {
+        const res = await fetch(`/api/orders/${trackingOrder.id}/track`)
+        if (res.ok) {
+          const data = await res.json()
+          setLiveTracking(data)
+        }
+      } catch (err) {
+        console.error('Failed to fetch live tracking details:', err)
+      } finally {
+        setTrackingLoading(false)
+      }
+    }
+
+    fetchLiveTracking()
+
+    // Poll live tracking details every 10 seconds for real-time updates
+    const interval = setInterval(fetchLiveTracking, 10000)
+    return () => clearInterval(interval)
+  }, [trackingOrder])
 
   useEffect(() => {
     return () => {
@@ -864,7 +901,7 @@ export default function CustomerOrdersPage() {
                 </span>
               </div>
 
-              {/* TikTok Shop Map Tracker Link / Bar */}
+              {/* Dynamic Tracker Bar */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '1rem 0', background: '#fafaf9', padding: '0.75rem 1rem', borderRadius: '10px', border: '1px solid #f5f5f4' }}>
                 <div style={{ fontSize: '0.85rem', color: '#44403c', fontWeight: 500 }}>
                   {isCancelled ? 'Order Cancelled' : isDelivered ? 'Package Delivered Successfully' : 'Package is on the way'}
@@ -874,7 +911,7 @@ export default function CustomerOrdersPage() {
                     style={{ background: 'none', border: 'none', color: '#2563eb', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', padding: 0 }}
                     onClick={() => setTrackingOrder(order)}
                   >
-                    View Map Tracker &rarr;
+                    View Live Tracker &rarr;
                   </button>
                 )}
               </div>
@@ -1087,7 +1124,7 @@ export default function CustomerOrdersPage() {
         })
       )}
 
-      {/* TikTok Shop Style Interactive Map Tracking Modal */}
+      {/* Dynamic Live Tracking Modal */}
       {trackingOrder && (
         <div style={{
           position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 2000,
@@ -1099,7 +1136,10 @@ export default function CustomerOrdersPage() {
           }}>
             {/* Modal Header */}
             <div style={{ padding: '1.25rem', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>Order Tracking #{trackingOrder.id}</h3>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>Live Tracking #{trackingOrder.id}</h3>
+                {trackingLoading && <span style={{ fontSize: '0.75rem', color: '#2563eb' }}>Updating GPS location...</span>}
+              </div>
               <button 
                 onClick={() => setTrackingOrder(null)}
                 style={{ background: 'none', border: 'none', fontSize: '1.25rem', cursor: 'pointer', color: '#6b7280' }}
@@ -1108,7 +1148,7 @@ export default function CustomerOrdersPage() {
               </button>
             </div>
 
-            {/* Simulated Map Container (TikTok Shop Visual Style) */}
+            {/* Simulated Live Interactive Map Container */}
             <div style={{ height: '220px', backgroundColor: '#e5e7eb', position: 'relative', overflow: 'hidden' }}>
               <div style={{
                 width: '100%', height: '100%', opacity: 0.6,
@@ -1124,32 +1164,36 @@ export default function CustomerOrdersPage() {
                 <div style={{ width: '12px', height: '12px', backgroundColor: '#1e293b', borderRadius: '50%', margin: '4px auto', border: '2px solid #fff' }} />
               </div>
 
-              <div style={{ position: 'absolute', top: '75px', left: '230px', background: '#2563eb', color: '#fff', padding: '6px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 600, boxShadow: '0 4px 6px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                🚚 Out for Delivery
+              {/* Dynamic Coordinate badge */}
+              <div style={{ position: 'absolute', top: '75px', left: '200px', background: '#2563eb', color: '#fff', padding: '6px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 600, boxShadow: '0 4px 6px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                🚚 {liveTracking?.status || 'Out for Delivery'}
+                {liveTracking?.currentLocation && (
+                  <span style={{ fontSize: '9px', opacity: 0.8 }}>({liveTracking.currentLocation.lat.toFixed(2)}, {liveTracking.currentLocation.lng.toFixed(2)})</span>
+                )}
               </div>
 
               <div style={{ position: 'absolute', top: '100px', left: '410px', textAlign: 'center' }}>
-                <div style={{ backgroundColor: '#16a34a', color: '#fff', padding: '2px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold' }}>Delivery Address</div>
+                <div style={{ backgroundColor: '#16a34a', color: '#fff', padding: '2px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold' }}>Destination</div>
                 <div style={{ width: '14px', height: '14px', backgroundColor: '#16a34a', borderRadius: '50%', margin: '4px auto', border: '2px solid #fff' }} />
               </div>
             </div>
 
-            {/* Timeline Steps */}
+            {/* Dynamic Logistics Timeline Logs */}
             <div style={{ padding: '1.5rem', maxHeight: '250px', overflowY: 'auto' }}>
-              <div style={{ fontSize: '0.85rem', fontWeight: 700, marginBottom: '1rem', color: '#374151' }}>Latest Logistics Update</div>
+              <div style={{ fontSize: '0.85rem', fontWeight: 700, marginBottom: '1rem', color: '#374151' }}>Logistics Activity Log</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', position: 'relative', paddingLeft: '1rem', borderLeft: '2px solid #e5e7eb' }}>
-                <div>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#16a34a' }}>[Out for Delivery] Courier rider is heading to your drop-off point.</div>
-                  <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.1rem' }}>Today, 10:45 AM</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 500, color: '#374151' }}>[Arrived at Local Hub] Sorting completed at sorting center.</div>
-                  <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.1rem' }}>Yesterday, 8:30 PM</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 500, color: '#374151' }}>[Order Placed] Package packed and handed over to logistics partner.</div>
-                  <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.1rem' }}>2 days ago</div>
-                </div>
+                {liveTracking?.logs && liveTracking.logs.length > 0 ? (
+                  liveTracking.logs.map((log, index) => (
+                    <div key={index}>
+                      <div style={{ fontSize: '0.85rem', fontWeight: index === 0 ? 600 : 500, color: index === 0 ? '#16a34a' : '#374151' }}>
+                        {log.title}
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.1rem' }}>{log.timestamp}</div>
+                    </div>
+                  ))
+                ) : (
+                  <div style={{ fontSize: '0.85rem', color: '#6b7280' }}>Fetching live tracking logs...</div>
+                )}
               </div>
             </div>
           </div>
