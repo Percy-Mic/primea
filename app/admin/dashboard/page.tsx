@@ -6,18 +6,91 @@ import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import AdminHeader from '@/components/AdminNav'
 
-export default function AdminFeaturePage() {
+interface Order {
+  id: string
+  customer: string
+  total: number
+  status: string
+  createdAt?: string
+}
+
+interface LowStockItem {
+  id: string
+  title: string
+  stock: number
+}
+
+interface DashboardStats {
+  revenue: number
+  totalOrders: number
+  activeProducts: number
+  totalUnits: number
+  totalInventoryValue: number
+  lowStockItems: LowStockItem[]
+}
+
+interface MonthlySummaryPeriod {
+  revenue: number
+  ordersCount: number
+  revenueGrowth: number
+  ordersGrowth: number
+}
+
+interface Summaries {
+  monthly: MonthlySummaryPeriod
+  yearly: { revenue: number; ordersCount: number }
+}
+
+interface Analytics {
+  averageOrderValue: number
+  pendingOrdersCount: number
+}
+
+interface DailyPoint {
+  day: number
+  label: string
+  revenue: number
+}
+
+const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+]
+
+export default function AdminDashboardPage() {
   const router = useRouter()
   const pathname = usePathname()
+  const currentDate = new Date()
+  
+  const [selectedMonth, setSelectedMonth] = useState<number>(currentDate.getMonth())
+  const [selectedYear, setSelectedYear] = useState<number>(currentDate.getFullYear())
+  const [chartMode, setChartMode] = useState<'daily' | 'weekly'>('daily')
 
   const [userEmail, setUserEmail] = useState<string>('Loading...')
+  const [isAuthorized, setIsAuthorized] = useState<boolean>(false)
   const [authLoading, setAuthLoading] = useState<boolean>(true)
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false)
-  const [isRefreshing, setIsRefreshing] = useState<boolean>(false)
 
-  // Example state for your feature view
-  const [items, setItems] = useState<any[]>([])
-  const [loading, setLoading] = useState<boolean>(true)
+  const [stats, setStats] = useState<DashboardStats>({
+    revenue: 0,
+    totalOrders: 0,
+    activeProducts: 0,
+    totalUnits: 0,
+    totalInventoryValue: 0,
+    lowStockItems: [],
+  })
+  const [summaries, setSummaries] = useState<Summaries>({
+    monthly: { revenue: 0, ordersCount: 0, revenueGrowth: 0, ordersGrowth: 0 },
+    yearly: { revenue: 0, ordersCount: 0 },
+  })
+  const [analytics, setAnalytics] = useState<Analytics>({
+    averageOrderValue: 0,
+    pendingOrdersCount: 0,
+  })
+  const [dailyTrend, setDailyTrend] = useState<DailyPoint[]>([])
+  const [recentOrders, setRecentOrders] = useState<Order[]>([])
+  const [loading, setLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   useEffect(() => {
     const checkAdminAccess = async () => {
@@ -41,31 +114,79 @@ export default function AdminFeaturePage() {
         console.warn('Access check warning: Verify user role settings.')
       }
 
+      setIsAuthorized(true)
       setAuthLoading(false)
     }
 
     checkAdminAccess()
   }, [router])
 
-  const fetchData = useCallback(async () => {
+  const fetchDashboardData = useCallback(async () => {
     setIsRefreshing(true)
     try {
-      // Fetch your custom endpoint data here
-      // const response = await fetch('/api/admin/your-endpoint')
-      // if (response.ok) { const data = await response.json(); setItems(data) }
+      const response = await fetch(
+        `/api/admin/dashboard?month=${selectedMonth}&year=${selectedYear}`
+      )
+      if (response.ok) {
+        const data = await response.json()
+        if (data.stats) setStats(data.stats)
+        if (data.summaries) setSummaries(data.summaries)
+        if (data.analytics) setAnalytics(data.analytics)
+        if (data.recentOrders) setRecentOrders(data.recentOrders)
+        if (data.dailyTrend) setDailyTrend(data.dailyTrend)
+      }
     } catch (error) {
-      console.error('Error fetching data:', error)
+      console.error('Error fetching admin dashboard data:', error)
     } finally {
       setLoading(false)
       setIsRefreshing(false)
     }
-  }, [])
+  }, [selectedMonth, selectedYear])
 
   useEffect(() => {
-    if (!authLoading) {
-      fetchData()
+    if (!isAuthorized) return
+    fetchDashboardData()
+
+    const supabase = createClient()
+    const channel = supabase
+      .channel('admin-dashboard-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'orders' },
+        () => { fetchDashboardData() }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'products' },
+        () => { fetchDashboardData() }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
     }
-  }, [authLoading, fetchData])
+  }, [isAuthorized, fetchDashboardData])
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      maximumFractionDigits: 0,
+    }).format(amount)
+  }
+
+  const renderGrowthBadge = (value: number) => {
+    const isPositive = value >= 0
+    const arrow = isPositive ? '↑' : '↓'
+
+    return (
+      <span className={`growth-badge ${isPositive ? 'positive' : 'negative'}`}>
+        {arrow} {Math.abs(value).toFixed(1)}% <span className="growth-sub">vs last mo</span>
+      </span>
+    )
+  }
+
+  const handlePrint = () => { window.print() }
 
   const handleLogout = async () => {
     const supabase = createClient()
@@ -75,11 +196,38 @@ export default function AdminFeaturePage() {
 
   if (authLoading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontFamily: 'sans-serif', color: '#666' }}>
+      <div className="auth-loading-screen">
         Verifying administrator credentials...
       </div>
     )
   }
+
+  const lowStockCount = stats.lowStockItems?.length || 0
+
+  const getWeeklyTrend = () => {
+    const weeks: { label: string; revenue: number }[] = []
+    let currentWeekRevenue = 0
+    let weekCount = 1
+    
+    dailyTrend.forEach((p, idx) => {
+      currentWeekRevenue += p.revenue
+      if ((idx + 1) % 7 === 0 || idx === dailyTrend.length - 1) {
+        weeks.push({
+          label: `Week ${weekCount}`,
+          revenue: currentWeekRevenue
+        })
+        currentWeekRevenue = 0
+        weekCount++
+      }
+    })
+    return weeks
+  }
+
+  const activeTrend = chartMode === 'daily' ? dailyTrend : getWeeklyTrend()
+  const rawMaxVal = Math.max(...activeTrend.map(p => p.revenue), 10)
+  const maxVal = Math.ceil(rawMaxVal / 50) * 50 || 100
+  const chartWidth = Math.max(activeTrend.length * 70, 650)
+  const chartHeight = 180
 
   return (
     <div className="admin-layout-wrapper">
@@ -89,15 +237,24 @@ export default function AdminFeaturePage() {
           margin: 0;
           padding: 0;
         }
+
         body {
-          background: #fbf7f2;
-          background-image: 
-            radial-gradient(circle at 85% 15%, rgba(243, 225, 208, 0.6) 0%, transparent 45%),
-            radial-gradient(circle at 10% 85%, rgba(247, 238, 228, 0.8) 0%, transparent 50%),
-            linear-gradient(135deg, #fdfbf7 0%, #f6f0e8 100%);
-          font-family: system-ui, -apple-system, sans-serif;
+          background: #FAFAFA;
+          color: #171717;
+          font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
           overflow-x: hidden;
           width: 100%;
+        }
+
+        .auth-loading-screen {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 100vh;
+          font-family: system-ui, -apple-system, sans-serif;
+          color: #666666;
+          background: #FAFAFA;
+          font-size: 14px;
         }
 
         .admin-layout-wrapper {
@@ -106,7 +263,8 @@ export default function AdminFeaturePage() {
           min-height: 100vh;
           padding-top: 115px;
           width: 100%;
-          max-width: 100vw;
+          max-width: 1400px;
+          margin: 0 auto;
           position: relative;
           z-index: 1;
         }
@@ -119,8 +277,8 @@ export default function AdminFeaturePage() {
           position: fixed;
           top: 0; left: 0; right: 0;
           z-index: 9999;
-          background-color: #ffffff;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+          background-color: #FFFFFF;
+          border-bottom: 1px solid #EBEBEB;
           width: 100%;
         }
 
@@ -128,23 +286,22 @@ export default function AdminFeaturePage() {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          background-color: #ffffff;
-          border-top: 1px solid #e8e2d9;
-          border-bottom: 1px solid #e8e2d9;
-          padding: 0.4rem 1rem;
+          background-color: #FFFFFF;
+          border-top: 1px solid #EBEBEB;
+          padding: 12px 24px;
           width: 100%;
           flex-wrap: wrap;
-          gap: 0.75rem;
+          gap: 12px;
         }
 
         @media (min-width: 640px) {
-          .top-nav-bar { padding: 0.4rem 1.5rem; }
+          .top-nav-bar { padding: 12px 32px; }
         }
 
         .nav-links-group {
           display: flex;
           list-style: none;
-          gap: 0.4rem;
+          gap: 4px;
           align-items: center;
           flex-wrap: wrap;
         }
@@ -152,48 +309,48 @@ export default function AdminFeaturePage() {
         .nav-link {
           display: inline-flex;
           align-items: center;
-          padding: 0.35rem 0.65rem;
-          border-radius: 6px;
-          font-size: 0.85rem;
+          padding: 6px 12px;
+          border-radius: 9999px;
+          font-size: 14px;
           font-weight: 500;
-          color: #3b332e;
+          color: #666666;
           text-decoration: none;
           transition: all 0.2s ease;
         }
 
         .nav-link:hover {
-          background-color: #f7f4ef;
-          color: #b06d50;
+          background-color: #FAFAFA;
+          color: #171717;
         }
 
         .nav-link.active {
-          background-color: #1f1815;
-          color: #ffffff;
-          font-weight: 600;
+          background-color: #171717;
+          color: #FFFFFF;
+          font-weight: 500;
         }
 
         .mobile-menu-btn {
           display: none;
           background: none;
-          border: 1px solid #ded7cc;
-          padding: 0.3rem 0.6rem;
-          border-radius: 6px;
-          font-size: 0.9rem;
-          font-weight: 600;
+          border: 1px solid #EBEBEB;
+          padding: 6px 12px;
+          border-radius: 9999px;
+          font-size: 14px;
+          font-weight: 500;
           cursor: pointer;
-          color: #1f1815;
+          color: #171717;
         }
 
         @media (max-width: 768px) {
-          .mobile-menu-btn { display: inline-flex; align-items: center; gap: 0.4rem; }
+          .mobile-menu-btn { display: inline-flex; align-items: center; gap: 4px; }
           .nav-links-group {
             display: ${mobileMenuOpen ? 'flex' : 'none'};
             width: 100%;
             flex-direction: column;
             align-items: stretch;
-            border-top: 1px solid #f2ede4;
-            margin-top: 0.4rem;
-            padding-top: 0.4rem;
+            border-top: 1px solid #EBEBEB;
+            margin-top: 8px;
+            padding-top: 8px;
           }
         }
 
@@ -201,28 +358,65 @@ export default function AdminFeaturePage() {
           flex: 1;
           display: flex;
           flex-direction: column;
-          padding: 0.75rem;
+          padding: 20px 24px 80px 24px;
           width: 100%;
           max-width: 1400px;
           margin: 0 auto;
         }
 
         @media (min-width: 640px) {
-          .admin-main-content { padding: 1.25rem 1.5rem 3rem 1.5rem; }
+          .admin-main-content { padding: 32px 32px 80px 32px; }
         }
 
         .dashboard-actions-bar {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 1.25rem;
+          margin-bottom: 32px;
           flex-wrap: wrap;
-          gap: 1rem;
+          gap: 20px;
+        }
+
+        .filter-bar {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          background: #FFFFFF;
+          border: 1px solid #EBEBEB;
+          padding: 8px 16px;
+          border-radius: 9999px;
+          box-shadow: none;
+          flex-wrap: wrap;
+          width: 100%;
+        }
+
+        @media (min-width: 640px) {
+          .filter-bar { width: auto; }
+        }
+
+        .filter-label {
+          font-size: 12px;
+          font-weight: 500;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          color: #666666;
+        }
+
+        .filter-select {
+          padding: 6px 12px;
+          background-color: #FAFAFA;
+          border: 1px solid #EBEBEB;
+          border-radius: 9999px;
+          font-size: 14px;
+          font-weight: 400;
+          color: #171717;
+          cursor: pointer;
+          outline: none;
         }
 
         .action-buttons-group {
           display: flex;
-          gap: 0.5rem;
+          gap: 12px;
           align-items: center;
           width: 100%;
         }
@@ -231,62 +425,239 @@ export default function AdminFeaturePage() {
           .action-buttons-group { width: auto; }
         }
 
-        .btn-action {
+        .btn-primary-custom {
           flex: 1;
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          gap: 0.4rem;
-          padding: 0.5rem 0.85rem;
-          background: linear-gradient(135deg, #ffffff 0%, #faf8f5 100%);
-          color: #1f1815;
-          border: 1px solid #ded7cc;
-          border-radius: 8px;
-          font-size: 0.82rem;
+          gap: 6px;
+          padding: 12px 16px;
+          background-color: #171717;
+          color: #FFFFFF;
+          border: 1px solid #171717;
+          border-radius: 9999px;
+          font-size: 14px;
           font-weight: 500;
           cursor: pointer;
-          transition: all 0.3s ease;
-          box-shadow: 0 2px 8px rgba(44, 34, 30, 0.02);
+          transition: background-color 0.2s ease, border-color 0.2s ease;
           text-decoration: none;
+          height: 40px;
         }
 
         @media (min-width: 640px) {
-          .btn-action { flex: unset; }
+          .btn-primary-custom { flex: unset; }
         }
 
-        .btn-action:hover {
-          background: #1f1815;
-          color: #ffffff;
-          border-color: #1f1815;
-          transform: translateY(-2px);
+        .btn-primary-custom:hover {
+          background-color: #000000;
+          border-color: #000000;
         }
+
+        .btn-secondary-custom {
+          flex: 1;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          padding: 12px 16px;
+          background-color: transparent;
+          color: #171717;
+          border: 1px solid #EBEBEB;
+          border-radius: 9999px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: border-color 0.2s ease, background-color 0.2s ease;
+          text-decoration: none;
+          height: 40px;
+        }
+
+        @media (min-width: 640px) {
+          .btn-secondary-custom { flex: unset; }
+        }
+
+        .btn-secondary-custom:hover {
+          border-color: #171717;
+          background-color: #FAFAFA;
+        }
+
+        .metrics-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 20px;
+          margin-bottom: 32px;
+        }
+
+        @media (min-width: 480px) { .metrics-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 1024px) { .metrics-grid { grid-template-columns: repeat(4, 1fr); } }
+
+        .metric-card {
+          background: #FFFFFF;
+          border: 1px solid #EBEBEB;
+          border-radius: 6px;
+          padding: 16px;
+          box-shadow: none;
+        }
+
+        .metric-label {
+          font-size: 12px;
+          font-weight: 500;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          color: #666666;
+        }
+
+        .metric-value {
+          font-size: 36px;
+          font-weight: 400;
+          letter-spacing: -1.44px;
+          color: #171717;
+          margin-top: 8px;
+          word-break: break-word;
+          line-height: 40px;
+        }
+
+        .analytics-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 32px;
+          margin-bottom: 32px;
+        }
+
+        @media (min-width: 1024px) { .analytics-grid { grid-template-columns: 2fr 1fr; } }
 
         .dashboard-section {
-          background: linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(250, 248, 245, 0.9) 100%);
-          backdrop-filter: blur(4px);
-          border: 1px solid rgba(232, 226, 217, 0.8);
-          border-radius: 12px;
-          padding: 1.25rem;
-          box-shadow: 0 4px 20px rgba(44, 34, 30, 0.03);
+          background: #FFFFFF;
+          border: 1px solid #EBEBEB;
+          border-radius: 6px;
+          padding: 16px;
+          box-shadow: none;
           overflow: hidden;
-          margin-bottom: 1.25rem;
         }
 
         .section-title-wrap {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          margin-bottom: 0.85rem;
-          padding-bottom: 0.5rem;
-          border-bottom: 1px solid #f2ede4;
-          gap: 0.5rem;
+          margin-bottom: 16px;
+          padding-bottom: 12px;
+          border-bottom: 1px solid #EBEBEB;
+          gap: 12px;
           flex-wrap: wrap;
         }
 
         .section-title {
-          font-size: 1rem;
-          font-weight: 700;
-          color: #1f1815;
+          font-size: 20px;
+          font-weight: 400;
+          line-height: 24px;
+          letter-spacing: 0px;
+          color: #171717;
+        }
+
+        .analysis-badge {
+          background: #FAFAFA;
+          color: #171717;
+          border: 1px solid #EBEBEB;
+          padding: 6px 10px;
+          border-radius: 9999px;
+          font-weight: 500;
+          font-size: 12px;
+        }
+
+        .scrollable-graph-container {
+          width: 100%;
+          overflow-x: auto;
+          white-space: nowrap;
+          padding-bottom: 8px;
+          margin-top: 12px;
+          scrollbar-width: thin;
+          scrollbar-color: #EBEBEB #FAFAFA;
+        }
+
+        .content-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 32px;
+        }
+
+        @media (min-width: 1024px) { .content-grid { grid-template-columns: 2fr 1fr; } }
+
+        .orders-table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 14px;
+          min-width: 450px;
+        }
+
+        .orders-table th {
+          text-align: left;
+          padding: 12px;
+          color: #666666;
+          font-weight: 500;
+          border-bottom: 1px solid #EBEBEB;
+        }
+
+        .orders-table td {
+          padding: 12px;
+          border-bottom: 1px solid #EBEBEB;
+          color: #171717;
+        }
+
+        .status-badge {
+          display: inline-block;
+          padding: 6px 10px;
+          border-radius: 9999px;
+          font-size: 12px;
+          font-weight: 500;
+        }
+
+        .status-completed { background-color: #FAFAFA; color: #171717; border: 1px solid #EBEBEB; }
+        .status-processing { background-color: #FAFAFA; color: #666666; border: 1px solid #EBEBEB; }
+
+        .growth-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          font-size: 12px;
+          font-weight: 500;
+          padding: 6px 10px;
+          border-radius: 9999px;
+          margin-top: 12px;
+          border: 1px solid #EBEBEB;
+        }
+
+        .growth-badge.positive {
+          background-color: #FAFAFA;
+          color: #171717;
+        }
+
+        .growth-badge.negative {
+          background-color: #FAFAFA;
+          color: #D92D20;
+          border-color: #D92D20;
+        }
+
+        .growth-sub {
+          font-weight: 400;
+          color: #666666;
+        }
+
+        /* Clean Print Formatting */
+        @media print {
+          body { background: #FFFFFF !important; color: #000000 !important; }
+          .header-fixed-container, .dashboard-actions-bar, .action-buttons-group, .mobile-menu-btn, .top-nav-bar, button { display: none !important; }
+          .admin-layout-wrapper { padding-top: 0 !important; max-width: 100% !important; }
+          .admin-main-content { max-width: 100% !important; padding: 0 !important; }
+          .dashboard-section, .metric-card { border: 1px solid #000000 !important; box-shadow: none !important; background: #FFFFFF !important; }
+          .admin-main-content::before {
+            content: "PRYMEA FASHION — EXECUTIVE PERFORMANCE REPORT (" attr(data-print-month) ")";
+            display: block;
+            font-size: 24px;
+            font-weight: 400;
+            margin-bottom: 24px;
+            border-bottom: 2px solid #000000;
+            padding-bottom: 12px;
+          }
         }
       `}</style>
 
@@ -294,8 +665,8 @@ export default function AdminFeaturePage() {
       <div className="header-fixed-container">
         <div className="fixed-top-header">
           <AdminHeader
-            title="Admin Management"
-            description="Manage your platform settings and content records"
+            title="Admin Dashboard"
+            description="Real-time store progress and inventory management dashboard"
             userEmail={userEmail}
             onLogout={handleLogout}
           />
@@ -309,30 +680,261 @@ export default function AdminFeaturePage() {
             <li><Link href="/admin/products" className={`nav-link ${pathname === '/admin/products' ? 'active' : ''}`}>Inventory</Link></li>
             <li><Link href="/admin/products/new" className={`nav-link ${pathname === '/admin/products/new' ? 'active' : ''}`}>Add Product</Link></li>
           </ul>
-          <Link href="/" target="_blank" className="nav-link" style={{ color: '#b06d50', fontWeight: 600 }}>View Storefront →</Link>
+          <Link href="/" target="_blank" className="nav-link" style={{ color: '#171717', fontWeight: 500 }}>View Storefront →</Link>
         </nav>
       </div>
 
       {/* Main Content Area */}
-      <div className="admin-main-content">
+      <div className="admin-main-content" data-print-month={`${MONTH_NAMES[selectedMonth]} ${selectedYear}`}>
         <div className="dashboard-actions-bar">
-          <h1 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1f1815' }}>Feature Management</h1>
+          <div className="filter-bar">
+            <span className="filter-label">Statistics Period:</span>
+            <select value={selectedMonth} onChange={(e) => setSelectedMonth(Number(e.target.value))} className="filter-select">
+              {MONTH_NAMES.map((name, index) => (<option key={index} value={index}>{name}</option>))}
+            </select>
+            <select value={selectedYear} onChange={(e) => setSelectedYear(Number(e.target.value))} className="filter-select">
+              {[2024, 2025, 2026, 2027].map((year) => (<option key={year} value={year}>{year}</option>))}
+            </select>
+          </div>
+
           <div className="action-buttons-group">
-            <button type="button" onClick={fetchData} disabled={isRefreshing} className="btn-action">
-              <span>{isRefreshing ? 'Syncing...' : 'Refresh Data'}</span>
+            <button type="button" onClick={fetchDashboardData} disabled={isRefreshing} className="btn-secondary-custom">
+              <span>{isRefreshing ? 'Syncing...' : 'Force Sync'}</span>
+            </button>
+            <button type="button" onClick={handlePrint} className="btn-primary-custom">
+              <span>Print Report</span>
             </button>
           </div>
         </div>
 
-        <div className="dashboard-section">
-          <div className="section-title-wrap">
-            <h2 className="section-title">Overview Section</h2>
+        {/* Metrics Cards */}
+        <div className="metrics-grid">
+          <div className="metric-card">
+            <div className="metric-label">Lifetime Revenue</div>
+            <div className="metric-value">{loading ? '...' : formatCurrency(stats.revenue)}</div>
           </div>
-          {loading ? (
-            <p style={{ fontSize: '0.85rem', color: '#8c827a' }}>Loading content...</p>
-          ) : (
-            <p style={{ fontSize: '0.85rem', color: '#3b332e' }}>Your custom components and tables can go here.</p>
-          )}
+          <div className="metric-card">
+            <div className="metric-label">Completed Orders</div>
+            <div className="metric-value">{loading ? '...' : stats.totalOrders}</div>
+          </div>
+          <div className="metric-card">
+            <div className="metric-label">Active Products</div>
+            <div className="metric-value">{loading ? '...' : stats.activeProducts}</div>
+          </div>
+          <div className="metric-card">
+            <div className="metric-label">{MONTH_NAMES[selectedMonth]} Revenue</div>
+            <div className="metric-value">{loading ? '...' : formatCurrency(summaries.monthly.revenue)}</div>
+            {!loading && renderGrowthBadge(summaries.monthly.revenueGrowth)}
+          </div>
+        </div>
+
+        {/* Store Progress Graph with Grid lines and Value Identifiers */}
+        <div className="analytics-grid">
+          <div className="dashboard-section">
+            <div className="section-title-wrap">
+              <h2 className="section-title">
+                {chartMode === 'daily' ? 'Daily' : 'Weekly'} Revenue Progress ({MONTH_NAMES[selectedMonth]} {selectedYear})
+              </h2>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ display: 'flex', background: '#FAFAFA', padding: '2px', borderRadius: '9999px', border: '1px solid #EBEBEB' }}>
+                  <button
+                    type="button"
+                    onClick={() => setChartMode('daily')}
+                    style={{
+                      background: chartMode === 'daily' ? '#171717' : 'transparent',
+                      color: chartMode === 'daily' ? '#FFFFFF' : '#666666',
+                      border: 'none',
+                      padding: '6px 12px',
+                      borderRadius: '9999px',
+                      fontSize: '12px',
+                      fontWeight: 500,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    Daily
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setChartMode('weekly')}
+                    style={{
+                      background: chartMode === 'weekly' ? '#171717' : 'transparent',
+                      color: chartMode === 'weekly' ? '#FFFFFF' : '#666666',
+                      border: 'none',
+                      padding: '6px 12px',
+                      borderRadius: '9999px',
+                      fontSize: '12px',
+                      fontWeight: 500,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    Weekly
+                  </button>
+                </div>
+                <span className="analysis-badge">Live Stream</span>
+              </div>
+            </div>
+            <p style={{ fontSize: '14px', color: '#666666', margin: '0 0 12px 0' }}>
+              {chartMode === 'daily' ? 'Daily sales with value identifiers (smaller dots):' : 'Weekly aggregated sales (larger dots):'}
+            </p>
+            
+            <div className="scrollable-graph-container">
+              {activeTrend.length === 0 ? (
+                <div style={{ height: '190px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666666', fontSize: '14px' }}>
+                  No transaction data recorded for this period.
+                </div>
+              ) : (
+                <div style={{ width: `${chartWidth}px`, height: '200px', position: 'relative' }}>
+                  <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} style={{ width: '100%', height: '100%', overflow: 'visible' }}>
+                    {/* Horizontal Grid Lines */}
+                    {[0, 0.25, 0.5, 0.75, 1].map((ratio, index) => {
+                      const yPos = 25 + ratio * 120
+                      const labelVal = Math.round(maxVal * (1 - ratio))
+                      return (
+                        <g key={index}>
+                          <line x1="45" y1={yPos} x2={chartWidth - 10} y2={yPos} stroke="#EBEBEB" strokeWidth="1" strokeDasharray={index === 4 ? 'none' : '3,3'} />
+                          <text x="38" y={yPos + 4} textAnchor="end" fontSize="10" fill="#666666" fontWeight="400">
+                            ${labelVal}
+                          </text>
+                        </g>
+                      )
+                    })}
+
+                    {/* Vertical Axis Line */}
+                    <line x1="45" y1="25" x2="45" y2="145" stroke="#EBEBEB" strokeWidth="1" />
+
+                    {/* Polyline Path */}
+                    <polyline
+                      fill="none"
+                      stroke="#171717"
+                      strokeWidth="2"
+                      points={activeTrend.map((p, idx) => {
+                        const cx = 70 + idx * 70
+                        const cy = 145 - (p.revenue / maxVal) * 120
+                        return `${cx},${cy}`
+                      }).join(' ')}
+                    />
+
+                    {/* Data Points and Identifiers */}
+                    {activeTrend.map((p, idx) => {
+                      const cx = 70 + idx * 70
+                      const cy = 145 - (p.revenue / maxVal) * 120
+                      const dotRadius = chartMode === 'daily' ? 3 : 5
+                      return (
+                        <g key={idx}>
+                          {/* Value Identifier / Label above dot */}
+                          <text x={cx} y={cy - 9} textAnchor="middle" fontSize="10" fill="#171717" fontWeight="500">
+                            {p.revenue > 0 ? `$${p.revenue}` : '$0'}
+                          </text>
+
+                          {/* Data Point Dot */}
+                          <circle
+                            cx={cx}
+                            cy={cy}
+                            r={dotRadius}
+                            fill="#FFFFFF"
+                            stroke="#171717"
+                            strokeWidth="2"
+                          />
+
+                          {/* X-Axis Label */}
+                          <text 
+                            x={cx} 
+                            y="165" 
+                            textAnchor="middle" 
+                            fontSize="10" 
+                            fill="#666666"
+                            fontWeight="400"
+                          >
+                            {p.label}
+                          </text>
+                        </g>
+                      )
+                    })}
+                  </svg>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="dashboard-section">
+            <div className="section-title-wrap">
+              <h2 className="section-title">Live Performance Analysis</h2>
+            </div>
+            <p style={{ fontSize: '14px', color: '#171717', lineHeight: '20px', margin: '0 0 16px 0' }}>
+              The graph incorporates horizontal axis thresholds and individual monetary identifiers directly over each data point for instant auditing.
+            </p>
+            <div style={{ background: '#FAFAFA', padding: '12px 16px', borderRadius: '6px', border: '1px solid #EBEBEB' }}>
+              <span style={{ fontSize: '12px', fontWeight: 500, color: '#666666', textTransform: 'uppercase' }}>Stream Status</span>
+              <div style={{ fontSize: '14px', color: '#171717', fontWeight: 500, marginTop: '4px' }}>
+                Connected to database stream
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Recent Orders & Inventory Health */}
+        <div className="content-grid">
+          <div className="dashboard-section">
+            <div className="section-title-wrap">
+              <h2 className="section-title">Recent Orders (Live)</h2>
+              <Link href="/admin/orders" style={{ fontSize: '14px', color: '#171717', textDecoration: 'none', fontWeight: 500 }}>View All →</Link>
+            </div>
+            {loading ? (
+              <p style={{ fontSize: '14px', color: '#666666' }}>Loading...</p>
+            ) : recentOrders.length === 0 ? (
+              <p style={{ fontSize: '14px', color: '#666666' }}>No recent orders found.</p>
+            ) : (
+              <div style={{ width: '100%', overflowX: 'auto' }}>
+                <table className="orders-table">
+                  <thead>
+                    <tr>
+                      <th>Order ID</th>
+                      <th>Customer</th>
+                      <th>Total</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {recentOrders.map((order) => (
+                      <tr key={order.id}>
+                        <td style={{ fontWeight: 500 }}>{order.id}</td>
+                        <td>{order.customer}</td>
+                        <td>{formatCurrency(order.total)}</td>
+                        <td>
+                          <span className={`status-badge ${order.status?.toLowerCase() === 'completed' ? 'status-completed' : 'status-processing'}`}>
+                            {order.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          <div className="dashboard-section">
+            <div className="section-title-wrap">
+              <h2 className="section-title">Inventory Health</h2>
+              <Link href="/admin/products" style={{ fontSize: '14px', color: '#171717', textDecoration: 'none', fontWeight: 500 }}>Manage →</Link>
+            </div>
+            {lowStockCount === 0 ? (
+              <div style={{ color: '#171717', fontSize: '14px', background: '#FAFAFA', padding: '16px', borderRadius: '6px', border: '1px solid #EBEBEB' }}>
+                Inventory levels are optimal. All items are in stock.
+              </div>
+            ) : (
+              <div style={{ color: '#D92D20', fontSize: '14px', background: '#FAFAFA', padding: '16px', borderRadius: '6px', border: '1px solid #D92D20' }}>
+                <strong>Low Stock Alerts ({lowStockCount})</strong>
+                <ul style={{ margin: '8px 0 0 0', paddingLeft: '16px' }}>
+                  {stats.lowStockItems.map((item) => (
+                    <li key={item.id}>{item.title} — {item.stock} left</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
