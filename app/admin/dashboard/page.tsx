@@ -252,12 +252,15 @@ export default function AdminDashboardPage() {
           margin: 0;
           padding: 0;
         }
+
+        /* Distinct Grid Pattern Background */
         body, html {
           background-color: #FAFAFA;
           background-image: 
-            linear-gradient(to right, #EBEBEB 1px, transparent 1px),
-            linear-gradient(to bottom, #EBEBEB 1px, transparent 1px);
-          background-size: 32px 32px;
+            linear-gradient(to right, rgba(0, 0, 0, 0.06) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(0, 0, 0, 0.06) 1px, transparent 1px);
+          background-size: 28px 28px;
+          background-position: center center;
           font-family: system-ui, -apple-system, sans-serif;
           color: #171717;
           overflow-x: hidden;
@@ -285,40 +288,41 @@ export default function AdminDashboardPage() {
           width: 100%;
         }
 
+        /* Top Nav Bar - Left Aligned on Desktop */
         .top-nav-bar {
           display: flex;
           align-items: center;
-          justify-content: space-between;
+          justify-content: flex-start; /* Align left */
+          gap: 16px;
           background-color: #FFFFFF;
           border-bottom: 1px solid #EBEBEB;
-          padding: 12px 24px;
+          padding: 10px 24px;
           width: 100%;
-          flex-wrap: wrap;
-          gap: 12px;
         }
 
         .nav-links-group {
           display: flex;
           list-style: none;
-          gap: 6px;
+          gap: 8px;
           align-items: center;
-          flex-wrap: wrap;
         }
 
         .nav-link {
           display: inline-flex;
           align-items: center;
-          padding: 6px 12px;
+          padding: 6px 14px;
           border-radius: 9999px;
-          font-size: 14px;
+          font-size: 13px;
           font-weight: 500;
           color: #666666;
           text-decoration: none;
+          border: 1px solid transparent;
           transition: all 0.2s ease;
         }
 
         .nav-link:hover {
           background-color: #FAFAFA;
+          border-color: #EBEBEB;
           color: #171717;
         }
 
@@ -328,20 +332,29 @@ export default function AdminDashboardPage() {
           font-weight: 500;
         }
 
+        .storefront-link {
+          margin-left: auto; /* Push storefront link to far right */
+        }
+
         .mobile-menu-btn {
           display: none;
           background: none;
           border: 1px solid #EBEBEB;
           padding: 6px 12px;
           border-radius: 9999px;
-          font-size: 14px;
+          font-size: 13px;
           font-weight: 500;
           cursor: pointer;
           color: #171717;
         }
 
         @media (max-width: 768px) {
-          .mobile-menu-btn { display: inline-flex; align-items: center; gap: 6px; }
+          .top-nav-bar {
+            flex-wrap: wrap;
+            justify-content: space-between;
+          }
+          .mobile-menu-btn { display: inline-flex; align-items: center; }
+          .storefront-link { margin-left: 0; }
           .nav-links-group {
             display: ${mobileMenuOpen ? 'flex' : 'none'};
             width: 100%;
@@ -368,13 +381,14 @@ export default function AdminDashboardPage() {
           .admin-main-content { padding: 32px; }
         }
 
+        /* Action Bar - Left Aligned Buttons */
         .dashboard-actions-bar {
           display: flex;
-          justify-content: space-between;
+          justify-content: flex-start; /* Align actions to the left */
           align-items: center;
           margin-bottom: 24px;
           flex-wrap: wrap;
-          gap: 16px;
+          gap: 12px;
         }
 
         .filter-bar {
@@ -383,9 +397,8 @@ export default function AdminDashboardPage() {
           gap: 8px;
           background: #FFFFFF;
           border: 1px solid #EBEBEB;
-          padding: 8px 16px;
+          padding: 6px 14px;
           border-radius: 9999px;
-          flex-wrap: wrap;
         }
 
         .filter-label {
@@ -397,11 +410,11 @@ export default function AdminDashboardPage() {
         }
 
         .filter-select {
-          padding: 4px 10px;
+          padding: 4px 8px;
           background-color: #FAFAFA;
           border: 1px solid #EBEBEB;
           border-radius: 9999px;
-          font-size: 14px;
+          font-size: 13px;
           font-weight: 500;
           color: #171717;
           cursor: pointer;
@@ -410,7 +423,7 @@ export default function AdminDashboardPage() {
 
         .action-buttons-group {
           display: flex;
-          gap: 10px;
+          gap: 8px;
           align-items: center;
           flex-wrap: wrap;
         }
@@ -420,17 +433,17 @@ export default function AdminDashboardPage() {
           align-items: center;
           justify-content: center;
           gap: 6px;
-          padding: 10px 16px;
+          padding: 8px 16px;
           background: #171717;
           color: #FFFFFF;
           border: 1px solid #171717;
           border-radius: 9999px;
-          font-size: 14px;
+          font-size: 13px;
           font-weight: 500;
           cursor: pointer;
           transition: all 0.2s ease;
           text-decoration: none;
-          height: 40px;
+          height: 36px;
         }
 
         .btn-action:hover {
@@ -598,15 +611,6 @@ export default function AdminDashboardPage() {
           .admin-layout-wrapper { padding-top: 0 !important; }
           .admin-main-content { max-width: 100% !important; padding: 0 !important; }
           .dashboard-section, .metric-card { border: 1px solid #000000 !important; box-shadow: none !important; background: #FFFFFF !important; }
-          .admin-main-content::before {
-            content: "PRIMEA FASHION — EXECUTIVE PERFORMANCE REPORT (" attr(data-print-month) ")";
-            display: block;
-            font-size: 24px;
-            font-weight: 400;
-            margin-bottom: 24px;
-            border-bottom: 1px solid #000000;
-            padding-bottom: 12px;
-          }
         }
       `}</style>
 
@@ -621,20 +625,26 @@ export default function AdminDashboardPage() {
           />
         </div>
 
+        {/* Top Nav Bar Left-Aligned */}
         <nav className="top-nav-bar">
-          <button type="button" className="mobile-menu-btn" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>Menu</button>
+          <button type="button" className="mobile-menu-btn" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+            Menu
+          </button>
           <ul className="nav-links-group">
             <li><Link href="/admin/dashboard" className={`nav-link ${pathname === '/admin/dashboard' ? 'active' : ''}`}>Dashboard</Link></li>
             <li><Link href="/admin/orders" className={`nav-link ${pathname === '/admin/orders' ? 'active' : ''}`}>Orders</Link></li>
             <li><Link href="/admin/products" className={`nav-link ${pathname === '/admin/products' ? 'active' : ''}`}>Inventory</Link></li>
             <li><Link href="/admin/products/new" className={`nav-link ${pathname === '/admin/products/new' ? 'active' : ''}`}>Add Product</Link></li>
           </ul>
-          <Link href="/" target="_blank" className="nav-link" style={{ color: '#171717', fontWeight: 500 }}>Storefront →</Link>
+          <Link href="/" target="_blank" className="nav-link storefront-link" style={{ color: '#171717', fontWeight: 500 }}>
+            Storefront →
+          </Link>
         </nav>
       </div>
 
       {/* Main Content Area */}
       <div className="admin-main-content" data-print-month={`${MONTH_NAMES[selectedMonth]} ${selectedYear}`}>
+        {/* Left-Aligned Action Buttons & Filters */}
         <div className="dashboard-actions-bar">
           <div className="filter-bar">
             <span className="filter-label">Period:</span>
@@ -765,7 +775,7 @@ export default function AdminDashboardPage() {
                       }).join(' ')}
                     />
 
-                    {/* Data Points and Identifiers */}
+                    {/* Data Points */}
                     {activeTrend.map((p, idx) => {
                       const cx = 70 + idx * 70
                       const cy = 145 - (p.revenue / maxVal) * 120
