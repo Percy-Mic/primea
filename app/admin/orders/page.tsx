@@ -16,7 +16,7 @@ export default function AdminOrdersPage() {
   const [authLoading, setAuthLoading] = useState<boolean>(true)
 
   const previousOrderCount = useRef<number>(0)
-  const isUpdating = useRef<number>(false)
+  const isUpdating = useRef<boolean>(false) // Fixed type from number to boolean
 
   // Verify Admin Access
   useEffect(() => {
@@ -264,7 +264,7 @@ export default function AdminOrdersPage() {
           display: flex;
           flex-direction: column;
           box-sizing: border-box;
-          padding: 85px 12px 48px 12px; /* Reduced top padding, expanded bottom padding */
+          padding: 85px 12px 48px 12px;
           width: 100%;
           max-width: 1400px;
           margin: 0 auto;
