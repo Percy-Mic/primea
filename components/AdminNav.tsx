@@ -175,50 +175,58 @@ export default function UserNav({
         </button>
       </div>
 
-      {/* Mobile Drawer */}
+      {/* Mobile Card Drawer */}
       {mobileMenuOpen && (
         <div style={styles.mobileDrawer} className="mobile-drawer-animate">
-          <div style={styles.mobileNavIcons}>
-            <Link href="/attendance" style={styles.iconButton} className="luxury-icon-hover" title="Attendance" onClick={() => setMobileMenuOpen(false)}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-            </Link>
-            <Link href="/profile" style={styles.iconButton} className="luxury-icon-hover" title="Profile" onClick={() => setMobileMenuOpen(false)}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-            </Link>
-            <Link href="/admin_list" style={styles.iconButton} className="luxury-icon-hover" title="Admin List" onClick={() => setMobileMenuOpen(false)}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-            </Link>
-            {isAuthed && (
-              <Link href="/logged_action" style={{ ...styles.iconButton, position: 'relative' }} className="luxury-icon-hover" title="Chats" onClick={() => setMobileMenuOpen(false)}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                <span style={styles.activeDotAbsolute} /> 
-              </Link>
-            )}
-          </div>
+          <div style={styles.mobileCardContent}>
+            <div style={styles.mobileNavRow}>
+              <span style={styles.mobileSectionLabel}>Navigation</span>
+              <div style={styles.mobileNavIcons}>
+                <Link href="/attendance" style={styles.iconButton} className="luxury-icon-hover" title="Attendance" onClick={() => setMobileMenuOpen(false)}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                </Link>
+                <Link href="/profile" style={styles.iconButton} className="luxury-icon-hover" title="Profile" onClick={() => setMobileMenuOpen(false)}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                </Link>
+                <Link href="/admin_list" style={styles.iconButton} className="luxury-icon-hover" title="Admin List" onClick={() => setMobileMenuOpen(false)}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                </Link>
+                {isAuthed && (
+                  <Link href="/logged_action" style={{ ...styles.iconButton, position: 'relative' }} className="luxury-icon-hover" title="Chats" onClick={() => setMobileMenuOpen(false)}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                    <span style={styles.activeDotAbsolute} /> 
+                  </Link>
+                )}
+              </div>
+            </div>
 
-          <div style={styles.mobileAuthSection}>
-            {loading ? (
-              <span style={styles.guestText}>Loading...</span>
-            ) : isAuthed ? (
-              <div style={styles.mobileLoggedIn}>
-                <div style={styles.userInfo}>
-                  <span style={styles.badge}>VERIFIED</span>
-                  <span style={styles.email} title={displayEmail}>{displayEmail}</span>
+            <div style={styles.mobileDivider} />
+
+            <div style={styles.mobileAuthRow}>
+              <span style={styles.mobileSectionLabel}>Account</span>
+              {loading ? (
+                <span style={styles.guestText}>Loading...</span>
+              ) : isAuthed ? (
+                <div style={styles.mobileLoggedIn}>
+                  <div style={styles.userInfoMobile}>
+                    <span style={styles.badge}>VERIFIED</span>
+                    <span style={styles.emailMobile} title={displayEmail}>{displayEmail}</span>
+                  </div>
+                  <button onClick={handleSignOut} style={styles.iconButtonAction} className="luxury-icon-hover" title="Sign Out">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                  </button>
                 </div>
-                <button onClick={handleSignOut} style={styles.iconButtonAction} className="luxury-icon-hover" title="Sign Out">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                </button>
-              </div>
-            ) : (
-              <div style={styles.guestContainer}>
-                <Link href="/login" style={styles.iconButton} className="luxury-icon-hover" title="Sign In" onClick={() => setMobileMenuOpen(false)}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
-                </Link>
-                <Link href="/register" style={styles.registerIconButton} className="luxury-icon-hover" title="Register" onClick={() => setMobileMenuOpen(false)}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
-                </Link>
-              </div>
-            )}
+              ) : (
+                <div style={styles.guestContainer}>
+                  <Link href="/login" style={styles.iconButton} className="luxury-icon-hover" title="Sign In" onClick={() => setMobileMenuOpen(false)}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+                  </Link>
+                  <Link href="/register" style={styles.registerIconButton} className="luxury-icon-hover" title="Register" onClick={() => setMobileMenuOpen(false)}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -350,6 +358,11 @@ const styles: { [key: string]: React.CSSProperties } = {
     flexDirection: 'column',
     alignItems: 'flex-end',
   },
+  userInfoMobile: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+  },
   badge: {
     fontSize: '0.5rem',
     letterSpacing: '0.1em',
@@ -365,6 +378,16 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: '0.75rem',
     fontFamily: 'sans-serif',
     maxWidth: '180px',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    marginTop: '2px',
+  },
+  emailMobile: {
+    color: '#c2b8a9',
+    fontSize: '0.75rem',
+    fontFamily: 'sans-serif',
+    maxWidth: '220px',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
@@ -389,28 +412,46 @@ const styles: { [key: string]: React.CSSProperties } = {
     cursor: 'pointer',
   },
   mobileDrawer: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: '1rem',
-    padding: '0.85rem 1.5rem',
+    padding: '1rem 1.25rem',
     background: 'linear-gradient(180deg, #1b1613 0%, #110e0c 100%)',
     borderTop: '1px solid rgba(212, 175, 55, 0.15)',
-    boxShadow: '0 10px 30px rgba(0,0,0,0.6)',
-    overflowX: 'auto',
+    boxShadow: '0 15px 35px rgba(0,0,0,0.7)',
+  },
+  mobileCardContent: {
+    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+    border: '1px solid rgba(212, 175, 55, 0.2)',
+    borderRadius: '12px',
+    padding: '1rem',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.85rem',
+  },
+  mobileNavRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  mobileAuthRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  mobileSectionLabel: {
+    color: '#a89f91',
+    fontSize: '0.7rem',
+    textTransform: 'uppercase',
+    letterSpacing: '0.1em',
+    fontWeight: 600,
+  },
+  mobileDivider: {
+    height: '1px',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    width: '100%',
   },
   mobileNavIcons: {
     display: 'flex',
-    flexDirection: 'row',
     alignItems: 'center',
     gap: '0.65rem',
-    flexShrink: 0,
-  },
-  mobileAuthSection: {
-    display: 'flex',
-    alignItems: 'center',
-    flexShrink: 0,
   },
   mobileLoggedIn: {
     display: 'flex',
