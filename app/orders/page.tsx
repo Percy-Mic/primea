@@ -50,6 +50,9 @@ export default function CustomerOrdersPage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [fileType, setFileType] = useState<'image' | 'video' | null>(null)
 
+  // Tracking Map Modal State
+  const [trackingOrder, setTrackingOrder] = useState<Order | null>(null)
+
   useEffect(() => {
     async function fetchUserOrders() {
       try {
@@ -133,6 +136,26 @@ export default function CustomerOrdersPage() {
       }
     } catch (err) {
       console.error('Failed to cancel order:', err)
+    }
+  }
+
+  const handleRefundOrder = async (orderId: string) => {
+    if (!window.confirm(`Are you sure you want to request a refund for order #${orderId}?`)) return
+
+    try {
+      const response = await fetch(`/api/orders/${orderId}/refund`, { method: 'POST' })
+      if (response.ok) {
+        setOrders((prev) =>
+          prev.map((ord) => (ord.id === orderId ? { ...ord, status: 'Refund Requested' } : ord))
+        )
+        alert('Refund request submitted successfully.')
+      } else {
+        const err = await response.json()
+        alert(err.error || 'Failed to request refund.')
+      }
+    } catch (err) {
+      console.error('Failed to request refund:', err)
+      alert('An error occurred. Please try again.')
     }
   }
 
@@ -312,46 +335,7 @@ export default function CustomerOrdersPage() {
         .status-shipped { background-color: #fafaf9; color: #1c1917; border: 1px solid #e7e5e4; }
         .status-completed, .status-delivered { background-color: #f0fdf4; color: #166534; }
         .status-cancelled { background-color: #fee2e2; color: #991b1b; }
-
-        .tracker-bar {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 0.5rem;
-          margin: 1.25rem 0;
-          padding: 1rem 0.5rem;
-          background: #fafaf9;
-          border-radius: 12px;
-          border: 1px solid #f5f5f4;
-        }
-
-        .tracker-step {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          text-align: center;
-          font-size: 0.75rem;
-          color: #a8a29e;
-          font-weight: 500;
-        }
-
-        .tracker-step-dot {
-          width: 10px;
-          height: 10px;
-          border-radius: 50%;
-          background-color: #d6d3d1;
-          margin-bottom: 0.4rem;
-          transition: all 0.2s ease;
-        }
-
-        .tracker-step.active {
-          color: #1c1917;
-          font-weight: 600;
-        }
-
-        .tracker-step.active .tracker-step-dot {
-          background-color: #1c1917;
-          box-shadow: 0 0 0 3px rgba(28, 25, 23, 0.15);
-        }
+        .status-refund-requested { background-color: #f3e8ff; color: #6b21a8; }
 
         .items-list {
           list-style: none;
@@ -783,6 +767,24 @@ export default function CustomerOrdersPage() {
           border-color: #f87171;
         }
 
+        .btn-refund-order {
+          background-color: #ffffff;
+          border: 1px solid #d1d5db;
+          color: #374151;
+          padding: 0.5rem 1rem;
+          border-radius: 8px;
+          font-size: 0.825rem;
+          font-weight: 600;
+          cursor: pointer;
+          white-space: nowrap;
+          transition: all 0.2s ease;
+        }
+
+        .btn-refund-order:hover {
+          background-color: #f3f4f6;
+          border-color: #9ca3af;
+        }
+
         @media (max-width: 640px) {
           .orders-container {
             padding: 100px 0.75rem 2.5rem 0.75rem;
@@ -790,24 +792,12 @@ export default function CustomerOrdersPage() {
           .order-card {
             padding: 1.15rem;
           }
-          .tracker-bar {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 0.75rem;
-          }
-          .tracker-step {
-            flex-direction: row;
-            gap: 0.4rem;
-            text-align: left;
-          }
-          .tracker-step-dot {
-            margin-bottom: 0;
-          }
           .order-card-footer {
             flex-direction: column;
             align-items: stretch;
             text-align: center;
           }
-          .btn-cancel-order {
+          .btn-cancel-order, .btn-refund-order {
             width: 100%;
           }
         }
@@ -831,7 +821,6 @@ export default function CustomerOrdersPage() {
           const orderId = order.id || 'Order'
           const date = formatDate(order.createdAt)
           
-          // --- ROBUST FIX: Safely handles arrays, nulls, and stringified JSON ---
           let rawItems: any[] = []
           if (Array.isArray(order.items)) {
             rawItems = order.items
@@ -875,30 +864,20 @@ export default function CustomerOrdersPage() {
                 </span>
               </div>
 
-              {!isCancelled ? (
-                <div className="tracker-bar">
-                  <div className={`tracker-step ${isPlaced || isProcessing || isShipped || isDelivered ? 'active' : ''}`}>
-                    <div className="tracker-step-dot" />
-                    <span>Placed</span>
-                  </div>
-                  <div className={`tracker-step ${isProcessing || isShipped || isDelivered ? 'active' : ''}`}>
-                    <div className="tracker-step-dot" />
-                    <span>Processing</span>
-                  </div>
-                  <div className={`tracker-step ${isShipped || isDelivered ? 'active' : ''}`}>
-                    <div className="tracker-step-dot" />
-                    <span>Shipped</span>
-                  </div>
-                  <div className={`tracker-step ${isDelivered ? 'active' : ''}`}>
-                    <div className="tracker-step-dot" />
-                    <span>Delivered</span>
-                  </div>
+              {/* TikTok Shop Map Tracker Link / Bar */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '1rem 0', background: '#fafaf9', padding: '0.75rem 1rem', borderRadius: '10px', border: '1px solid #f5f5f4' }}>
+                <div style={{ fontSize: '0.85rem', color: '#44403c', fontWeight: 500 }}>
+                  {isCancelled ? 'Order Cancelled' : isDelivered ? 'Package Delivered Successfully' : 'Package is on the way'}
                 </div>
-              ) : (
-                <div style={{ padding: '0.75rem 0', color: '#dc2626', fontSize: '0.85rem' }}>
-                  This order has been cancelled.
-                </div>
-              )}
+                {!isCancelled && (
+                  <button
+                    style={{ background: 'none', border: 'none', color: '#2563eb', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer', padding: 0 }}
+                    onClick={() => setTrackingOrder(order)}
+                  >
+                    View Map Tracker &rarr;
+                  </button>
+                )}
+              </div>
 
               <ul className="items-list">
                 {rawItems.length > 0 ? (
@@ -1025,24 +1004,24 @@ export default function CustomerOrdersPage() {
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
                                       </svg>
                                       <span className="upload-text">Click or drag photo/video to upload</span>
-                                      <span className="upload-subtext">PNG, JPG, MP4 up to 50MB</span>
+                                      <span className="upload-subtext">Supports PNG, JPG, MP4, etc.</span>
                                     </div>
                                   ) : (
                                     <div className="preview-card">
                                       <div className="preview-content">
-                                        {previewUrl && (
-                                          fileType === 'video' ? (
-                                            <video src={previewUrl} className="preview-thumb" />
-                                          ) : (
-                                            <img src={previewUrl} alt="Preview" className="preview-thumb" />
-                                          )
+                                        {fileType === 'image' && previewUrl ? (
+                                          <img src={previewUrl} alt="Preview" className="preview-thumb" />
+                                        ) : fileType === 'video' && previewUrl ? (
+                                          <video src={previewUrl} className="preview-thumb" />
+                                        ) : (
+                                          <div className="media-placeholder">File</div>
                                         )}
                                         <div className="preview-info">
                                           <span className="preview-filename">{selectedFile.name}</span>
                                           <span className="preview-type">{fileType} file</span>
                                         </div>
                                       </div>
-                                      <button type="button" className="btn-remove-file" onClick={removeFile}>
+                                      <button type="button" className="btn-remove-file" onClick={removeFile} title="Remove file">
                                         &times;
                                       </button>
                                     </div>
@@ -1053,7 +1032,7 @@ export default function CustomerOrdersPage() {
                                   <button
                                     type="button"
                                     className="btn-cancel-review"
-                                    onClick={resetReviewForm}
+                                    onClick={() => toggleReviewForm(itemKey)}
                                   >
                                     Cancel
                                   </button>
@@ -1061,10 +1040,7 @@ export default function CustomerOrdersPage() {
                                     type="button"
                                     className="btn-submit-review"
                                     disabled={submitting}
-                                    onClick={() => {
-                                      if (!productId) return
-                                      handleReviewSubmit(productId, orderId, itemKey)
-                                    }}
+                                    onClick={() => productId && handleReviewSubmit(productId, orderId, itemKey)}
                                   >
                                     {submitting ? 'Submitting...' : 'Submit Review'}
                                   </button>
@@ -1077,26 +1053,107 @@ export default function CustomerOrdersPage() {
                     )
                   })
                 ) : (
-                  <p style={{ color: '#78716c', fontSize: '0.9rem', margin: '0.5rem 0' }}>No items found for this order.</p>
+                  <div style={{ fontSize: '0.875rem', color: '#78716c', padding: '0.5rem 0' }}>
+                    No items found for this order.
+                  </div>
                 )}
               </ul>
 
-              {canCancel && (
-                <div className="order-card-footer">
-                  <div style={{ fontSize: '0.85rem', color: '#78716c' }}>
-                    Need to change or cancel this purchase?
-                  </div>
-                  <button
-                    className="btn-cancel-order"
-                    onClick={() => handleCancelOrder(orderId)}
-                  >
-                    Cancel Order
-                  </button>
+              <div className="order-card-footer">
+                <div style={{ fontSize: '0.95rem', fontWeight: 600 }}>
+                  Total: <span style={{ fontWeight: 700, color: '#1c1917' }}>{formatCurrency(computedTotal)}</span>
                 </div>
-              )}
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  {canCancel && (
+                    <button
+                      className="btn-cancel-order"
+                      onClick={() => handleCancelOrder(orderId)}
+                    >
+                      Cancel Order
+                    </button>
+                  )}
+                  {(isDelivered || statusRaw === 'completed') && statusRaw !== 'refund requested' && (
+                    <button
+                      className="btn-refund-order"
+                      onClick={() => handleRefundOrder(orderId)}
+                    >
+                      Request Refund
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
           )
         })
+      )}
+
+      {/* TikTok Shop Style Interactive Map Tracking Modal */}
+      {trackingOrder && (
+        <div style={{
+          position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 2000,
+          display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1rem'
+        }}>
+          <div style={{
+            backgroundColor: '#fff', borderRadius: '16px', maxWidth: '500px', width: '100%',
+            overflow: 'hidden', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)', position: 'relative'
+          }}>
+            {/* Modal Header */}
+            <div style={{ padding: '1.25rem', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>Order Tracking #{trackingOrder.id}</h3>
+              <button 
+                onClick={() => setTrackingOrder(null)}
+                style={{ background: 'none', border: 'none', fontSize: '1.25rem', cursor: 'pointer', color: '#6b7280' }}
+              >
+                &times;
+              </button>
+            </div>
+
+            {/* Simulated Map Container (TikTok Shop Visual Style) */}
+            <div style={{ height: '220px', backgroundColor: '#e5e7eb', position: 'relative', overflow: 'hidden' }}>
+              <div style={{
+                width: '100%', height: '100%', opacity: 0.6,
+                backgroundImage: 'radial-gradient(#cbd5e1 2px, transparent 2px)', backgroundSize: '20px 20px'
+              }} />
+              
+              <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
+                <path d="M 80 150 Q 200 50, 420 120" fill="none" stroke="#2563eb" strokeWidth="4" strokeDasharray="6 6" />
+              </svg>
+
+              <div style={{ position: 'absolute', top: '130px', left: '70px', textAlign: 'center' }}>
+                <div style={{ backgroundColor: '#1e293b', color: '#fff', padding: '2px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold' }}>Hub</div>
+                <div style={{ width: '12px', height: '12px', backgroundColor: '#1e293b', borderRadius: '50%', margin: '4px auto', border: '2px solid #fff' }} />
+              </div>
+
+              <div style={{ position: 'absolute', top: '75px', left: '230px', background: '#2563eb', color: '#fff', padding: '6px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 600, boxShadow: '0 4px 6px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                🚚 Out for Delivery
+              </div>
+
+              <div style={{ position: 'absolute', top: '100px', left: '410px', textAlign: 'center' }}>
+                <div style={{ backgroundColor: '#16a34a', color: '#fff', padding: '2px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: 'bold' }}>Delivery Address</div>
+                <div style={{ width: '14px', height: '14px', backgroundColor: '#16a34a', borderRadius: '50%', margin: '4px auto', border: '2px solid #fff' }} />
+              </div>
+            </div>
+
+            {/* Timeline Steps */}
+            <div style={{ padding: '1.5rem', maxHeight: '250px', overflowY: 'auto' }}>
+              <div style={{ fontSize: '0.85rem', fontWeight: 700, marginBottom: '1rem', color: '#374151' }}>Latest Logistics Update</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', position: 'relative', paddingLeft: '1rem', borderLeft: '2px solid #e5e7eb' }}>
+                <div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#16a34a' }}>[Out for Delivery] Courier rider is heading to your drop-off point.</div>
+                  <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.1rem' }}>Today, 10:45 AM</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 500, color: '#374151' }}>[Arrived at Local Hub] Sorting completed at sorting center.</div>
+                  <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.1rem' }}>Yesterday, 8:30 PM</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 500, color: '#374151' }}>[Order Placed] Package packed and handed over to logistics partner.</div>
+                  <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.1rem' }}>2 days ago</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
