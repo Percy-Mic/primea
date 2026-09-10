@@ -6,7 +6,6 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-02-28.acacia' as any,
 })
 
-// Initialize a Supabase admin client to bypass RLS securely on the server
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -20,12 +19,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing payment intent ID' }, { status: 400 })
     }
 
-    // 1. Issue refund via Stripe API
-    const refund = await stripe.refunds.create({
+    // 1. Issue the refund via Stripe
+    await stripe.refunds.create({
       payment_intent: paymentIntentId,
     })
 
-    // 2. Update order status in Supabase to 'refunded'
+    // 2. Update order status in Supabase
     const { error: dbError } = await supabaseAdmin
       .from('orders')
       .update({ status: 'refunded' })
@@ -35,7 +34,7 @@ export async function POST(req: Request) {
       throw new Error(`Failed to update order status: ${dbError.message}`)
     }
 
-    return NextResponse.json({ success: true, refundId: refund.id })
+    return NextResponse.json({ success: true })
   } catch (error: any) {
     console.error('Refund error:', error)
     return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 })
