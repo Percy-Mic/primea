@@ -72,9 +72,9 @@ export default function AdminSubNav() {
         .sub-nav-bar {
           display: flex;
           align-items: center;
-          background-color: #FFFFFF;
-          border-bottom: 1px solid #EBEBEB;
-          padding: 10px 24px;
+          background: #fbf8f3;
+          border-bottom: 1px solid #e8dfd4;
+          padding: 10px clamp(16px, 3vw, 40px);
           width: 100%;
           box-sizing: border-box;
           position: fixed;
@@ -82,88 +82,59 @@ export default function AdminSubNav() {
           left: 0;
           right: 0;
           z-index: 9998;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+          box-shadow: 0 8px 24px rgba(55, 38, 25, 0.045);
         }
 
         .sub-nav-list {
           display: flex;
           list-style: none;
           padding: 0;
-          margin: 0;
+          margin: 0 auto;
           width: 100%;
+          max-width: 1440px;
           align-items: center;
-          /* Mobile: Distribute items evenly across the full width */
-          justify-content: space-between;
+          justify-content: flex-start;
+          gap: 8px;
+          overflow-x: auto;
+          scrollbar-width: none;
         }
-
-        /* Desktop: Switch layout to left-aligned with a clean gap */
-        @media (min-width: 768px) {
-          .sub-nav-list {
-            justify-content: flex-start;
-            gap: 16px;
-            max-width: 1400px;
-            margin: 0 auto;
-          }
-        }
-
-        .sub-nav-item {
-          position: relative;
-        }
-
+        .sub-nav-list::-webkit-scrollbar { display: none; }
+        .sub-nav-item { position: relative; flex-shrink: 0; }
         .sub-nav-link {
-          display: flex;
+          display: inline-flex;
           align-items: center;
           justify-content: center;
-          width: 42px;
-          height: 42px;
-          border-radius: 9999px;
-          background-color: transparent;
-          color: #666666;
-          border: 1px solid #EBEBEB;
+          gap: 9px;
+          min-height: 42px;
+          padding: 0 15px;
+          border-radius: 8px;
+          background: transparent;
+          color: #76695d;
+          border: 1px solid transparent;
           text-decoration: none;
-          transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .sub-nav-link:hover {
-          background-color: #FAFAFA;
-          color: #171717;
-          border-color: #171717;
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-        }
-
-        .sub-nav-link.active {
-          background-color: #171717;
-          color: #FFFFFF;
-          border-color: #171717;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        }
-
-        /* Tooltip styling on hover */
-        .sub-nav-link::after {
-          content: attr(data-tooltip);
-          position: absolute;
-          bottom: -32px;
-          left: 50%;
-          transform: translateX(-50%) translateY(4px);
-          background: #171717;
-          color: #FFFFFF;
-          padding: 4px 8px;
-          font-size: 11px;
-          font-weight: 500;
+          font-size: 13px;
+          font-weight: 600;
           white-space: nowrap;
-          border-radius: 4px;
-          opacity: 0;
-          visibility: hidden;
-          transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-          pointer-events: none;
-          z-index: 10;
+          transition: all 180ms ease;
         }
+        .sub-nav-link:hover {
+          background: #f1e9df;
+          color: #37291f;
+          border-color: #e7dbce;
+        }
+        .sub-nav-link.active {
+          background: #33251d;
+          color: #fffaf5;
+          border-color: #33251d;
+          box-shadow: 0 3px 8px rgba(51, 37, 29, .12);
+        }
+        .sub-nav-link::after { display: none; }
 
-        .sub-nav-link:hover::after {
-          opacity: 1;
-          visibility: visible;
-          transform: translateX(-50%) translateY(0);
+        @media (max-width: 640px) {
+          .sub-nav-bar { padding: 8px 12px; }
+          .sub-nav-list { gap: 5px; }
+          .sub-nav-link { min-height: 38px; padding: 0 11px; font-size: 12px; gap: 7px; }
+          .sub-nav-link svg { width: 16px; height: 16px; }
         }
       `}</style>
 
@@ -179,6 +150,7 @@ export default function AdminSubNav() {
                 data-tooltip={item.label}
               >
                 {item.icon}
+                <span>{item.label}</span>
               </Link>
             </li>
           )
