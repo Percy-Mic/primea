@@ -302,7 +302,7 @@ export default function LoggedActionPage() {
   }
 
   return (
-    <div style={{ maxWidth: '900px', margin: '1.5rem auto', padding: '0 1rem', fontFamily: 'system-ui, -apple-system, sans-serif', boxSizing: 'border-box' }}>
+    <div className="primea-chat-page" style={{ maxWidth: '900px', margin: '1.5rem auto', padding: '0 1rem', fontFamily: 'system-ui, -apple-system, sans-serif', boxSizing: 'border-box' }}>
       <style>{`
         @keyframes wavePulse {
           0%, 100% { height: 6px; }
