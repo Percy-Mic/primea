@@ -1,12 +1,13 @@
 // app/api/orders/[id]/track/route.ts
 import { NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase/server' // Updated to match your folder structure
+import { createClient } from '@/lib/supabase/server'
 
 export async function GET(
   request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
+    const supabase = createClient()
     const orderId = params.id
 
     const { data, error } = await supabase
