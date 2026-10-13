@@ -243,6 +243,20 @@ export default function AdminDashboardPage() {
   const maxVal = Math.ceil(rawMaxVal / 50) * 50 || 100
   const chartWidth = Math.max(activeTrend.length * 48, 320)
   const chartHeight = 180
+  const chartPoints = activeTrend.map((p, idx) => ({
+    x: 55 + idx * 48,
+    y: 145 - (p.revenue / maxVal) * 120,
+    ...p,
+  }))
+  const smoothLinePath = chartPoints.reduce((path, point, idx, points) => {
+    if (idx === 0) return `M ${point.x} ${point.y}`
+    const previous = points[idx - 1]
+    const midX = (previous.x + point.x) / 2
+    return `${path} C ${midX} ${previous.y}, ${midX} ${point.y}, ${point.x} ${point.y}`
+  }, '')
+  const areaPath = chartPoints.length
+    ? `${smoothLinePath} L ${chartPoints[chartPoints.length - 1].x} 145 L ${chartPoints[0].x} 145 Z`
+    : ''
 
   return (
     <div className="admin-layout-wrapper">
@@ -714,16 +728,26 @@ export default function AdminDashboardPage() {
                     {/* Vertical Axis Line */}
                     <line x1="45" y1="25" x2="45" y2="145" stroke="#EBEBEB" strokeWidth="1.5" />
 
-                    {/* Polyline Path */}
-                    <polyline
+                    <defs>
+                      <linearGradient id="revenueAreaGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#B8A98B" stopOpacity="0.62" />
+                        <stop offset="100%" stopColor="#E9E1D2" stopOpacity="0.12" />
+                      </linearGradient>
+                      <linearGradient id="revenueLineGradient" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stopColor="#B9A987" />
+                        <stop offset="100%" stopColor="#8F7D5F" />
+                      </linearGradient>
+                    </defs>
+
+                    {/* Soft filled area and smooth revenue curve */}
+                    <path d={areaPath} fill="url(#revenueAreaGradient)" />
+                    <path
+                      d={smoothLinePath}
                       fill="none"
-                      stroke="#171717"
-                      strokeWidth="2"
-                      points={activeTrend.map((p, idx) => {
-                        const cx = 55 + idx * 48
-                        const cy = 145 - (p.revenue / maxVal) * 120
-                        return `${cx},${cy}`
-                      }).join(' ')}
+                      stroke="url(#revenueLineGradient)"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                     />
 
                     {/* Data Points */}
