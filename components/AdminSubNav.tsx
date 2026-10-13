@@ -90,12 +90,15 @@ export default function AdminSubNav() {
           list-style: none;
           padding: 0;
           margin: 0 auto;
-          width: 100%;
+          width: max-content;
+          min-width: 100%;
           max-width: 1440px;
           align-items: center;
           justify-content: flex-start;
+          flex-wrap: nowrap;
           gap: 8px;
           overflow-x: auto;
+          overflow-y: hidden;
           scrollbar-width: none;
         }
         .sub-nav-list::-webkit-scrollbar { display: none; }
@@ -131,10 +134,35 @@ export default function AdminSubNav() {
         .sub-nav-link::after { display: none; }
 
         @media (max-width: 640px) {
-          .sub-nav-bar { padding: 8px 12px; }
-          .sub-nav-list { gap: 5px; }
-          .sub-nav-link { min-height: 38px; padding: 0 11px; font-size: 12px; gap: 7px; }
-          .sub-nav-link svg { width: 16px; height: 16px; }
+          .sub-nav-bar {
+            top: 69px;
+            padding: 7px 8px;
+            overflow: hidden;
+          }
+          .sub-nav-list {
+            width: 100%;
+            min-width: 0;
+            max-width: 100%;
+            flex-wrap: nowrap !important;
+            justify-content: flex-start;
+            gap: 4px;
+            padding: 0 2px 2px;
+            overscroll-behavior-x: contain;
+            -webkit-overflow-scrolling: touch;
+          }
+          .sub-nav-item { flex: 0 0 auto; }
+          .sub-nav-link {
+            min-height: 36px;
+            padding: 0 9px;
+            font-size: 11px;
+            gap: 5px;
+            border-radius: 7px;
+          }
+          .sub-nav-link svg { display: none; }
+        }
+
+        @media (min-width: 641px) {
+          .sub-nav-link svg { flex-shrink: 0; }
         }
       `}</style>
 
