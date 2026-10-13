@@ -618,6 +618,28 @@ function ProductsCatalogContent() {
           0% { opacity: 0.4; }
           100% { opacity: 1; }
         }
+
+        .hero-eyebrow {
+          display: inline-flex; align-items: center; gap: .8rem;
+          margin-bottom: clamp(1.35rem, 3vh, 2.15rem); color: #e5c9b0;
+          font-size: .65rem; font-weight: 600; letter-spacing: .28em; text-transform: uppercase;
+          animation: primea-hero-enter 900ms cubic-bezier(.2,.75,.25,1) both;
+        }
+        .hero-eyebrow span { color: rgba(255,255,255,.55); }
+        .hero-cta {
+          display: inline-flex; align-items: center; justify-content: center; gap: 1rem;
+          min-height: 54px; margin-top: 2.35rem; padding: .9rem 1.45rem .9rem 1.7rem;
+          border: 1px solid rgba(246,239,231,.72); border-radius: 999px;
+          color: #211a16; background: #f5eee6; text-decoration: none; font-size: .72rem;
+          font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+          transition: color 260ms ease, background-color 260ms ease, border-color 260ms ease, transform 260ms ease, box-shadow 260ms ease;
+          animation: primea-hero-enter 1.05s 220ms cubic-bezier(.2,.75,.25,1) both;
+        }
+        .hero-cta svg { transition: transform 260ms cubic-bezier(.2,.75,.25,1); }
+        .hero-cta:hover { color: #fffaf5; background: rgba(31,24,21,.72); border-color: rgba(255,255,255,.9); transform: translateY(-3px); box-shadow: 0 14px 34px rgba(0,0,0,.2); }
+        .hero-cta:hover svg { transform: translateX(4px); }
+        .hero-index { position: absolute; right: clamp(1.25rem, 4vw, 4rem); bottom: 2rem; color: rgba(255,255,255,.64); font-size: .6rem; letter-spacing: .2em; }
+
       `}</style>
 
       {/* Navigation Header */}
@@ -739,14 +761,20 @@ function ProductsCatalogContent() {
       
       {/* Hero Banner */}
       <section className="hero-banner">
-        <h1 className="hero-title">All Products</h1>
+        <span className="hero-eyebrow">THE CONSIDERED EDIT <span aria-hidden="true">/</span> PRIMEA</span>
+        <h1 className="hero-title">The art of everyday luxury.</h1>
         <p className="hero-subtitle">
-          Curated luxury fashion and high-quality artisanal pieces delivered to your door.
+          Thoughtfully selected pieces. A quieter kind of statement. Discover the collection designed to stay with you.
         </p>
+        <Link href="#collection" className="hero-cta">
+          Explore the collection
+          <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M5 12h14M13 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        </Link>
+        <span className="hero-index" aria-hidden="true">01 — THE COLLECTION</span>
       </section>
 
       {/* Main Catalog View */}
-      <main className="catalog-container">
+      <main id="collection" className="catalog-container">
         <div className="catalog-header">
           <h2 className="catalog-title">Catalog Collection</h2>
 
