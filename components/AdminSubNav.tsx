@@ -158,11 +158,21 @@ export default function AdminSubNav() {
             gap: 5px;
             border-radius: 7px;
           }
-          .sub-nav-link svg { display: none; }
+          .sub-nav-link svg { display: block; width: 16px; height: 16px; flex-shrink: 0; }
+          .sub-nav-link span { display: none; }
+          .sub-nav-link {
+            width: 40px;
+            min-width: 40px;
+            padding: 0;
+            justify-content: center;
+            border-radius: 10px;
+          }
+          .sub-nav-list { justify-content: space-between; }
         }
 
         @media (min-width: 641px) {
           .sub-nav-link svg { flex-shrink: 0; }
+          .sub-nav-link span { display: inline; }
         }
       `}</style>
 
