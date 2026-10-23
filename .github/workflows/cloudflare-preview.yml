@@ -34,7 +34,9 @@ jobs:
         # OpenNext 1.20.x no longer supports Next.js 14. Keep this preview build on
         # the supported Next.js 15 LTS line until the app dependency lockfile is
         # deliberately upgraded and validated in a separate change.
-        run: npm install --no-save --package-lock=false next@15.5.26 @opennextjs/cloudflare@1.20.12 wrangler
+        run: |
+          npm pkg set dependencies.next=15.5.26
+          npm install --no-save --package-lock=false @opennextjs/cloudflare@1.20.12 wrangler
 
       - name: Validate required build configuration
         env:
