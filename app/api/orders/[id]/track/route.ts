@@ -4,11 +4,11 @@ import { createClient } from '@/lib/supabase/server'
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = createClient()
-    const orderId = params.id
+    const supabase = await createClient()
+    const { id: orderId } = await params
 
     const { data, error } = await supabase
       .from('orders')
