@@ -1,13 +1,12 @@
 import { createBrowserClient } from '@supabase/ssr'
 
 export function createClient() {
-  const supabaseUrl =
-    process.env.NEXT_PUBLIC_SUPABASE_URL ||
-    'https://znxaurlyjgyklqtjjivu.supabase.co'
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-  const supabaseAnonKey =
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-    'sb_publishable_tSdZdaLzS5BbaIrcB6jiEA_DCQS-X7n'
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Missing required environment variables: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY')
+  }
 
   return createBrowserClient(supabaseUrl, supabaseAnonKey)
 }

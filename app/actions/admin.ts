@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 
 export async function completeTaskForAdmin(adminId: string, pointsEarned: number) {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   // Fetch current score, then update
   const { data: profile } = await supabase

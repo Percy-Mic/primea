@@ -10,7 +10,7 @@ const supabaseAdmin = createServiceRoleClient(
 // GET: Fetch orders (All orders for admin, user-specific orders for customers)
 export async function GET() {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: { user }, error: userError } = await supabase.auth.getUser();
 
     if (userError || !user) {
@@ -57,7 +57,7 @@ export async function GET() {
 // POST: Save a new order when checkout completes successfully
 export async function POST(request: Request) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     const body = await request.json();

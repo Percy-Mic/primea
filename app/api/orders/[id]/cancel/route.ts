@@ -3,10 +3,10 @@ import { createClient } from '@/lib/supabase/server'
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const orderId = params.id
+    const { id: orderId } = await params
     const supabase = await createClient()
 
     // Update the order status to Cancelled in Supabase
