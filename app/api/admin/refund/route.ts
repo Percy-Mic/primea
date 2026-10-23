@@ -2,29 +2,35 @@ import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-02-28.acacia' as any,
-})
-
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
 export async function POST(req: Request) {
   try {
-    const { orderId, paymentIntentId } = await req.json()
+    const stripeSecret = process.env.STRIPE_SECRET_KEY
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-    if (!paymentIntentId) {
-      return NextResponse.json({ error: 'Missing payment intent ID' }, { status: 400 })
+    if (!stripeSecret || !supabaseUrl || !serviceRoleKey) {
+      console.error('Admin refund route is missing STRIPE_SECRET_KEY, NEXT_PUBLIC_SUPABASE_URL, or SUPABASE_SERVICE_ROLE_KEY')
+      return NextResponse.json({ error: 'Refund service is not configured' }, { status: 503 })
     }
 
-    // 1. Issue the refund via Stripe
-    await stripe.refunds.create({
-      payment_intent: paymentIntentId,
-    })
+    const { orderId, paymentIntentId } = await req.json()
 
-    // 2. Update order status in Supabase
+    if (!orderId || !paymentIntentId) {
+      return NextResponse.json({ error: 'Missing order ID or payment intent ID' }, { status: 400 })
+    }
+
+    const stripe = new Stripe(stripeSecret, {
+      apiVersion: '2025-02-28.acacia' as any,
+    })
+    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey)
+
+    // Issue the refund via Stripe.
+    await stripe.refunds.create({ payment_intent: paymentIntentId })
+
+    // Update order status in Supabase.
     const { error: dbError } = await supabaseAdmin
       .from('orders')
       .update({ status: 'refunded' })
@@ -35,8 +41,9 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ success: true })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Refund error:', error)
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 })
+    const message = error instanceof Error ? error.message : 'Internal Server Error'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
