@@ -9,8 +9,8 @@ function getRequiredEnv(name: string): string {
   return value
 }
 
-export function createClient() {
-  const cookieStore = cookies()
+export async function createClient() {
+  const cookieStore = await cookies()
   const supabaseUrl = getRequiredEnv('NEXT_PUBLIC_SUPABASE_URL')
   const supabaseAnonKey = getRequiredEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY')
 
